@@ -13,9 +13,9 @@ export const authService = {
     const demo = tryDemoLogin(email, password);
     if (demo) return demo;
 
-    // /login returns { token, user } directly (not wrapped in { data }).
-    const res = await api.post<AuthResponse>("/auth/login", { email, password });
-    return res.data;
+    // /login returns { data: { token, user } } — unwrap the envelope.
+    const res = await api.post<{ data: AuthResponse }>("/auth/login", { email, password });
+    return res.data.data;
   },
 
   async logout(): Promise<void> {
