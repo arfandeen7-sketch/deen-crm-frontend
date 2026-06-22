@@ -35,6 +35,6 @@ export const authService = {
       }
       return;
     }
-    await api.put("/auth/change-password", { currentPassword, newPassword });
+    await api.put("/auth/change-password", { newPassword });
   },
 };

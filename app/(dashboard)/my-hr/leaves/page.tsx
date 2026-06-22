@@ -41,8 +41,8 @@ export default function MyLeavesPage() {
 
   const columns: Column<LeaveRequest>[] = [
     { key: "leaveType", header: "Type", render: (r) => r.leaveType.replace("_", " ") },
-    { key: "startDate", header: "From", render: (r) => formatDate(r.startDate) },
-    { key: "endDate", header: "To", render: (r) => formatDate(r.endDate) },
+    { key: "dateFrom", header: "From", render: (r) => formatDate(r.dateFrom) },
+    { key: "dateTo", header: "To", render: (r) => formatDate(r.dateTo) },
     { key: "totalDays", header: "Days", render: (r) => String(r.totalDays) },
     { key: "reason", header: "Reason", render: (r) => <span className="max-w-[200px] truncate block">{r.reason}</span> },
     { key: "status", header: "Status", render: (r) => <Badge className={LEAVE_STATUS_COLORS[r.status]}>{r.status}</Badge> },
@@ -64,15 +64,15 @@ export default function MyLeavesPage() {
       {balance && (
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-indigo-700">{balance.annual}</p>
+            <p className="text-2xl font-bold text-indigo-700">{balance.leaveBalance.annual}</p>
             <p className="text-xs text-slate-600">Annual Leave</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-rose-700">{balance.sick}</p>
+            <p className="text-2xl font-bold text-rose-700">{balance.leaveBalance.sick}</p>
             <p className="text-xs text-slate-600">Sick Leave</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-amber-700">{balance.emergency}</p>
+            <p className="text-2xl font-bold text-amber-700">{balance.leaveBalance.emergency}</p>
             <p className="text-xs text-slate-600">Emergency Leave</p>
           </div>
         </div>
@@ -96,13 +96,13 @@ export default function MyLeavesPage() {
             <div />
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Start Date *</label>
-              <input type="date" {...register("startDate")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              {errors.startDate && <p className="mt-1 text-xs text-rose-600">{errors.startDate.message}</p>}
+              <input type="date" {...register("dateFrom")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              {errors.dateFrom && <p className="mt-1 text-xs text-rose-600">{errors.dateFrom.message}</p>}
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">End Date *</label>
-              <input type="date" {...register("endDate")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              {errors.endDate && <p className="mt-1 text-xs text-rose-600">{errors.endDate.message}</p>}
+              <input type="date" {...register("dateTo")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              {errors.dateTo && <p className="mt-1 text-xs text-rose-600">{errors.dateTo.message}</p>}
             </div>
             <div className="sm:col-span-2">
               <label className="mb-1 block text-sm font-medium text-slate-700">Reason *</label>

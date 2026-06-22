@@ -2,9 +2,9 @@ import { z } from "zod";
 
 export const leaveApplySchema = z.object({
   leaveType: z.enum(["annual", "sick", "emergency", "unpaid"]),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
-  reason: z.string().min(5, "Reason must be at least 5 characters"),
+  dateFrom: z.string().min(1, "Start date is required"),
+  dateTo: z.string().min(1, "End date is required"),
+  reason: z.string().optional(),
 });
 
 export type LeaveApplyFormValues = z.infer<typeof leaveApplySchema>;

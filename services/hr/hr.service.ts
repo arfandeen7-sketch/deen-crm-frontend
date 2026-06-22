@@ -1,22 +1,22 @@
-import { api, getData, postData, putData, deleteData } from "@/services/api/client";
+import { api, getData, patchData, postData, putData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
-import type { User, Paginated, HrDashboardSummary, EmployeeDashboard } from "@/types";
+import type { User, Paginated, EmploymentStatus } from "@/types";
 
 export interface EmployeeInput {
   fullName: string;
   email: string;
   phone?: string | null;
-  profilePhoto?: string | null;
   role: string;
   employeeId?: string | null;
   department?: string | null;
   designation?: string | null;
   joiningDate?: string | null;
-  basicSalary?: number | null;
-  allowances?: number | null;
+  basicSalary?: string | null;
+  allowances?: string | null;
   bankName?: string | null;
   bankAccountNumber?: string | null;
-  employmentStatus?: string | null;
+  bankIban?: string | null;
+  leaveBalance?: { annual: number; sick: number; emergency: number } | null;
 }
 
 export interface EmployeeQuery {
@@ -25,39 +25,33 @@ export interface EmployeeQuery {
   search?: string;
   department?: string;
   designation?: string;
-  employmentStatus?: string;
+  status?: string;
   role?: string;
 }
 
 export const employeeService = {
   async list(params: EmployeeQuery = {}): Promise<Paginated<User>> {
     const res = await api.get<Paginated<User>>(
-      `/hrms/employees${buildQuery(params)}`,
+      `/employees${buildQuery(params)}`,
     );
     return res.data;
   },
   get(id: string): Promise<User> {
-    return getData<User>(`/hrms/employees/${id}`);
+    return getData<User>(`/employees/${id}`);
   },
   create(body: EmployeeInput): Promise<User> {
-    return postData<User>("/hrms/employees", body);
+    return postData<User>("/employees", body);
   },
   update(id: string, body: Partial<EmployeeInput>): Promise<User> {
-    return putData<User>(`/hrms/employees/${id}`, body);
+    return putData<User>(`/employees/${id}`, body);
   },
-  remove(id: string): Promise<{ id: string }> {
-    return deleteData<{ id: string }>(`/hrms/employees/${id}`);
+  patchStatus(id: string, status: EmploymentStatus): Promise<User> {
+    return patchData<User>(`/employees/${id}/status`, { status });
   },
   async export(params: EmployeeQuery = {}): Promise<Blob> {
-    const res = await api.get(`/hrms/employees/export${buildQuery(params)}`, {
+    const res = await api.get(`/employees/export${buildQuery(params)}`, {
       responseType: "blob",
     });
     return res.data as Blob;
-  },
-  dashboard(): Promise<HrDashboardSummary> {
-    return getData<HrDashboardSummary>("/hrms/dashboard");
-  },
-  myDashboard(): Promise<EmployeeDashboard> {
-    return getData<EmployeeDashboard>("/hrms/my/dashboard");
   },
 };

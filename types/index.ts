@@ -2,7 +2,7 @@
 
 export type UserRole = "master" | "hr_manager" | "sales_manager" | "sales_executive";
 
-export type EmploymentStatus = "active" | "probation" | "terminated" | "resigned" | "on_notice";
+export type EmploymentStatus = "active" | "on_leave" | "suspended" | "resigned" | "terminated";
 
 export type BrokerStatus = "active" | "inactive" | "suspended";
 
@@ -14,13 +14,13 @@ export type LeadIngestionSource =
   | "manual"
   | "import";
 
-export type AttendanceStatus = "present" | "absent" | "half_day" | "late" | "leave";
+export type AttendanceStatus = "present" | "absent" | "half_day" | "late" | "leave" | "weekend" | "holiday";
 
 export type LeaveType = "annual" | "sick" | "emergency" | "unpaid";
 
-export type LeaveStatus = "pending" | "approved" | "rejected";
+export type LeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
 
-export type PayrollStatus = "pending" | "processed" | "paid";
+export type PayrollStatus = "draft" | "generated" | "sent";
 
 // Dynamic field categories (backend: dynamic_fields.category)
 export type DynamicFieldCategory =
@@ -55,6 +55,7 @@ export interface User {
   allowances?: number | null;
   bankName?: string | null;
   bankAccountNumber?: string | null;
+  bankIban?: string | null;
   leaveBalance?: LeaveBalance | null;
   employmentStatus?: EmploymentStatus | null;
   createdAt: string;
@@ -143,16 +144,23 @@ export interface AttendanceRecord {
   date: string;
   checkInTime?: string | null;
   checkOutTime?: string | null;
-  checkInPhoto?: string | null;
-  checkOutPhoto?: string | null;
+  checkInPhotoUrl?: string | null;
+  checkOutPhotoUrl?: string | null;
   status: AttendanceStatus;
-  workingHours?: number | null;
-  lateMinutes?: number | null;
-  overtime?: number | null;
+  totalWorkingHours?: number | null;
+  isManualOverride?: boolean;
+  overrideReason?: string | null;
+  leaveType?: string | null;
+  recordedBy?: string | null;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: Pick<User, "id" | "fullName" | "role" | "department"> | null;
+}
+
+export interface AttendanceReport {
+  records: AttendanceRecord[];
+  summary: AttendanceSummary;
 }
 
 export interface AttendanceCheckPayload {
@@ -175,25 +183,25 @@ export interface LeaveRequest {
   id: string;
   userId: string;
   leaveType: LeaveType;
-  startDate: string;
-  endDate: string;
+  dateFrom: string;
+  dateTo: string;
   totalDays: number;
-  reason: string;
+  reason?: string | null;
   status: LeaveStatus;
-  approvedBy?: string | null;
-  approvedAt?: string | null;
-  rejectionReason?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: Pick<User, "id" | "fullName" | "department"> | null;
-  approver?: Pick<User, "id" | "fullName"> | null;
+  reviewer?: Pick<User, "id" | "fullName"> | null;
 }
 
 export interface LeaveApplyPayload {
   leaveType: LeaveType;
-  startDate: string;
-  endDate: string;
-  reason: string;
+  dateFrom: string;
+  dateTo: string;
+  reason?: string;
 }
 
 // ── HRMS: Payroll ────────────────────────────────────────────────────────────
@@ -242,16 +250,25 @@ export interface PayrollDashboard {
 
 export interface Payslip {
   id: string;
-  payrollId: string;
   userId: string;
   month: number;
   year: number;
+  basicSalary: string;
+  allowances: string;
+  presentDays: number;
+  halfDays: number;
+  approvedLeaveDays: number;
+  unpaidLeaveDays: number;
+  overtimeAmount: number;
+  deductions: number;
+  netSalary: number;
+  status: PayrollStatus;
   pdfUrl?: string | null;
-  emailSent: boolean;
-  emailSentAt?: string | null;
+  generatedBy?: string | null;
+  sentAt?: string | null;
   createdAt: string;
-  user?: Pick<User, "id" | "fullName" | "department" | "designation" | "employeeId"> | null;
-  payroll?: PayrollRecord | null;
+  updatedAt: string;
+  user?: Pick<User, "id" | "fullName" | "department" | "designation" | "employeeId" | "bankName" | "bankAccountNumber"> | null;
 }
 
 // ── HRMS: Email Configuration ────────────────────────────────────────────────
@@ -285,11 +302,10 @@ export interface EmailTemplate {
 export interface LoginActivity {
   id: string;
   userId: string;
-  role: UserRole;
   loginTime: string;
   logoutTime?: string | null;
   sessionDuration?: number | null;
-  deviceInfo?: string | null;
+  userAgent?: string | null;
   ipAddress?: string | null;
   createdAt: string;
   user?: Pick<User, "id" | "fullName" | "role"> | null;

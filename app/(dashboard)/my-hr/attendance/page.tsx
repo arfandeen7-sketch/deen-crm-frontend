@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMyAttendance, useAttendanceSummary } from "@/hooks/useHrms";
+import { useMyAttendance, useAttendanceUserSummary } from "@/hooks/useHrms";
+import { useAuth } from "@/hooks/useAuth";
 import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
@@ -16,14 +17,15 @@ export default function MyAttendancePage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const now = new Date();
 
+  const { user } = useAuth();
   const { data, isLoading } = useMyAttendance({ page, pageSize });
-  const { data: summary } = useAttendanceSummary({ month: now.getMonth() + 1, year: now.getFullYear() });
+  const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
 
   const columns: Column<AttendanceRecord>[] = [
     { key: "date", header: "Date", render: (r) => formatDate(r.date) },
     { key: "checkIn", header: "Check In", render: (r) => r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
     { key: "checkOut", header: "Check Out", render: (r) => r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
-    { key: "hours", header: "Hours", render: (r) => r.workingHours != null ? `${r.workingHours.toFixed(1)}h` : "—" },
+    { key: "hours", header: "Hours", render: (r) => r.totalWorkingHours != null ? `${r.totalWorkingHours.toFixed(1)}h` : "—" },
     { key: "status", header: "Status", render: (r) => <Badge className={ATTENDANCE_STATUS_COLORS[r.status]}>{r.status.replace("_", " ")}</Badge> },
   ];
 

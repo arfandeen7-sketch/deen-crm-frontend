@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useMyDashboard } from "@/hooks/useHrms";
+import { useTodayAttendance, useLeaveBalance, useAttendanceUserSummary } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, ROLE_BADGE_CLASSES, EMPLOYMENT_STATUS_COLORS } from "@/constants";
@@ -9,7 +9,10 @@ import { formatDate } from "@/lib/utils";
 
 export default function MyProfilePage() {
   const { user } = useAuth();
-  const { data: dashboard } = useMyDashboard();
+  const now = new Date();
+  const { data: todayRecord } = useTodayAttendance();
+  const { data: balanceData } = useLeaveBalance();
+  const { data: monthSummary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
 
   if (!user) return null;
 
@@ -44,32 +47,31 @@ export default function MyProfilePage() {
 
         {/* Employee Dashboard */}
         <div className="space-y-4 lg:col-span-2">
-          {dashboard && (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <DashCard label="Today's Status" value={dashboard.todayStatus === "not_checked_in" ? "Not Checked In" : dashboard.todayStatus.replace("_", " ")} accent={dashboard.todayStatus === "present" ? "emerald" : "amber"} />
-                <DashCard label="Last Login" value={dashboard.lastLoginTime ? new Date(dashboard.lastLoginTime).toLocaleString("en-AE") : "—"} accent="indigo" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <DashCard label="Today's Status" value={todayRecord?.status ? todayRecord.status.replace("_", " ") : "Not Checked In"} accent={todayRecord?.status === "present" ? "emerald" : "amber"} />
+            <DashCard label="Overtime" value={todayRecord?.totalWorkingHours != null ? `${todayRecord.totalWorkingHours.toFixed(1)}h worked` : "—"} accent="indigo" />
+          </div>
+          {monthSummary && (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-base font-semibold text-slate-900">Current Month Attendance</h3>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                <MiniStat label="Present" value={monthSummary.presentDays} color="emerald" />
+                <MiniStat label="Absent" value={monthSummary.absentDays} color="rose" />
+                <MiniStat label="Late" value={monthSummary.lateDays} color="orange" />
+                <MiniStat label="Half Day" value={monthSummary.halfDays} color="amber" />
+                <MiniStat label="Leave" value={monthSummary.leaveDays} color="sky" />
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-base font-semibold text-slate-900">Current Month Attendance</h3>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-                  <MiniStat label="Present" value={dashboard.currentMonthAttendance.presentDays} color="emerald" />
-                  <MiniStat label="Absent" value={dashboard.currentMonthAttendance.absentDays} color="rose" />
-                  <MiniStat label="Late" value={dashboard.currentMonthAttendance.lateDays} color="orange" />
-                  <MiniStat label="Half Day" value={dashboard.currentMonthAttendance.halfDays} color="amber" />
-                  <MiniStat label="Leave" value={dashboard.currentMonthAttendance.leaveDays} color="sky" />
-                  <MiniStat label="OT (hrs)" value={dashboard.currentMonthAttendance.overtimeHours} color="indigo" />
-                </div>
+            </div>
+          )}
+          {balanceData && (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-base font-semibold text-slate-900">Leave Balance</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <MiniStat label="Annual" value={balanceData.leaveBalance.annual} color="indigo" />
+                <MiniStat label="Sick" value={balanceData.leaveBalance.sick} color="rose" />
+                <MiniStat label="Emergency" value={balanceData.leaveBalance.emergency} color="amber" />
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-base font-semibold text-slate-900">Leave Balance</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <MiniStat label="Annual" value={dashboard.leaveBalance.annual} color="indigo" />
-                  <MiniStat label="Sick" value={dashboard.leaveBalance.sick} color="rose" />
-                  <MiniStat label="Emergency" value={dashboard.leaveBalance.emergency} color="amber" />
-                </div>
-              </div>
-            </>
+            </div>
           )}
         </div>
       </div>

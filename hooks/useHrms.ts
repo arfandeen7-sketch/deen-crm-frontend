@@ -4,12 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { employeeService, type EmployeeInput, type EmployeeQuery } from "@/services/hr/hr.service";
 import { attendanceService, type AttendanceQuery } from "@/services/attendance/attendance.service";
 import { leaveService, type LeaveQuery } from "@/services/hrms/leave.service";
-import { payrollService, type PayrollQuery } from "@/services/hrms/payroll.service";
+import { payrollService, type PayrollPreviewParams } from "@/services/hrms/payroll.service";
 import { payslipService, type PayslipQuery } from "@/services/hrms/payslip.service";
 import { emailService, type SmtpConfigInput, type EmailTemplateInput } from "@/services/hrms/email.service";
 import { loginActivityService, type LoginActivityQuery } from "@/services/hrms/login-activity.service";
 import { hrReportsService, type HrReportQuery, type HrReportType } from "@/services/hrms/hr-reports.service";
-import type { AttendanceCheckPayload, LeaveApplyPayload, LeaveBalance, PayrollGeneratePayload } from "@/types";
+import type { AttendanceCheckPayload, EmploymentStatus, LeaveApplyPayload, LeaveStatus } from "@/types";
 
 // ── Employee Hooks ───────────────────────────────────────────────────────────
 
@@ -41,26 +41,13 @@ export function useEmployeeMutations() {
       employeeService.update(id, body),
     onSuccess: invalidate,
   });
-  const remove = useMutation({
-    mutationFn: (id: string) => employeeService.remove(id),
+  const patchStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: EmploymentStatus }) =>
+      employeeService.patchStatus(id, status),
     onSuccess: invalidate,
   });
 
-  return { create, update, remove };
-}
-
-export function useHrDashboard() {
-  return useQuery({
-    queryKey: ["hrms", "dashboard"],
-    queryFn: () => employeeService.dashboard(),
-  });
-}
-
-export function useMyDashboard() {
-  return useQuery({
-    queryKey: ["hrms", "my-dashboard"],
-    queryFn: () => employeeService.myDashboard(),
-  });
+  return { create, update, patchStatus };
 }
 
 // ── Attendance Hooks ─────────────────────────────────────────────────────────
@@ -72,7 +59,7 @@ export function useAttendanceList(params: AttendanceQuery) {
   });
 }
 
-export function useMyAttendance(params: Omit<AttendanceQuery, "userId" | "department"> = {}) {
+export function useMyAttendance(params: Omit<AttendanceQuery, "userId"> = {}) {
   return useQuery({
     queryKey: ["attendance", "my-list", params],
     queryFn: () => attendanceService.myList(params),
@@ -86,10 +73,11 @@ export function useTodayAttendance() {
   });
 }
 
-export function useAttendanceSummary(params: { userId?: string; month?: number; year?: number } = {}) {
+export function useAttendanceUserSummary(userId: string, params: { month: number; year: number }) {
   return useQuery({
-    queryKey: ["attendance", "summary", params],
-    queryFn: () => attendanceService.summary(params),
+    queryKey: ["attendance", "user-summary", userId, params],
+    queryFn: () => attendanceService.userSummary(userId, params),
+    enabled: !!userId,
   });
 }
 
@@ -140,68 +128,38 @@ export function useApplyLeave() {
   });
 }
 
-export function useApproveLeave() {
+export function useReviewLeave() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => leaveService.approve(id),
+    mutationFn: ({ id, status, reviewNote }: { id: string; status: Extract<LeaveStatus, "approved" | "rejected">; reviewNote?: string }) =>
+      leaveService.review(id, status, reviewNote),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
   });
 }
 
-export function useRejectLeave() {
+export function useCancelLeave() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => leaveService.reject(id, reason),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
-  });
-}
-
-export function useUpdateLeaveBalance() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ userId, balance }: { userId: string; balance: LeaveBalance }) =>
-      leaveService.updateBalance(userId, balance),
+    mutationFn: (id: string) => leaveService.cancel(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
   });
 }
 
 // ── Payroll Hooks ────────────────────────────────────────────────────────────
 
-export function usePayrollList(params: PayrollQuery) {
+export function usePayrollPreview(params: PayrollPreviewParams, enabled = true) {
   return useQuery({
-    queryKey: ["payroll", "list", params],
-    queryFn: () => payrollService.list(params),
+    queryKey: ["payroll", "preview", params],
+    queryFn: () => payrollService.preview(params),
+    enabled,
   });
 }
 
-export function usePayrollRecord(id: string | undefined) {
-  return useQuery({
-    queryKey: ["payroll", "detail", id],
-    queryFn: () => payrollService.get(id as string),
-    enabled: !!id,
-  });
-}
-
-export function usePayrollDashboard(params: { month?: number; year?: number } = {}) {
-  return useQuery({
-    queryKey: ["payroll", "dashboard", params],
-    queryFn: () => payrollService.dashboard(params),
-  });
-}
-
-export function useGeneratePayroll() {
+export function useCalculatePayroll() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: PayrollGeneratePayload) => payrollService.generate(body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["payroll"] }),
-  });
-}
-
-export function useProcessPayroll() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => payrollService.process(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["payroll"] }),
+    mutationFn: (body: PayrollPreviewParams) => payrollService.calculate(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payslips"] }),
   });
 }
 
@@ -229,18 +187,27 @@ export function usePayslip(id: string | undefined) {
   });
 }
 
-export function useSendPayslipEmail() {
+export function useGeneratePayslipPdf() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => payslipService.sendEmail(id),
+    mutationFn: (id: string) => payslipService.generatePdf(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["payslips"] }),
   });
 }
 
-export function useSendBulkPayslipEmails() {
+export function useSendPayslip() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (ids: string[]) => payslipService.sendBulkEmails(ids),
+    mutationFn: (id: string) => payslipService.send(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payslips"] }),
+  });
+}
+
+export function useSendBulkPayslips() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ month, year }: { month: number; year: number }) =>
+      payslipService.sendBulk(month, year),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["payslips"] }),
   });
 }

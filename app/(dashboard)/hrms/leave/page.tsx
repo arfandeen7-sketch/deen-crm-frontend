@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Check, X } from "lucide-react";
-import { useLeaveList, useApproveLeave, useRejectLeave } from "@/hooks/useHrms";
+import { Check, X } from "lucide-react";
+import { useLeaveList, useReviewLeave } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
-import { leaveService } from "@/services/hrms/leave.service";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import type { LeaveRequest } from "@/types";
@@ -20,33 +19,22 @@ export default function LeaveManagementPage() {
   const [leaveType, setLeaveType] = useState("");
 
   const { data, isLoading } = useLeaveList({ page, pageSize, status: status || undefined, leaveType: leaveType || undefined });
-  const approve = useApproveLeave();
-  const reject = useRejectLeave();
+  const review = useReviewLeave();
 
   const handleApprove = (id: string) => {
-    approve.mutate(id, { onSuccess: () => toast.success("Leave approved") });
+    review.mutate({ id, status: "approved" }, { onSuccess: () => toast.success("Leave approved") });
   };
 
   const handleReject = (id: string) => {
-    const reason = prompt("Rejection reason:");
-    if (reason) reject.mutate({ id, reason }, { onSuccess: () => toast.success("Leave rejected") });
-  };
-
-  const handleExport = async () => {
-    const blob = await leaveService.export({ status, leaveType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "leave-records.xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
+    const reviewNote = prompt("Rejection reason:");
+    if (reviewNote) review.mutate({ id, status: "rejected", reviewNote }, { onSuccess: () => toast.success("Leave rejected") });
   };
 
   const columns: Column<LeaveRequest>[] = [
     { key: "user", header: "Employee", render: (r) => r.user?.fullName || "—" },
     { key: "leaveType", header: "Type", render: (r) => r.leaveType.replace("_", " ") },
-    { key: "startDate", header: "From", render: (r) => formatDate(r.startDate) },
-    { key: "endDate", header: "To", render: (r) => formatDate(r.endDate) },
+    { key: "dateFrom", header: "From", render: (r) => formatDate(r.dateFrom) },
+    { key: "dateTo", header: "To", render: (r) => formatDate(r.dateTo) },
     { key: "totalDays", header: "Days", render: (r) => String(r.totalDays) },
     { key: "reason", header: "Reason", render: (r) => <span className="max-w-[200px] truncate block">{r.reason}</span> },
     {
@@ -76,11 +64,7 @@ export default function LeaveManagementPage() {
       <PageHeader
         title="Leave Management"
         subtitle="Manage employee leave requests"
-        actions={
-          <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            <Download className="h-4 w-4" /> Export
-          </button>
-        }
+        actions={null}
       />
 
       <div className="flex flex-wrap gap-3">

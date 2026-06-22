@@ -50,26 +50,29 @@ export const ATTENDANCE_STATUS_COLORS: Record<string, string> = {
   half_day: "bg-amber-100 text-amber-700 ring-amber-600/20",
   late: "bg-orange-100 text-orange-700 ring-orange-600/20",
   leave: "bg-sky-100 text-sky-700 ring-sky-600/20",
+  weekend: "bg-slate-100 text-slate-500 ring-slate-400/20",
+  holiday: "bg-violet-100 text-violet-700 ring-violet-600/20",
 };
 
 export const LEAVE_STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700 ring-amber-600/20",
   approved: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
   rejected: "bg-rose-100 text-rose-700 ring-rose-600/20",
+  cancelled: "bg-slate-100 text-slate-600 ring-slate-500/20",
 };
 
 export const PAYROLL_STATUS_COLORS: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-700 ring-amber-600/20",
-  processed: "bg-blue-100 text-blue-700 ring-blue-600/20",
-  paid: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
+  draft: "bg-slate-100 text-slate-600 ring-slate-500/20",
+  generated: "bg-sky-100 text-sky-700 ring-sky-600/20",
+  sent: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
 };
 
 export const EMPLOYMENT_STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  probation: "bg-amber-100 text-amber-700 ring-amber-600/20",
-  terminated: "bg-rose-100 text-rose-700 ring-rose-600/20",
+  on_leave: "bg-sky-100 text-sky-700 ring-sky-600/20",
+  suspended: "bg-orange-100 text-orange-700 ring-orange-600/20",
   resigned: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  on_notice: "bg-orange-100 text-orange-700 ring-orange-600/20",
+  terminated: "bg-rose-100 text-rose-700 ring-rose-600/20",
 };
 
 // Official shift timing (Asia/Dubai)

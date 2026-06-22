@@ -18,7 +18,7 @@ export default function MyPayslipsPage() {
   const { data, isLoading } = useMyPayslips({ page, pageSize });
 
   const handleDownload = async (id: string, month: number, year: number) => {
-    const blob = await payslipService.downloadPdf(id);
+    const blob = await payslipService.download(id, true);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -36,22 +36,22 @@ export default function MyPayslipsPage() {
     {
       key: "basic",
       header: "Basic",
-      render: (r) => r.payroll ? `AED ${r.payroll.basicSalary.toLocaleString()}` : "—",
+      render: (r) => `AED ${Number(r.basicSalary).toLocaleString()}`,
     },
     {
       key: "allowances",
       header: "Allowances",
-      render: (r) => r.payroll ? `AED ${r.payroll.allowances.toLocaleString()}` : "—",
+      render: (r) => `AED ${Number(r.allowances).toLocaleString()}`,
     },
     {
       key: "deductions",
       header: "Deductions",
-      render: (r) => r.payroll ? `AED ${(r.payroll.deductions + r.payroll.leaveDeductions + r.payroll.latePenalty).toLocaleString()}` : "—",
+      render: (r) => `AED ${r.deductions.toLocaleString()}`,
     },
     {
       key: "net",
       header: "Net Salary",
-      render: (r) => r.payroll ? <span className="font-semibold text-emerald-700">AED {r.payroll.netSalary.toLocaleString()}</span> : "—",
+      render: (r) => <span className="font-semibold text-emerald-700">AED {r.netSalary.toLocaleString()}</span>,
     },
     {
       key: "actions",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download, Mail, Send } from "lucide-react";
-import { usePayslipList, useSendPayslipEmail, useSendBulkPayslipEmails } from "@/hooks/useHrms";
+import { usePayslipList, useSendPayslip, useSendBulkPayslips } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -21,11 +21,11 @@ export default function PayslipsPage() {
   const [selected, setSelected] = useState<string[]>([]);
 
   const { data, isLoading } = usePayslipList({ page, pageSize, month, year });
-  const sendEmail = useSendPayslipEmail();
-  const sendBulk = useSendBulkPayslipEmails();
+  const sendPayslip = useSendPayslip();
+  const sendBulk = useSendBulkPayslips();
 
   const handleDownload = async (id: string) => {
-    const blob = await payslipService.downloadPdf(id);
+    const blob = await payslipService.download(id);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -35,11 +35,9 @@ export default function PayslipsPage() {
   };
 
   const handleSendBulk = () => {
-    if (selected.length === 0) return toast.error("Select payslips to send");
-    sendBulk.mutate(selected, {
+    sendBulk.mutate({ month, year }, {
       onSuccess: (res) => {
-        toast.success(`Sent: ${res.sent}, Failed: ${res.failed}`);
-        setSelected([]);
+        toast.success(`Sent: ${res.sent} / ${res.total}`);
       },
     });
   };
@@ -50,11 +48,12 @@ export default function PayslipsPage() {
     { key: "department", header: "Department", render: (r) => r.user?.department || "—" },
     { key: "month", header: "Month", render: (r) => `${new Date(2024, r.month - 1).toLocaleString("default", { month: "short" })} ${r.year}` },
     {
-      key: "emailSent",
-      header: "Email",
-      render: (r) => r.emailSent
-        ? <Badge className="bg-emerald-100 text-emerald-700">Sent</Badge>
-        : <Badge className="bg-slate-100 text-slate-600">Not Sent</Badge>,
+      key: "status",
+      header: "Status",
+      render: (r) => {
+        const colors: Record<string, string> = { draft: "bg-slate-100 text-slate-600", generated: "bg-sky-100 text-sky-700", sent: "bg-emerald-100 text-emerald-700" };
+        return <Badge className={colors[r.status] ?? "bg-slate-100 text-slate-600"}>{r.status}</Badge>;
+      },
     },
     {
       key: "actions",
@@ -65,9 +64,9 @@ export default function PayslipsPage() {
             <Download className="h-4 w-4" />
           </button>
           <button
-            onClick={() => sendEmail.mutate(r.id, { onSuccess: () => toast.success("Email sent") })}
+            onClick={() => sendPayslip.mutate(r.id, { onSuccess: () => toast.success("Payslip sent") })}
             className="rounded p-1 text-sky-600 hover:bg-sky-50"
-            title="Send Email"
+            title="Send Payslip"
           >
             <Mail className="h-4 w-4" />
           </button>
@@ -82,8 +81,8 @@ export default function PayslipsPage() {
         title="Payslips"
         subtitle="View, download, and email payslips"
         actions={
-          <button onClick={handleSendBulk} disabled={sendBulk.isPending || selected.length === 0} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-            <Send className="h-4 w-4" /> Send Bulk Emails ({selected.length})
+          <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
           </button>
         }
       />

@@ -33,16 +33,16 @@ export const leadsService = {
     return putData<Lead>(`/leads/${id}`, body);
   },
 
-  remove(id: string): Promise<{ id: string }> {
-    return deleteData<{ id: string }>(`/leads/${id}`);
+  remove(id: string): Promise<{ success: true }> {
+    return deleteData<{ success: true }>(`/leads/${id}`);
   },
 
-  bulkAssign(ids: string[], assignedTo: string): Promise<{ count: number }> {
-    return postData<{ count: number }>("/leads/bulk-assign", { ids, assignedTo });
+  bulkAssign(leadIds: string[], assignedTo: string): Promise<{ updated: number }> {
+    return postData<{ updated: number }>("/leads/bulk-assign", { leadIds, assignedTo });
   },
 
-  bulkStatus(ids: string[], leadStatus: string): Promise<{ count: number }> {
-    return postData<{ count: number }>("/leads/bulk-status", { ids, leadStatus });
+  bulkStatus(leadIds: string[], status: string): Promise<{ matched: number; updated: number }> {
+    return postData<{ matched: number; updated: number }>("/leads/bulk-status", { leadIds, status });
   },
 
   async import(file: File): Promise<ImportResult> {

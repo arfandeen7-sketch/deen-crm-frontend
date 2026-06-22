@@ -113,10 +113,9 @@ export function AttendanceCheckInOut() {
           </div>
         </div>
 
-        {today?.workingHours != null && (
+        {today?.totalWorkingHours != null && (
           <p className="mt-4 text-center text-sm text-slate-600">
-            Working Hours: <span className="font-semibold">{today.workingHours.toFixed(1)}h</span>
-            {today.overtime ? ` (OT: ${today.overtime.toFixed(1)}h)` : ""}
+            Working Hours: <span className="font-semibold">{today.totalWorkingHours.toFixed(1)}h</span>
           </p>
         )}
       </div>

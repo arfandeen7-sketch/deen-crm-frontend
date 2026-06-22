@@ -1,4 +1,4 @@
-import { api, getData, patchData, postData, putData } from "@/services/api/client";
+import { getData, patchData, postData, putData } from "@/services/api/client";
 import type { User, UserRole, UsersListResponse } from "@/types";
 
 export interface CreateUserInput {
@@ -16,9 +16,8 @@ export interface UpdateUserInput {
 }
 
 export const usersService = {
-  async list(): Promise<UsersListResponse> {
-    const res = await api.get<UsersListResponse>("/users");
-    return res.data;
+  list(): Promise<UsersListResponse> {
+    return getData<UsersListResponse>("/users");
   },
   get(id: string): Promise<User> {
     return getData<User>(`/users/${id}`);

@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Play, DollarSign, Users2, Clock, CheckCircle2 } from "lucide-react";
-import { usePayrollList, usePayrollDashboard, useGeneratePayroll, useProcessPayroll } from "@/hooks/useHrms";
+import { Download, Mail, Send } from "lucide-react";
+import { usePayslipList, useCalculatePayroll, useSendPayslip, useSendBulkPayslips } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
-import { payrollService } from "@/services/hrms/payroll.service";
+import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
-import type { PayrollRecord } from "@/types";
+import type { Payslip } from "@/types";
 
 export default function PayrollManagementPage() {
   const now = new Date();
@@ -20,38 +19,43 @@ export default function PayrollManagementPage() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
 
-  const { data, isLoading } = usePayrollList({ page, pageSize, month, year });
-  const { data: dashboard } = usePayrollDashboard({ month, year });
-  const generate = useGeneratePayroll();
-  const process = useProcessPayroll();
+  const { data, isLoading } = usePayslipList({ page, pageSize, month, year });
+  const calculate = useCalculatePayroll();
+  const sendPayslip = useSendPayslip();
+  const sendBulk = useSendBulkPayslips();
 
-  const handleGenerate = () => {
-    generate.mutate({ month, year }, {
-      onSuccess: (res) => toast.success(`Payroll generated for ${res.count} employees`),
-      onError: () => toast.error("Failed to generate payroll"),
+  const handleCalculate = () => {
+    const userId = prompt("Employee user ID to calculate payroll for:");
+    if (!userId) return;
+    calculate.mutate({ userId, month, year }, {
+      onSuccess: () => toast.success("Payslip calculated"),
+      onError: () => toast.error("Failed to calculate payroll"),
     });
   };
 
-  const handleProcess = (id: string) => {
-    process.mutate(id, { onSuccess: () => toast.success("Payroll processed") });
-  };
-
-  const handleExport = async () => {
-    const blob = await payrollService.export({ month, year });
+  const handleDownload = async (id: string) => {
+    const blob = await payslipService.download(id);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `payroll-${year}-${month}.xlsx`;
+    a.download = `payslip-${id}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const columns: Column<PayrollRecord>[] = [
+  const handleSendBulk = () => {
+    sendBulk.mutate({ month, year }, {
+      onSuccess: (res) => toast.success(`Sent: ${res.sent} / ${res.total}`),
+      onError: () => toast.error("Failed to send bulk payslips"),
+    });
+  };
+
+  const columns: Column<Payslip>[] = [
     { key: "user", header: "Employee", render: (r) => r.user?.fullName || "—" },
     { key: "department", header: "Department", render: (r) => r.user?.department || "—" },
-    { key: "grossSalary", header: "Gross", render: (r) => `AED ${r.grossSalary.toLocaleString()}` },
-    { key: "deductions", header: "Deductions", render: (r) => `AED ${(r.deductions + r.leaveDeductions + r.latePenalty).toLocaleString()}` },
-    { key: "netSalary", header: "Net Salary", render: (r) => <span className="font-semibold">AED {r.netSalary.toLocaleString()}</span> },
+    { key: "basic", header: "Basic", render: (r) => `AED ${Number(r.basicSalary).toLocaleString()}` },
+    { key: "deductions", header: "Deductions", render: (r) => `AED ${r.deductions.toLocaleString()}` },
+    { key: "net", header: "Net Salary", render: (r) => <span className="font-semibold">AED {r.netSalary.toLocaleString()}</span> },
     {
       key: "status",
       header: "Status",
@@ -60,12 +64,20 @@ export default function PayrollManagementPage() {
     {
       key: "actions",
       header: "",
-      render: (r) =>
-        r.status === "pending" ? (
-          <button onClick={() => handleProcess(r.id)} className="rounded-lg bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100">
-            Process
+      render: (r) => (
+        <div className="flex gap-1">
+          <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-indigo-600 hover:bg-indigo-50" title="Download">
+            <Download className="h-4 w-4" />
           </button>
-        ) : null,
+          <button
+            onClick={() => sendPayslip.mutate(r.id, { onSuccess: () => toast.success("Payslip sent") })}
+            className="rounded p-1 text-sky-600 hover:bg-sky-50"
+            title="Send"
+          >
+            <Mail className="h-4 w-4" />
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -73,30 +85,19 @@ export default function PayrollManagementPage() {
     <div className="space-y-6">
       <PageHeader
         title="Payroll Management"
-        subtitle="Generate and manage monthly payroll"
+        subtitle="Calculate and manage monthly payslips"
         actions={
           <div className="flex gap-2">
-            <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Download className="h-4 w-4" /> Export
+            <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+              <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
             </button>
-            <button onClick={handleGenerate} disabled={generate.isPending} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              <Play className="h-4 w-4" /> Generate Payroll
+            <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+              Calculate Payslip
             </button>
           </div>
         }
       />
 
-      {/* Dashboard Cards */}
-      {dashboard && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Total Employees" value={dashboard.totalEmployees} icon={Users2} />
-          <StatCard label="Payroll Pending" value={dashboard.payrollPending} icon={Clock} accent="amber" />
-          <StatCard label="Payroll Processed" value={dashboard.payrollProcessed} icon={CheckCircle2} accent="emerald" />
-          <StatCard label="Total Salary (AED)" value={dashboard.totalSalary} icon={DollarSign} accent="indigo" />
-        </div>
-      )}
-
-      {/* Month/Year Filter */}
       <div className="flex gap-3">
         <select value={month} onChange={(e) => { setMonth(Number(e.target.value)); setPage(1); }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
           {Array.from({ length: 12 }, (_, i) => (
@@ -111,7 +112,7 @@ export default function PayrollManagementPage() {
         </select>
       </div>
 
-      <DataTable<PayrollRecord>
+      <DataTable<Payslip>
         columns={columns}
         rows={data?.data ?? []}
         rowKey={(r) => r.id}

@@ -30,12 +30,11 @@ export const brokersService = {
   get(id: string): Promise<Broker> {
     return getData<Broker>(`/brokers/${id}`);
   },
-  async leads(id: string): Promise<Lead[]> {
-    const res = await api.get<Paginated<Lead> | { data: Lead[] }>(
-      `/brokers/${id}/leads`,
+  async leads(id: string, params: BrokerQuery = {}): Promise<Paginated<Lead>> {
+    const res = await api.get<Paginated<Lead>>(
+      `/brokers/${id}/leads${buildQuery(params)}`,
     );
-    const body = res.data as Paginated<Lead> & { data: Lead[] };
-    return body.data;
+    return res.data;
   },
   create(body: BrokerInput): Promise<Broker> {
     return postData<Broker>("/brokers", body);
@@ -51,5 +50,16 @@ export const brokersService = {
       responseType: "blob",
     });
     return res.data as Blob;
+  },
+
+  async import(file: File): Promise<{ imported: number; skipped: number; errors: { row: number; reason: string }[] }> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await api.post<{ data: { imported: number; skipped: number; errors: { row: number; reason: string }[] } }>(
+      "/brokers/import",
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data.data;
   },
 };
