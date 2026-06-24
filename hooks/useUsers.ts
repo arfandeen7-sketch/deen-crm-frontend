@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   usersService,
+  type AssignableUser,
   type CreateUserInput,
   type UpdateUserInput,
 } from "@/services/users/users.service";
@@ -19,18 +20,23 @@ export function useUsers() {
   });
 }
 
-/** Lightweight list of assignable users for dropdowns. */
+/** Lightweight list of assignable users for dropdowns — uses /users/assignable, accessible to master + sales_manager. */
 export function useAssignableUsers() {
   const { role } = useAuth();
   const enabled = can(role, "leads.assign");
-  const query = useQuery({
-    queryKey: ["users"],
-    queryFn: () => usersService.list(),
+  const query = useQuery<AssignableUser[]>({
+    queryKey: ["users", "assignable"],
+    queryFn: () => usersService.assignable(),
     enabled,
+    retry: (failCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 403 || status === 404) return false;
+      return failCount < 2;
+    },
   });
   return {
     ...query,
-    users: query.data?.users ?? [],
+    users: query.data ?? [],
   };
 }
 

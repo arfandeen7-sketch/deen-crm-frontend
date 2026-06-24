@@ -15,9 +15,18 @@ export interface UpdateUserInput {
   role?: UserRole;
 }
 
+export interface AssignableUser {
+  id: string;
+  fullName: string;
+  role: UserRole;
+}
+
 export const usersService = {
   list(): Promise<UsersListResponse> {
     return getData<UsersListResponse>("/users");
+  },
+  assignable(): Promise<AssignableUser[]> {
+    return getData<{ users: AssignableUser[] }>("/users/assignable").then((r) => r.users);
   },
   get(id: string): Promise<User> {
     return getData<User>(`/users/${id}`);

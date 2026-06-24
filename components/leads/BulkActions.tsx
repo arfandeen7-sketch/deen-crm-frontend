@@ -32,7 +32,7 @@ export function BulkActions({
     if (!assignTo) return toast.error("Select a user");
     try {
       const res = await bulkAssign.mutateAsync({ ids: selectedIds, assignedTo: assignTo });
-      toast.success(`Assigned ${res.count} lead(s)`);
+      toast.success(`Assigned ${res.updated} lead(s)`);
       setAssignOpen(false);
       onClear();
     } catch (e) {
@@ -44,7 +44,7 @@ export function BulkActions({
     if (!status) return toast.error("Select a status");
     try {
       const res = await bulkStatus.mutateAsync({ ids: selectedIds, leadStatus: status });
-      toast.success(`Updated ${res.count} lead(s)`);
+      toast.success(`Updated ${res.updated} lead(s)`);
       setStatusOpen(false);
       onClear();
     } catch (e) {

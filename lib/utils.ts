@@ -18,6 +18,18 @@ export function formatDate(value?: string | null): string {
   });
 }
 
+/**
+ * Convert an ISO date/datetime string to the value format required by
+ * `<input type="datetime-local">` — "YYYY-MM-DDTHH:MM" in local time.
+ */
+export function toDatetimeLocal(value?: string | null): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 /** Format an ISO date string with time. */
 export function formatDateTime(value?: string | null): string {
   if (!value) return "—";

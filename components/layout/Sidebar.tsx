@@ -46,7 +46,7 @@ function groupContainsActive(pathname: string, items: NavItem[]): boolean {
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { role } = useAuth();
+  const { role, hasModule } = useAuth();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set<string>());
 
@@ -147,6 +147,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {NAV_GROUPS.map((group) => {
+          if (group.moduleKey && !hasModule(group.moduleKey)) return null;
           const visibleItems = group.items.filter(
             (item) => !item.permission || can(role, item.permission),
           );

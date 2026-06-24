@@ -26,6 +26,7 @@ export type PayrollStatus = "draft" | "generated" | "sent";
 export type DynamicFieldCategory =
   | "source"
   | "project_name"
+  | "project_type"
   | "payment_plan"
   | "configuration"
   | "location"
@@ -46,6 +47,9 @@ export interface User {
   profilePhoto?: string | null;
   role: UserRole;
   isActive: boolean;
+  modules?: string[];
+  moduleAccess?: string[] | null;
+  moduleAccessOverridden?: boolean;
   // Employee fields
   employeeId?: string | null;
   department?: string | null;
@@ -109,12 +113,18 @@ export interface Lead {
   email?: string | null;
   city?: string | null;
   locality?: string | null;
+  unitNumber?: string | null;
+  price?: string | null;
+  propertySize?: string | null;
+  projectType?: string | null;
+  configuration?: string | null;
   comments?: string | null;
   leadStatus: string;
   leadPriority?: string | null;
   assignedTo?: string | null;
   brokerId?: string | null;
   isImported: boolean;
+  isTouched: boolean;
   createdBy: string;
   ingestionSource: LeadIngestionSource;
   externalLeadId?: string | null;
@@ -387,6 +397,8 @@ export interface LeadQueryParams {
   dateTo?: string;
   search?: string;
   category?: "fresh" | "untouched" | "imported" | "assigned" | "unassigned";
+  projectType?: string;
+  configuration?: string;
 }
 
 // ── Lead Report types ────────────────────────────────────────────────────────
@@ -409,15 +421,69 @@ export interface LeadStatusReportItem {
   percentage: number;
 }
 
+export interface LeadReportRow {
+  groupKey: string;
+  groupLabel: string;
+  totalAssigned: number;
+  touched: number;
+  untouched: number;
+  followedUp: number;
+  missedFollowUps: number;
+  statusBreakdown: Record<string, number>;
+  lastActivityAt?: string | null;
+}
+
+export interface LeadReportResponse {
+  groupBy: "user" | "source";
+  rows: LeadReportRow[];
+}
+
 export interface UserPerformanceItem {
   userId: string;
   fullName: string;
   assigned: number;
-  converted: number;
-  followUpsCompleted: number;
+  touched: number;
+  untouched: number;
+  followedUp: number;
+  missedFollowUps: number;
+  statusBreakdown: Record<string, number>;
+  lastActivityAt?: string | null;
 }
 
 export interface LeadTimeSeriesItem {
   date: string;
   count: number;
+}
+
+// ── Lead Activity ────────────────────────────────────────────────────────────
+
+export type LeadActivityAction =
+  | "created"
+  | "status_changed"
+  | "comment_added"
+  | "followup_scheduled"
+  | "assigned"
+  | "field_updated"
+  | "imported";
+
+export interface LeadActivity {
+  id: string;
+  leadId: string;
+  actorId: string;
+  action: LeadActivityAction;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  actor?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── App Notifications ────────────────────────────────────────────────────────
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  leadId?: string | null;
+  isRead: boolean;
+  createdAt: string;
 }

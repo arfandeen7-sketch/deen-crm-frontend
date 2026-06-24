@@ -9,6 +9,7 @@ import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAssignableUsers } from "@/hooks/useUsers";
 import { useBrokerOptions } from "@/hooks/useBrokers";
 import { SERVICE_TYPES } from "@/constants";
+import { toDatetimeLocal } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 export function LeadForm({
@@ -26,6 +27,8 @@ export function LeadForm({
   const statuses = useFieldOptions("lead_status");
   const priorities = useFieldOptions("lead_priority");
   const projects = useFieldOptions("project_name");
+  const projectTypes = useFieldOptions("project_type");
+  const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
 
@@ -47,9 +50,14 @@ export function LeadForm({
       leadPriority: initial?.leadPriority ?? "",
       assignedTo: initial?.assignedTo ?? "",
       brokerId: initial?.brokerId ?? "",
-      followUpDate: initial?.followUpDate?.slice(0, 10) ?? "",
+      followUpDate: toDatetimeLocal(initial?.followUpDate),
       city: initial?.city ?? "",
       locality: initial?.locality ?? "",
+      unitNumber: initial?.unitNumber ?? "",
+      price: initial?.price ?? "",
+      propertySize: initial?.propertySize ?? "",
+      projectType: initial?.projectType ?? "",
+      configuration: initial?.configuration ?? "",
       comments: initial?.comments ?? "",
     },
   });
@@ -110,8 +118,8 @@ export function LeadForm({
             ))}
           </Select>
         </Field>
-        <Field label="Follow Up Date" error={errors.followUpDate?.message}>
-          <Input type="date" {...register("followUpDate")} />
+        <Field label="Follow Up Date &amp; Time" error={errors.followUpDate?.message}>
+          <Input type="datetime-local" {...register("followUpDate")} />
         </Field>
         <Field label="Assigned User" error={errors.assignedTo?.message}>
           <Select {...register("assignedTo")}>
@@ -131,12 +139,37 @@ export function LeadForm({
         </Field>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="City" error={errors.city?.message}>
           <Input placeholder="e.g. Dubai" {...register("city")} />
         </Field>
         <Field label="Locality" error={errors.locality?.message}>
           <Input placeholder="e.g. Business Bay" {...register("locality")} />
+        </Field>
+        <Field label="Unit Number" error={errors.unitNumber?.message}>
+          <Input placeholder="e.g. 1204" {...register("unitNumber")} />
+        </Field>
+        <Field label="Price (AED)" error={errors.price?.message}>
+          <Input type="text" placeholder="e.g. 1500000" {...register("price")} />
+        </Field>
+        <Field label="Property Size (sqft)" error={errors.propertySize?.message}>
+          <Input type="text" placeholder="e.g. 850" {...register("propertySize")} />
+        </Field>
+        <Field label="Project Type" error={errors.projectType?.message}>
+          <Select {...register("projectType")}>
+            <option value="">Select type</option>
+            {projectTypes.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Configuration" error={errors.configuration?.message}>
+          <Select {...register("configuration")}>
+            <option value="">Select config</option>
+            {configurations.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </Select>
         </Field>
       </section>
 

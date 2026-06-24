@@ -28,6 +28,8 @@ export interface DataTableProps<T> {
   selectedIds?: string[];
   onToggleRow?: (id: string) => void;
   onToggleAll?: (checked: boolean) => void;
+  /** Optional per-row additional CSS classes. */
+  rowClassName?: (row: T) => string;
 }
 
 export function DataTable<T>({
@@ -45,6 +47,7 @@ export function DataTable<T>({
   selectedIds = [],
   onToggleRow,
   onToggleAll,
+  rowClassName,
 }: DataTableProps<T>) {
   const allChecked = rows.length > 0 && selectedIds.length === rows.length;
 
@@ -90,6 +93,7 @@ export function DataTable<T>({
                   "transition-colors",
                   onRowClick && "cursor-pointer hover:bg-slate-50",
                   selected && "bg-indigo-50/50",
+                  rowClassName?.(row),
                 )}
               >
                 {selectable && (

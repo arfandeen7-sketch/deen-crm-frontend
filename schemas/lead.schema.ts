@@ -28,6 +28,11 @@ export const leadSchema = z.object({
   followUpDate: optionalString,
   city: optionalString,
   locality: optionalString,
+  unitNumber: optionalString,
+  price: optionalString,
+  propertySize: optionalString,
+  projectType: optionalString,
+  configuration: optionalString,
   comments: optionalString,
 });
 

@@ -184,7 +184,7 @@ export default function LeadReportsPage() {
                 data={(userPerf.data ?? []).map((d) => ({
                   label: d.fullName,
                   value: d.assigned,
-                  secondary: d.converted,
+                  secondary: d.touched,
                 }))}
                 color="bg-indigo-500"
                 secondaryColor="bg-emerald-400"
@@ -352,9 +352,12 @@ export default function LeadReportsPage() {
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <th className="px-5 py-3">User</th>
-                  <th className="px-5 py-3">Leads Assigned</th>
-                  <th className="px-5 py-3">Leads Converted</th>
-                  <th className="px-5 py-3">Follow Ups Completed</th>
+                  <th className="px-5 py-3">Assigned</th>
+                  <th className="px-5 py-3">Touched</th>
+                  <th className="px-5 py-3">Untouched</th>
+                  <th className="px-5 py-3">Followed Up</th>
+                  <th className="px-5 py-3">Missed Follow-Ups</th>
+                  <th className="px-5 py-3">Last Activity</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -364,11 +367,12 @@ export default function LeadReportsPage() {
                       {row.fullName}
                     </td>
                     <td className="px-5 py-3 text-slate-700">{row.assigned}</td>
-                    <td className="px-5 py-3 text-emerald-600 font-medium">
-                      {row.converted}
-                    </td>
-                    <td className="px-5 py-3 text-slate-700">
-                      {row.followUpsCompleted}
+                    <td className="px-5 py-3 text-emerald-600 font-medium">{row.touched}</td>
+                    <td className="px-5 py-3 text-amber-600">{row.untouched}</td>
+                    <td className="px-5 py-3 text-indigo-600">{row.followedUp}</td>
+                    <td className="px-5 py-3 text-rose-600">{row.missedFollowUps}</td>
+                    <td className="px-5 py-3 text-slate-500 text-xs">
+                      {row.lastActivityAt ? new Date(row.lastActivityAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                     </td>
                   </tr>
                 ))}

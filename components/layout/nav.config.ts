@@ -43,6 +43,8 @@ export interface NavGroup {
   title: string;
   icon: LucideIcon;
   items: NavItem[];
+  /** Backend module key — if set, group is hidden unless user.modules includes it (prefix matched). */
+  moduleKey?: string;
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -58,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "leads",
     title: "Lead Management",
     icon: Users2,
+    moduleKey: "leads",
     items: [
       { label: "All Leads", href: "/leads", icon: Users2 },
       { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost },
@@ -73,6 +76,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "followup",
     title: "Follow Up Management",
     icon: CalendarClock,
+    moduleKey: "followup",
     items: [
       { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck },
       { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX },
@@ -83,6 +87,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "users",
     title: "User Management",
     icon: UserCog,
+    moduleKey: "users",
     items: [
       { label: "All Users", href: "/users", icon: UserCog, permission: "users.manage" },
       { label: "Create User", href: "/users/create", icon: UserPlus, permission: "users.manage" },
@@ -92,6 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "hrms",
     title: "Human Resource Management",
     icon: Briefcase,
+    moduleKey: "hrms",
     items: [
       { label: "HR Dashboard", href: "/hrms/dashboard", icon: LayoutDashboard, permission: "hrms.employees" },
       { label: "Employees", href: "/hrms/employees", icon: Users2, permission: "hrms.employees" },
@@ -108,6 +114,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "brokers",
     title: "Broker Management",
     icon: Handshake,
+    moduleKey: "brokers",
     items: [
       { label: "All Brokers", href: "/brokers", icon: Handshake },
       { label: "Create Broker", href: "/brokers/create", icon: UserPlus },
@@ -128,6 +135,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "dynamic-fields",
     title: "Dynamic Fields",
     icon: SlidersHorizontal,
+    moduleKey: "dynamic-fields",
     items: MANAGED_DYNAMIC_CATEGORIES.map(
       (c): NavItem => ({
         label: c.label,

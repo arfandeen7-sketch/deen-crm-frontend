@@ -20,6 +20,8 @@ export function LeadFilters({
 }) {
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
+  const projectTypes = useFieldOptions("project_type");
+  const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
   const { can } = useAuth();
 
@@ -30,7 +32,9 @@ export function LeadFilters({
       filters.assignedTo ||
       filters.category ||
       filters.dateFrom ||
-      filters.dateTo,
+      filters.dateTo ||
+      filters.projectType ||
+      filters.configuration,
   );
 
   return (
@@ -75,6 +79,26 @@ export function LeadFilters({
           <option value="imported">Imported</option>
           <option value="assigned">Assigned</option>
           <option value="unassigned">Unassigned</option>
+        </Select>
+        <Select
+          value={filters.projectType ?? ""}
+          onChange={(e) => onChange("projectType", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All types</option>
+          {projectTypes.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </Select>
+        <Select
+          value={filters.configuration ?? ""}
+          onChange={(e) => onChange("configuration", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All configs</option>
+          {configurations.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </Select>
         {can("leads.view.all") && (
           <Select

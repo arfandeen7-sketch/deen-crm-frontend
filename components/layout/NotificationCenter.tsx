@@ -1,0 +1,123 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Bell, CheckCheck } from "lucide-react";
+import { useUnreadCount, useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
+import { timeAgo } from "@/lib/utils";
+import type { AppNotification } from "@/types";
+
+function NotificationRow({
+  n,
+  onRead,
+}: {
+  n: AppNotification;
+  onRead: (id: string, leadId?: string | null) => void;
+}) {
+  return (
+    <button
+      onClick={() => onRead(n.id, n.leadId)}
+      className={`w-full px-4 py-3 text-left hover:bg-slate-50 ${!n.isRead ? "bg-indigo-50/40" : ""}`}
+    >
+      <div className="flex items-start gap-2.5">
+        {!n.isRead && (
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+        )}
+        <div className={`min-w-0 ${n.isRead ? "pl-4" : ""}`}>
+          <p className="truncate text-sm font-medium text-slate-800">{n.title}</p>
+          <p className="mt-0.5 text-xs text-slate-500 line-clamp-2">{n.body}</p>
+          <p className="mt-1 text-[11px] text-slate-400">{timeAgo(n.createdAt)}</p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function NotificationCenter() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const badgeCount = useUnreadCount();
+  const { data: notifications, isLoading } = useNotifications();
+  const { markRead, markAllRead } = useNotificationMutations();
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  async function handleRead(id: string, leadId?: string | null) {
+    await markRead.mutateAsync(id);
+    setOpen(false);
+    if (leadId) router.push(`/leads/${leadId}`);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+        aria-label="Notifications"
+      >
+        <Bell className="h-5 w-5" />
+        {badgeCount > 0 && (
+          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900">Notifications</h3>
+              {badgeCount > 0 && (
+                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                  {badgeCount} unread
+                </span>
+              )}
+            </div>
+            {badgeCount > 0 && (
+              <button
+                onClick={() => markAllRead.mutate()}
+                className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600"
+                title="Mark all as read"
+              >
+                <CheckCheck className="h-3.5 w-3.5" /> All read
+              </button>
+            )}
+          </div>
+
+          <div className="max-h-[420px] divide-y divide-slate-50 overflow-y-auto">
+            {isLoading && (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">Loading…</p>
+            )}
+            {!isLoading && (!notifications || notifications.length === 0) && (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
+                No notifications yet 🎉
+              </p>
+            )}
+            {notifications?.map((n) => (
+              <NotificationRow key={n.id} n={n} onRead={handleRead} />
+            ))}
+          </div>
+
+          <div className="border-t border-slate-100 px-4 py-2.5">
+            <Link
+              href="/notifications"
+              onClick={() => setOpen(false)}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              View all notifications →
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -32,6 +32,17 @@ export function useAuth() {
     router.replace("/login");
   }
 
+  /**
+   * Returns true if the user has access to the given module key.
+   * Uses prefix matching so hasModule("hrms") matches "hrms.attendance" etc.
+   * Falls back to true when the user has no modules array (no override set).
+   */
+  function hasModule(key: string): boolean {
+    const modules = user?.modules;
+    if (!modules || modules.length === 0) return true;
+    return modules.some((m) => m === key || m.startsWith(`${key}.`));
+  }
+
   return {
     user,
     token,
@@ -39,6 +50,7 @@ export function useAuth() {
     isAuthenticated: Boolean(token),
     role: user?.role,
     can: (permission: Permission) => can(user?.role, permission),
+    hasModule,
     login,
     logout,
   };

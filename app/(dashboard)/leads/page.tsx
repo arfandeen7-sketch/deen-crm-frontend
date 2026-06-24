@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Download, Upload, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -16,13 +16,14 @@ import { UserAvatar } from "@/components/ui/Avatar";
 import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
+import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
 import { RoleGuard } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
 import { useAuth } from "@/hooks/useAuth";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
-import { downloadBlob, formatDate } from "@/lib/utils";
+import { downloadBlob, formatDate, formatDateTime } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 export default function LeadsPage() {
@@ -97,7 +98,28 @@ export default function LeadsPage() {
         ),
     },
     { key: "followup", header: "Follow Up", render: (l) => formatDate(l.followUpDate) },
-    { key: "created", header: "Created", render: (l) => formatDate(l.createdAt) },
+    {
+      key: "createdBy",
+      header: "Created By",
+      render: (l) => (
+        <div>
+          <p className="text-sm text-slate-700">{l.creator?.fullName ?? "—"}</p>
+          <p className="text-xs text-slate-400">{formatDateTime(l.createdAt)}</p>
+        </div>
+      ),
+    },
+    {
+      key: "comment",
+      header: "Last Comment",
+      render: (l) =>
+        l.comments ? (
+          <span className="max-w-[160px] truncate text-xs text-slate-600" title={l.comments}>
+            {l.comments}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-400">—</span>
+        ),
+    },
     {
       key: "actions",
       header: "",
@@ -105,9 +127,6 @@ export default function LeadsPage() {
       className: "text-right",
       render: (l) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Link href={`/leads/${l.id}`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
-            <Eye className="h-4 w-4" />
-          </Link>
           <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600">
             <Pencil className="h-4 w-4" />
           </Link>
@@ -119,6 +138,7 @@ export default function LeadsPage() {
               <Trash2 className="h-4 w-4" />
             </button>
           </RoleGuard>
+          <LeadQuickActions lead={l} />
         </div>
       ),
     },
@@ -168,6 +188,7 @@ export default function LeadsPage() {
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}
+          rowClassName={(l) => (!l.isTouched ? "bg-sky-50/40 hover:bg-sky-50" : "")}
         />
         {data && data.total > 0 && (
           <Pagination
