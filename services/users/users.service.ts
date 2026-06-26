@@ -13,6 +13,8 @@ export interface UpdateUserInput {
   fullName?: string;
   phone?: string | null;
   role?: UserRole;
+  moduleAccess?: string[];
+  moduleAccessOverridden?: boolean;
 }
 
 export interface AssignableUser {

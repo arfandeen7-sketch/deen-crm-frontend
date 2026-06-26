@@ -87,6 +87,27 @@ export const SHIFT_CONFIG = {
 
 export const SERVICE_TYPES = ["Buy", "Sell", "Rent", "Mortgage"] as const;
 
+export interface ModuleAccessOption {
+  key: string;
+  label: string;
+  group: string;
+}
+
+export const MODULE_ACCESS_OPTIONS: ModuleAccessOption[] = [
+  { key: "leads", label: "Leads", group: "Leads & Sales" },
+  { key: "leads.reports", label: "Leads Reports", group: "Leads & Sales" },
+  { key: "followup", label: "Follow-up", group: "Leads & Sales" },
+  { key: "brokers", label: "Brokers", group: "Leads & Sales" },
+  { key: "users", label: "Users", group: "Administration" },
+  { key: "dynamic-fields", label: "Dynamic Fields", group: "Administration" },
+  { key: "hrms.attendance", label: "Attendance", group: "HRMS" },
+  { key: "hrms.leave", label: "Leave", group: "HRMS" },
+  { key: "hrms.payroll", label: "Payroll", group: "HRMS" },
+  { key: "hrms.employees", label: "Employees", group: "HRMS" },
+];
+
+export const MODULE_ACCESS_KEYS = MODULE_ACCESS_OPTIONS.map((m) => m.key);
+
 // Categories managed in the Dynamic Fields screen.
 // `slug` is the URL segment; `category` is the backend dynamic_fields.category value.
 export const MANAGED_DYNAMIC_CATEGORIES = [

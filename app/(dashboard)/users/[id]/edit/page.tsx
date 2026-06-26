@@ -9,8 +9,10 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { UserForm } from "@/components/forms/UserForm";
 import { useUser, useUserMutations } from "@/hooks/useUsers";
-import { updateUserSchema, type CreateUserValues } from "@/schemas/user.schema";
+import { updateUserSchema, type CreateUserValues, type UpdateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
+
+type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden">;
 
 export default function EditUserPage() {
   const params = useParams<{ id: string }>();
@@ -18,7 +20,7 @@ export default function EditUserPage() {
   const { data: user, isLoading, isError, refetch } = useUser(params.id);
   const { update } = useUserMutations();
 
-  async function onSubmit(values: CreateUserValues) {
+  async function onSubmit(values: SubmitValues) {
     try {
       const parsed = updateUserSchema.parse(values);
       await update.mutateAsync({ id: params.id, body: parsed });

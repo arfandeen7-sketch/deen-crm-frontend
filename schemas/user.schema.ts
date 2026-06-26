@@ -19,6 +19,8 @@ export const updateUserSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   phone: optional,
   role,
+  moduleAccess: z.array(z.string()).optional(),
+  moduleAccessOverridden: z.boolean().optional(),
 });
 
 export type CreateUserValues = z.input<typeof createUserSchema>;
