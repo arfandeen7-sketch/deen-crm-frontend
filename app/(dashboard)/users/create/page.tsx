@@ -10,6 +10,7 @@ import { UserForm } from "@/components/forms/UserForm";
 import { useUserMutations } from "@/hooks/useUsers";
 import { createUserSchema, type CreateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
+import { PermissionGuard } from "@/components/shared/Guards";
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function CreateUserPage() {
   }
 
   return (
+    <PermissionGuard permission="users.manage">
     <div className="space-y-5">
       <Link href="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to users
@@ -38,5 +40,6 @@ export default function CreateUserPage() {
         </CardBody>
       </Card>
     </div>
+    </PermissionGuard>
   );
 }

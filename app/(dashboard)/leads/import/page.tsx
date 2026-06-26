@@ -18,6 +18,7 @@ import { useLeadMutations } from "@/hooks/useLeads";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob } from "@/lib/utils";
+import { PermissionGuard } from "@/components/shared/Guards";
 import type { ImportResult } from "@/types";
 
 export default function ImportLeadsPage() {
@@ -51,6 +52,7 @@ export default function ImportLeadsPage() {
   }
 
   return (
+    <PermissionGuard permission="leads.import">
     <div className="space-y-5">
       <Link href="/leads" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to leads
@@ -164,5 +166,6 @@ export default function ImportLeadsPage() {
         </Card>
       )}
     </div>
+    </PermissionGuard>
   );
 }

@@ -69,7 +69,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX },
       { label: "Create Lead", href: "/leads/create", icon: UserPlus },
       { label: "Import Leads", href: "/leads/import", icon: Upload, permission: "leads.import" },
-      { label: "Lead Reports", href: "/leads/reports", icon: BarChart2 },
+      { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, permission: "leads.reports" },
     ],
   },
   {
@@ -117,7 +117,7 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "brokers",
     items: [
       { label: "All Brokers", href: "/brokers", icon: Handshake },
-      { label: "Create Broker", href: "/brokers/create", icon: UserPlus },
+      { label: "Create Broker", href: "/brokers/create", icon: UserPlus, permission: "brokers.create" },
     ],
   },
   {

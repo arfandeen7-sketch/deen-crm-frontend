@@ -11,6 +11,7 @@ import { UserForm } from "@/components/forms/UserForm";
 import { useUser, useUserMutations } from "@/hooks/useUsers";
 import { updateUserSchema, type CreateUserValues, type UpdateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
+import { PermissionGuard } from "@/components/shared/Guards";
 
 type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden">;
 
@@ -32,6 +33,7 @@ export default function EditUserPage() {
   }
 
   return (
+    <PermissionGuard permission="users.manage">
     <div className="space-y-5">
       <Link href="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to users
@@ -54,5 +56,6 @@ export default function EditUserPage() {
         </CardBody>
       </Card>
     </div>
+    </PermissionGuard>
   );
 }

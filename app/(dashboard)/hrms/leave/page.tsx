@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { PermissionGuard } from "@/components/shared/Guards";
 import type { LeaveRequest } from "@/types";
 
 export default function LeaveManagementPage() {
@@ -60,6 +61,7 @@ export default function LeaveManagementPage() {
   ];
 
   return (
+    <PermissionGuard permission="hrms.leave.manage">
     <div className="space-y-6">
       <PageHeader
         title="Leave Management"
@@ -94,5 +96,6 @@ export default function LeaveManagementPage() {
         <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
       )}
     </div>
+    </PermissionGuard>
   );
 }

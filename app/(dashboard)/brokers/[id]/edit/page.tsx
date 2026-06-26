@@ -11,6 +11,7 @@ import { BrokerForm } from "@/components/forms/BrokerForm";
 import { useBroker, useBrokerMutations } from "@/hooks/useBrokers";
 import { brokerSchema, type BrokerFormValues } from "@/schemas/broker.schema";
 import { getErrorMessage } from "@/services/api/client";
+import { PermissionGuard } from "@/components/shared/Guards";
 
 export default function EditBrokerPage() {
   const params = useParams<{ id: string }>();
@@ -30,6 +31,7 @@ export default function EditBrokerPage() {
   }
 
   return (
+    <PermissionGuard permission="brokers.create">
     <div className="space-y-5">
       <Link href={`/brokers/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to broker
@@ -52,5 +54,6 @@ export default function EditBrokerPage() {
         </CardBody>
       </Card>
     </div>
+    </PermissionGuard>
   );
 }

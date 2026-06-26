@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, EMPLOYMENT_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { employeeService } from "@/services/hr/hr.service";
+import { PermissionGuard } from "@/components/shared/Guards";
 import type { User } from "@/types";
 
 export default function EmployeesPage() {
@@ -17,17 +18,17 @@ export default function EmployeesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
-  const [employmentStatus, setEmploymentStatus] = useState("");
+  const [status, setStatus] = useState("");
 
   const { data, isLoading } = useEmployeeList({
     page,
     pageSize,
     search: search || undefined,
-    employmentStatus: employmentStatus || undefined,
+    status: status || undefined,
   });
 
   const handleExport = async () => {
-    const blob = await employeeService.export({ search, employmentStatus });
+    const blob = await employeeService.export({ search, status });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -53,6 +54,7 @@ export default function EmployeesPage() {
   ];
 
   return (
+    <PermissionGuard permission="hrms.employees">
     <div className="space-y-6">
       <PageHeader
         title="Employees"
@@ -81,8 +83,8 @@ export default function EmployeesPage() {
           />
         </div>
         <select
-          value={employmentStatus}
-          onChange={(e) => { setEmploymentStatus(e.target.value); setPage(1); }}
+          value={status}
+          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
         >
           <option value="">All Status</option>
@@ -113,5 +115,6 @@ export default function EmployeesPage() {
         />
       )}
     </div>
+    </PermissionGuard>
   );
 }

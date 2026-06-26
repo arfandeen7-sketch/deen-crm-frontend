@@ -6,6 +6,7 @@ import { useHrReport } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { hrReportsService, type HrReportType } from "@/services/hrms/hr-reports.service";
 import { toast } from "sonner";
+import { PermissionGuard } from "@/components/shared/Guards";
 
 const REPORT_TYPES: { value: HrReportType; label: string }[] = [
   { value: "attendance", label: "Attendance Report" },
@@ -47,6 +48,7 @@ export default function HrReportsPage() {
   };
 
   return (
+    <PermissionGuard permission="hrms.reports">
     <div className="space-y-6">
       <PageHeader
         title="HR Reports"
@@ -109,5 +111,6 @@ export default function HrReportsPage() {
         )}
       </div>
     </div>
+    </PermissionGuard>
   );
 }

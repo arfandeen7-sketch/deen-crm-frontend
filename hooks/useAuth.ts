@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { authService } from "@/services/auth/auth.service";
 import { loginActivityService } from "@/services/hrms/login-activity.service";
 import { isDemoToken } from "@/services/auth/demo";
-import { can, type Permission } from "@/lib/rbac";
+import { can, type Permission, ROLE_DEFAULT_MODULES } from "@/lib/rbac";
 
 export function useAuth() {
   const router = useRouter();
@@ -34,13 +34,24 @@ export function useAuth() {
 
   /**
    * Returns true if the user has access to the given module key.
+   * When moduleAccessOverridden is true, uses the custom moduleAccess array.
+   * Otherwise falls back to the role-based default module list.
    * Uses prefix matching so hasModule("hrms") matches "hrms.attendance" etc.
-   * Falls back to true when the user has no modules array (no override set).
    */
   function hasModule(key: string): boolean {
-    const modules = user?.modules;
-    if (!modules || modules.length === 0) return true;
-    return modules.some((m) => m === key || m.startsWith(`${key}.`));
+    if (!user) return false;
+    const { moduleAccessOverridden, moduleAccess, role } = user;
+
+    if (moduleAccessOverridden && moduleAccess && moduleAccess.length > 0) {
+      return moduleAccess.some((m) => m === key || m.startsWith(`${key}.`));
+    }
+
+    if (role) {
+      const defaults = ROLE_DEFAULT_MODULES[role];
+      return defaults.some((m) => m === key || m.startsWith(`${key}.`));
+    }
+
+    return false;
   }
 
   return {

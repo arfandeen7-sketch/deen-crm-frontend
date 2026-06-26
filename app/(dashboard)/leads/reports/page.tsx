@@ -11,6 +11,7 @@ import { DonutChart } from "@/components/charts/DonutChart";
 import { BarChart } from "@/components/charts/BarChart";
 import { LoadingState } from "@/components/ui/States";
 import { LeadTabs } from "@/components/leads/LeadTabs";
+import { PermissionGuard } from "@/components/shared/Guards";
 import {
   useSourceReport,
   useStatusReport,
@@ -69,6 +70,7 @@ export default function LeadReportsPage() {
   const hasDateFilter = Boolean(dateFrom || dateTo);
 
   return (
+    <PermissionGuard permission="leads.reports">
     <div className="space-y-6">
       <LeadTabs />
 
@@ -382,5 +384,6 @@ export default function LeadReportsPage() {
         </CardBody>
       </Card>
     </div>
+    </PermissionGuard>
   );
 }

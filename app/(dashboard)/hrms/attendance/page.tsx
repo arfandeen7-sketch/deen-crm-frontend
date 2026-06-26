@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ATTENDANCE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { attendanceService } from "@/services/attendance/attendance.service";
 import { formatDate } from "@/lib/utils";
+import { PermissionGuard } from "@/components/shared/Guards";
 import type { AttendanceRecord } from "@/types";
 
 export default function AttendanceManagementPage() {
@@ -49,6 +50,7 @@ export default function AttendanceManagementPage() {
   ];
 
   return (
+    <PermissionGuard permission="hrms.attendance.manage">
     <div className="space-y-6">
       <PageHeader
         title="Attendance Management"
@@ -83,5 +85,6 @@ export default function AttendanceManagementPage() {
         />
       )}
     </div>
+    </PermissionGuard>
   );
 }

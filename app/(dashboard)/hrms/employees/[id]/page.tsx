@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, ROLE_BADGE_CLASSES, EMPLOYMENT_STATUS_COLORS } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { PermissionGuard } from "@/components/shared/Guards";
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,7 @@ export default function EmployeeDetailPage() {
   if (!employee) return <p className="py-12 text-center text-slate-500">Employee not found</p>;
 
   return (
+    <PermissionGuard permission="hrms.employees">
     <div className="space-y-6">
       <PageHeader
         title={employee.fullName}
@@ -94,6 +96,7 @@ export default function EmployeeDetailPage() {
         </div>
       </div>
     </div>
+    </PermissionGuard>
   );
 }
 

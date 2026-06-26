@@ -6,6 +6,40 @@ import { useAuth } from "@/hooks/useAuth";
 import { can, type Permission } from "@/lib/rbac";
 import { LoadingState } from "@/components/ui/States";
 
+/**
+ * Page-level guard that redirects to /dashboard/overview when the user lacks
+ * the required permission. Use this as a wrapper around page content to
+ * prevent direct URL access by unauthorized roles.
+ */
+export function PermissionGuard({
+  permission,
+  children,
+}: {
+  permission: Permission;
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const { role, hydrated } = useAuth();
+
+  useEffect(() => {
+    if (hydrated && !can(role, permission)) {
+      router.replace("/dashboard/overview");
+    }
+  }, [hydrated, role, router, permission]);
+
+  if (!hydrated) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <LoadingState label="Checking access…" />
+      </div>
+    );
+  }
+
+  if (!can(role, permission)) return null;
+
+  return <>{children}</>;
+}
+
 /** Blocks rendering until auth is hydrated; redirects to /login if unauthenticated. */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
