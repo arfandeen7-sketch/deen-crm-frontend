@@ -24,6 +24,7 @@ export function useNotifications(unreadOnly = false) {
       return res.data;
     },
     staleTime: 20_000,
+    retry: 1,
   });
 }
 

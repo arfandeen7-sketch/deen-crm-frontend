@@ -13,6 +13,8 @@ export const createUserSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters"),
   phone: optional,
   role,
+  moduleAccess: z.array(z.string()).optional(),
+  moduleAccessOverridden: z.boolean().optional(),
 });
 
 export const updateUserSchema = z.object({

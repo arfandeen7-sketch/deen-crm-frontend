@@ -39,7 +39,7 @@ export function NotificationCenter() {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const badgeCount = useUnreadCount();
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading, error } = useNotifications();
   const { markRead, markAllRead } = useNotificationMutations();
 
   useEffect(() => {
@@ -97,7 +97,12 @@ export function NotificationCenter() {
             {isLoading && (
               <p className="px-4 py-6 text-center text-sm text-slate-400">Loading…</p>
             )}
-            {!isLoading && (!notifications || notifications.length === 0) && (
+            {error && (
+              <p className="px-4 py-6 text-center text-sm text-rose-500">
+                Failed to load notifications
+              </p>
+            )}
+            {!isLoading && !error && (!notifications || notifications.length === 0) && (
               <p className="px-4 py-6 text-center text-sm text-slate-400">
                 No notifications yet 🎉
               </p>

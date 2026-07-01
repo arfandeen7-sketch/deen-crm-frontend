@@ -88,15 +88,11 @@ export function UserForm({
   );
 
   function handleFormSubmit(values: CreateUserValues) {
-    if (isEdit) {
-      onSubmit({
-        ...values,
-        moduleAccess: overrideEnabled ? selectedModules : undefined,
-        moduleAccessOverridden: overrideEnabled,
-      });
-    } else {
-      onSubmit(values as SubmitValues);
-    }
+    onSubmit({
+      ...values,
+      moduleAccess: overrideEnabled ? selectedModules : undefined,
+      moduleAccessOverridden: overrideEnabled || undefined,
+    });
   }
 
   return (
@@ -125,8 +121,7 @@ export function UserForm({
         </Field>
       </div>
 
-      {isEdit && (
-        <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-slate-800">Custom Module Access</p>
@@ -227,7 +222,6 @@ export function UserForm({
             </p>
           )}
         </div>
-      )}
 
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
         {onCancel && (

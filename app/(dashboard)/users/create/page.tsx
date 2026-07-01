@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { UserForm } from "@/components/forms/UserForm";
 import { useUserMutations } from "@/hooks/useUsers";
-import { createUserSchema, type CreateUserValues } from "@/schemas/user.schema";
+import { createUserSchema, type CreateUserValues, type UpdateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
 import { PermissionGuard } from "@/components/shared/Guards";
 
@@ -16,10 +16,16 @@ export default function CreateUserPage() {
   const router = useRouter();
   const { create } = useUserMutations();
 
-  async function onSubmit(values: CreateUserValues) {
+  type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden">;
+
+  async function onSubmit(values: SubmitValues) {
     try {
-      const parsed = createUserSchema.parse(values);
-      await create.mutateAsync(parsed);
+      const { moduleAccess, moduleAccessOverridden, ...rest } = values;
+      const parsed = createUserSchema.parse(rest);
+      await create.mutateAsync({
+        ...parsed,
+        ...(moduleAccessOverridden && { moduleAccess, moduleAccessOverridden }),
+      });
       toast.success("User created");
       router.push("/users");
     } catch (e) {

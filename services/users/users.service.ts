@@ -7,6 +7,8 @@ export interface CreateUserInput {
   password: string;
   phone?: string | null;
   role: UserRole;
+  moduleAccess?: string[];
+  moduleAccessOverridden?: boolean;
 }
 
 export interface UpdateUserInput {
