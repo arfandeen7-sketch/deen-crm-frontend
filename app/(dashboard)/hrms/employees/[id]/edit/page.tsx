@@ -26,11 +26,10 @@ export default function EditEmployeePage() {
     department: employee.department,
     designation: employee.designation,
     joiningDate: employee.joiningDate,
-    basicSalary: employee.basicSalary,
-    allowances: employee.allowances,
+    basicSalary: employee.basicSalary?.toString(),
+    allowances: employee.allowances?.toString(),
     bankName: employee.bankName,
     bankAccountNumber: employee.bankAccountNumber,
-    employmentStatus: employee.employmentStatus,
   };
 
   return (

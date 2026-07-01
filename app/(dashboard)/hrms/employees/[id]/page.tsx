@@ -14,17 +14,7 @@ export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data: employee, isLoading } = useEmployee(id);
-  const { remove } = useEmployeeMutations();
-
-  const handleDelete = () => {
-    if (!confirm("Are you sure you want to remove this employee?")) return;
-    remove.mutate(id, {
-      onSuccess: () => {
-        toast.success("Employee removed");
-        router.push("/hrms/employees");
-      },
-    });
-  };
+  // Delete functionality not supported by API yet
 
   if (isLoading) return <div className="animate-pulse h-96 rounded-xl bg-slate-100" />;
   if (!employee) return <p className="py-12 text-center text-slate-500">Employee not found</p>;
@@ -42,9 +32,6 @@ export default function EmployeeDetailPage() {
             </button>
             <button onClick={() => router.push(`/hrms/employees/${id}/edit`)} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
               <Edit className="h-4 w-4" /> Edit
-            </button>
-            <button onClick={handleDelete} className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700">
-              <Trash2 className="h-4 w-4" /> Delete
             </button>
           </div>
         }

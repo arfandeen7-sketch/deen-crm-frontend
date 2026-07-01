@@ -1,17 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-
-const COLORS = [
-  "#6366f1",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#0ea5e9",
-  "#8b5cf6",
-  "#ec4899",
-  "#14b8a6",
-];
+import { CHART_COLORS } from "./palette";
 
 export interface DonutDatum {
   label: string;
@@ -38,18 +28,24 @@ export function DonutChart({
 
   if (total === 0) {
     return (
-      <div className={cn("flex items-center justify-center text-sm text-slate-400", size === "sm" ? "h-20" : "h-44")}>
-        No data available
+      <div className={cn("flex items-center justify-center text-sm text-slate-400 border-2 border-dashed border-slate-200 rounded-full", dim)}>
+        No leads
       </div>
     );
   }
 
   return (
     <div className={cn("flex items-center gap-6", size === "sm" ? "flex-row justify-start gap-3" : "flex-col sm:flex-row sm:justify-center")}>
-      <svg viewBox={`0 0 ${box} ${box}`} className={cn(dim, "-rotate-90 shrink-0")}>
+      <svg viewBox={`0 0 ${box} ${box}`} className={cn(dim, "-rotate-90 shrink-0 overflow-hidden")}>
         {data.map((d, i) => {
+          if (d.value === 0) return null; // Skip empty segments
           const fraction = d.value / total;
           const dash = fraction * circumference;
+          
+          // SVG stroke-dasharray can be buggy when fraction is exactly 1 (100%).
+          // If it's a full ring, just draw a normal circle without dasharray.
+          const isFullRing = fraction === 1;
+
           const seg = (
             <circle
               key={d.label}
@@ -57,10 +53,12 @@ export function DonutChart({
               cy={center}
               r={radius}
               fill="transparent"
-              stroke={COLORS[i % COLORS.length]}
+              stroke={CHART_COLORS[i % CHART_COLORS.length]}
               strokeWidth={stroke}
-              strokeDasharray={`${dash} ${circumference - dash}`}
-              strokeDashoffset={-offset}
+              {...(!isFullRing && {
+                strokeDasharray: `${dash} ${circumference - dash}`,
+                strokeDashoffset: -offset,
+              })}
             />
           );
           offset += dash;
@@ -71,7 +69,7 @@ export function DonutChart({
           y={center}
           textAnchor="middle"
           dominantBaseline="middle"
-          className={cn("rotate-90 fill-slate-900 font-semibold", size === "sm" ? "text-sm" : "text-2xl")}
+          className={cn("fill-slate-900 font-semibold", size === "sm" ? "text-sm" : "text-2xl")}
           transform={`rotate(90 ${center} ${center})`}
         >
           {total}
@@ -79,19 +77,22 @@ export function DonutChart({
       </svg>
       {showLegend && (
         <ul className="space-y-2">
-          {data.map((d, i) => (
-            <li key={d.label} className="flex items-center gap-2 text-sm">
-              <span
-                className="h-3 w-3 rounded-sm"
-                style={{ backgroundColor: COLORS[i % COLORS.length] }}
-              />
-              <span className="text-slate-600">{d.label}</span>
-              <span className="ml-auto font-medium text-slate-900">{d.value}</span>
-              <span className="w-10 text-right text-xs text-slate-400">
-                {Math.round((d.value / total) * 100)}%
-              </span>
-            </li>
-          ))}
+          {data.map((d, i) => {
+            if (d.value === 0) return null;
+            return (
+              <li key={d.label} className="flex items-center gap-2 text-sm">
+                <span
+                  className="h-3 w-3 rounded-sm"
+                  style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                />
+                <span className="text-slate-600">{d.label}</span>
+                <span className="ml-auto font-medium text-slate-900">{d.value}</span>
+                <span className="w-10 text-right text-xs text-slate-400">
+                  {Math.round((d.value / total) * 100)}%
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

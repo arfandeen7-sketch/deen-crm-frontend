@@ -20,8 +20,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Badge";
-import { DonutChart } from "@/components/charts/DonutChart";
-import { BarChart } from "@/components/charts/BarChart";
+import { DistributionBarChart } from "@/components/charts/DistributionBarChart";
+import { LineChart } from "@/components/charts/LineChart";
 import { FunnelChart } from "@/components/charts/FunnelChart";
 import { LoadingState, EmptyState } from "@/components/ui/States";
 import { LeadTabs } from "@/components/leads/LeadTabs";
@@ -321,6 +321,7 @@ export default function LeadReportsPage() {
           loading={kpisLoading}
           value={kpis?.newLeads.current}
           comparison={hasDateFilter ? kpis?.newLeads : null}
+          history={timeSeries.data?.map(d => ({ date: d.date, count: d.count }))}
         />
         <KpiCard
           label="Touch Rate"
@@ -405,9 +406,9 @@ export default function LeadReportsPage() {
                 message="Requires the GET /leads/report/timeseries backend endpoint."
               />
             ) : (
-              <BarChart
+              <LineChart
                 data={(timeSeries.data ?? []).map((d) => ({ label: d.date, value: d.count }))}
-                color="bg-sky-500"
+                color="#0ea5e9" // sky-500
               />
             )}
           </CardBody>
@@ -425,11 +426,12 @@ export default function LeadReportsPage() {
             {sourceReport.isLoading ? (
               <LoadingState />
             ) : (
-              <DonutChart
+              <DistributionBarChart
                 data={(sourceReport.data ?? []).map((d) => ({
                   label: d.source,
                   value: d.count,
                 }))}
+                useCategoricalColors
               />
             )}
           </CardBody>
@@ -444,11 +446,12 @@ export default function LeadReportsPage() {
             {statusReport.isLoading ? (
               <LoadingState />
             ) : (
-              <DonutChart
+              <DistributionBarChart
                 data={(statusReport.data ?? []).map((d) => ({
                   label: d.status,
                   value: d.count,
                 }))}
+                useCategoricalColors
               />
             )}
           </CardBody>

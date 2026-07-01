@@ -75,17 +75,28 @@ export function EmployeePerformanceCard({
         </div>
       </div>
 
-      {(lowTouch || highMissed) && (
-        <div className="flex flex-wrap gap-2 border-b border-slate-100 bg-rose-50/60 px-4 py-2">
-          {lowTouch && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
-              <AlertTriangle className="h-3.5 w-3.5" /> Low touch rate
+      {(lowTouch || highMissed || item.performanceScore >= 75) && (
+        <div className={cn(
+          "flex flex-wrap gap-2 border-b border-slate-100 px-4 py-2",
+          item.performanceScore >= 75 ? "bg-emerald-50/60" : "bg-rose-50/60"
+        )}>
+          {item.performanceScore >= 75 ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+              <Star className="h-3.5 w-3.5" /> On track
             </span>
-          )}
-          {highMissed && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
-              <AlertTriangle className="h-3.5 w-3.5" /> {item.missedFollowUps} missed follow-ups
-            </span>
+          ) : (
+            <>
+              {lowTouch && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Low touch rate
+                </span>
+              )}
+              {highMissed && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
+                  <AlertTriangle className="h-3.5 w-3.5" /> {item.missedFollowUps} missed follow-ups
+                </span>
+              )}
+            </>
           )}
         </div>
       )}

@@ -19,16 +19,19 @@ export function Sparkline({
 }) {
   const width = 120;
   const height = 32;
-  const max = Math.max(1, ...data.map((d) => d.count));
+  const max = Math.max(1, ...data.map((d) => d.count || 0));
+  const total = data.reduce((sum, d) => sum + (d.count || 0), 0);
 
   if (data.length === 0) {
-    return <div className={cn("h-8 text-xs text-slate-400", className)}>No activity</div>;
+    return <div className={cn("h-8 flex items-center text-xs text-slate-400", className)}>No activity</div>;
   }
 
   const step = data.length > 1 ? width / (data.length - 1) : 0;
   const points = data.map((d, i) => {
     const x = data.length > 1 ? i * step : width / 2;
-    const y = height - (d.count / max) * height;
+    // Keep the line slightly above the very bottom even for 0 so it's not clipped
+    const count = d.count || 0;
+    const y = height - (count / max) * (height - 2) - 1;
     return `${x},${y}`;
   });
 
@@ -36,22 +39,33 @@ export function Sparkline({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-8 w-28 shrink-0">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-8 w-24 shrink-0 overflow-hidden">
         <polyline
           points={points.join(" ")}
           fill="none"
-          stroke={color}
+          stroke={total === 0 ? "#cbd5e1" : color} // muted color if no activity
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         {data.map((d, i) => {
           const x = data.length > 1 ? i * step : width / 2;
-          const y = height - (d.count / max) * height;
-          return <circle key={d.date} cx={x} cy={y} r={1.5} fill={color} />;
+          const count = d.count || 0;
+          const y = height - (count / max) * (height - 2) - 1;
+          return (
+            <circle 
+              key={d.date || i} 
+              cx={x} 
+              cy={y} 
+              r={1.5} 
+              fill={total === 0 ? "#cbd5e1" : color} 
+            />
+          );
         })}
       </svg>
-      <span className="text-xs text-slate-500">{last?.count ?? 0} today</span>
+      <span className="text-[10px] text-slate-500 font-medium truncate">
+        {total === 0 ? "0 this week" : `${last?.count ?? 0} today`}
+      </span>
     </div>
   );
 }

@@ -57,11 +57,11 @@ export default function BrokerDetailPage() {
           <CardBody className="p-0">
             {leads.isLoading ? (
               <LoadingState />
-            ) : (leads.data?.length ?? 0) === 0 ? (
+            ) : (leads.data?.data?.length ?? 0) === 0 ? (
               <EmptyState title="No leads" message="No leads are linked to this broker yet." />
             ) : (
               <div className="divide-y divide-slate-100">
-                {leads.data?.map((l) => (
+                {leads.data?.data?.map((l) => (
                   <Link key={l.id} href={`/leads/${l.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50">
                     <UserAvatar name={l.leadName} size="sm" />
                     <div className="min-w-0 flex-1">
