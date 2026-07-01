@@ -413,6 +413,10 @@ export interface LeadSourceReportItem {
   source: string;
   count: number;
   percentage: number;
+  touched?: number;
+  converted?: number;
+  conversionRate?: number;
+  statusBreakdown?: Record<string, number>;
 }
 
 export interface LeadStatusReportItem {
@@ -453,6 +457,76 @@ export interface UserPerformanceItem {
 export interface LeadTimeSeriesItem {
   date: string;
   count: number;
+}
+
+// ── Lead Report: Phase 1/2/3 enhancements ───────────────────────────────────
+
+/** NEW BACKEND ENDPOINT REQUIRED: GET /leads/report/priority */
+export interface LeadPriorityReportItem {
+  priority: string;
+  count: number;
+  percentage: number;
+}
+
+/** NEW BACKEND ENDPOINT REQUIRED: GET /leads/report/geo */
+export interface LeadGeoReportItem {
+  city: string;
+  count: number;
+  percentage: number;
+}
+
+/**
+ * NEW BACKEND ENDPOINT REQUIRED: GET /leads/report/summary
+ * Provides metrics that cannot be derived client-side from existing
+ * /leads/report and /dashboard/status-analytics responses (true "new leads
+ * created" count independent of assignment, and average first-touch response
+ * time). All other KPI fields are computed client-side as a fallback when
+ * this endpoint is unavailable.
+ */
+export interface LeadReportSummary {
+  newLeads: number;
+  avgResponseTimeMinutes: number | null;
+}
+
+export interface KpiComparisonValue {
+  current: number;
+  previous: number;
+  deltaPct: number | null;
+}
+
+export interface LeadReportKpis {
+  totalLeads: KpiComparisonValue;
+  newLeads: KpiComparisonValue;
+  touchRate: KpiComparisonValue;
+  conversionRate: KpiComparisonValue;
+  followUpCompletionRate: KpiComparisonValue;
+  avgResponseTimeMinutes: number | null;
+}
+
+export interface LeadFunnelStage {
+  stage: string;
+  count: number;
+  percentage: number;
+}
+
+export interface EmployeePerformance extends UserPerformanceItem {
+  role?: UserRole;
+  department?: string | null;
+  designation?: string | null;
+  profilePhoto?: string | null;
+  touchRate: number;
+  conversionRate: number;
+  followUpCompletionRate: number;
+  performanceScore: number;
+  weeklyActivity: { date: string; count: number }[];
+  recentActivity: LeadActivity[];
+}
+
+export interface LeaderboardEntry {
+  userId: string;
+  fullName: string;
+  value: number;
+  rank: number;
 }
 
 // ── Lead Activity ────────────────────────────────────────────────────────────

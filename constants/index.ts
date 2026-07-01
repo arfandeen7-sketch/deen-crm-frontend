@@ -32,6 +32,14 @@ export const LEAD_STATUS_COLORS: Record<string, string> = {
   "Not Receiving Calls": "bg-orange-100 text-orange-700 ring-orange-600/20",
 };
 
+// Statuses considered a "conversion" for KPI/performance calculations.
+export const CONVERTED_LEAD_STATUSES = ["Interested", "Existing Client"];
+
+// Funnel stage order used for the (approximate, snapshot-based) Lead Funnel
+// chart. A true progression funnel requires backend aggregation over
+// lead_status_history — see reports page summary notes.
+export const LEAD_FUNNEL_STAGES = ["Fresh", "Interested", "Existing Client"];
+
 export const LEAD_PRIORITY_COLORS: Record<string, string> = {
   Hot: "bg-rose-100 text-rose-700 ring-rose-600/20",
   Warm: "bg-amber-100 text-amber-700 ring-amber-600/20",
