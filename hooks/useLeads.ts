@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import {
   useMutation,
   useQuery,
@@ -18,11 +19,28 @@ export function useLeadsList(params: LeadQueryParams) {
 }
 
 export function useLead(id: string | undefined) {
-  return useQuery({
+  const query = useQuery({
     queryKey: [KEY, "detail", id],
     queryFn: () => leadsService.get(id as string),
     enabled: !!id,
   });
+
+  // Viewing a lead's detail page marks it as touched server-side (see backend
+  // GET /api/leads/:id). Invalidate list-derived caches once per lead per
+  // mount so the lead disappears from the Untouched Leads module immediately
+  // without waiting for the default query staleTime to elapse.
+  const qc = useQueryClient();
+  const invalidatedForId = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (query.data && invalidatedForId.current !== id) {
+      invalidatedForId.current = id;
+      qc.invalidateQueries({ queryKey: [KEY, "list"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["followup"] });
+    }
+  }, [query.data, id, qc]);
+
+  return query;
 }
 
 export function useLeadMutations() {

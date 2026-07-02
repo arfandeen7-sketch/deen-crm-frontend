@@ -538,7 +538,8 @@ export type LeadActivityAction =
   | "followup_scheduled"
   | "assigned"
   | "field_updated"
-  | "imported";
+  | "imported"
+  | "viewed";
 
 export interface LeadActivity {
   id: string;
