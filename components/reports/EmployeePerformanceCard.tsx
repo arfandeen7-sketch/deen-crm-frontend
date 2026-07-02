@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Bell, ClipboardList, PhoneCall, Star, Tag, UserPlus2 } from "lucide-react";
+import { AlertTriangle, Bell, ClipboardList, Eye, PhoneCall, Star, Tag, UserPlus2 } from "lucide-react";
 import { cn, timeAgo } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
@@ -18,6 +18,7 @@ const ACTIVITY_ICONS: Record<LeadActivityAction, typeof Tag> = {
   assigned: UserPlus2,
   field_updated: ClipboardList,
   imported: ClipboardList,
+  viewed: Eye,
 };
 
 function scoreColor(score: number): string {
@@ -32,12 +33,14 @@ export function EmployeePerformanceCard({
   onTogglePin,
   onSendReminder,
   sendingReminder,
+  onViewReport,
 }: {
   item: EmployeePerformance;
   pinned?: boolean;
   onTogglePin?: () => void;
   onSendReminder?: () => void;
   sendingReminder?: boolean;
+  onViewReport?: () => void;
 }) {
   const lowTouch = item.touchRate < 50;
   const highMissed = item.missedFollowUps >= 5;
@@ -165,11 +168,17 @@ export function EmployeePerformanceCard({
             View All Leads
           </Button>
         </Link>
-        <Link href={`/leads/reports/employee/${item.userId}`} className="flex-1">
-          <Button variant="outline" size="sm" className="w-full">
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={onViewReport}
+            disabled={!onViewReport}
+          >
             Full Report
           </Button>
-        </Link>
+        </div>
         {highMissed && onSendReminder && (
           <Button size="sm" variant="ghost" loading={sendingReminder} onClick={onSendReminder} title="Send reminder">
             <Bell className="h-4 w-4" />

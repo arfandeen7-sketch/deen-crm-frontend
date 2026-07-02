@@ -111,7 +111,48 @@ export const reportsService = {
       missedFollowUps: r.missedFollowUps,
       statusBreakdown: r.statusBreakdown,
       lastActivityAt: r.lastActivityAt,
+      converted: convertedCount(r.statusBreakdown),
     }));
+  },
+
+  async dailyUserPerformance(params: { dateFrom: string; dateTo: string }): Promise<UserPerformanceItem[]> {
+    const rows = await getData<UserPerformanceItem[]>(`/leads/report/user${buildQuery(params)}`);
+    return rows.map((row) => ({
+      userId: row.userId,
+      fullName: row.fullName,
+      assigned: row.assigned,
+      touched: row.touched,
+      untouched: row.untouched,
+      followedUp: row.followedUp,
+      missedFollowUps: row.missedFollowUps,
+      statusBreakdown: row.statusBreakdown ?? {},
+      lastActivityAt: row.lastActivityAt,
+      converted: row.converted ?? convertedCount(row.statusBreakdown),
+    }));
+  },
+
+  async employeeReport(params: LeadReportParams & { userId: string }): Promise<UserPerformanceItem | null> {
+    const p: ReportQueryParams = {
+      groupBy: "user",
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      userId: params.userId,
+    };
+    const res = await getData<LeadReportResponse>(`/leads/report${buildQuery(p)}`);
+    const row = res.rows?.[0];
+    if (!row) return null;
+    return {
+      userId: row.groupKey,
+      fullName: row.groupLabel,
+      assigned: row.totalAssigned,
+      touched: row.touched,
+      untouched: row.untouched,
+      followedUp: row.followedUp,
+      missedFollowUps: row.missedFollowUps,
+      statusBreakdown: row.statusBreakdown,
+      lastActivityAt: row.lastActivityAt,
+      converted: convertedCount(row.statusBreakdown),
+    };
   },
 
   /**

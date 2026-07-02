@@ -28,6 +28,7 @@ import { LeadTabs } from "@/components/leads/LeadTabs";
 import { PermissionGuard } from "@/components/shared/Guards";
 import { KpiCard } from "@/components/reports/KpiCard";
 import { EmployeePerformanceCard } from "@/components/reports/EmployeePerformanceCard";
+import { EmployeeHistoricalReportModal } from "@/components/reports/EmployeeHistoricalReportModal";
 import { Leaderboard } from "@/components/reports/Leaderboard";
 import { EmployeeFilterBar, type EmployeeSortKey } from "@/components/reports/EmployeeFilterBar";
 import {
@@ -37,7 +38,7 @@ import {
   useLeadTimeSeries,
   usePriorityReport,
   useKpiComparison,
-  useEmployeePerformanceList,
+  useDailyEmployeePerformanceList,
   useSendReminder,
   previousPeriodRange,
 } from "@/hooks/useLeadReports";
@@ -45,7 +46,7 @@ import { reportsService } from "@/services/leads/reports.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob, cn } from "@/lib/utils";
 import { LEAD_FUNNEL_STAGES } from "@/constants";
-import type { LeadReportParams, LeaderboardEntry } from "@/types";
+import type { EmployeePerformance, LeadReportParams, LeaderboardEntry } from "@/types";
 
 const PERIODS = [
   { key: "daily", label: "Daily" },
@@ -86,6 +87,7 @@ export default function LeadReportsPage() {
   const [empRole, setEmpRole] = useState("");
   const [empSort, setEmpSort] = useState<EmployeeSortKey>("performanceScore");
   const [pinned, setPinned] = useState<string[]>([]);
+  const [reportEmployee, setReportEmployee] = useState<EmployeePerformance | null>(null);
 
   useEffect(() => {
     setPinned(readPinned());
@@ -112,7 +114,7 @@ export default function LeadReportsPage() {
   const timeSeries = useLeadTimeSeries(timeSeriesParams);
   const priorityReport = usePriorityReport(params);
   const { kpis, isLoading: kpisLoading, summaryUnavailable } = useKpiComparison(params);
-  const employees = useEmployeePerformanceList(params);
+  const employees = useDailyEmployeePerformanceList();
   const sendReminder = useSendReminder();
 
   const prevRange = useMemo(() => previousPeriodRange(dateFrom || undefined, dateTo || undefined), [dateFrom, dateTo]);
@@ -489,6 +491,7 @@ export default function LeadReportsPage() {
                 onTogglePin={() => togglePin(e.userId)}
                 onSendReminder={() => handleSendReminder(e.userId, e.fullName)}
                 sendingReminder={sendReminder.isPending}
+                onViewReport={() => setReportEmployee(e)}
               />
             ))}
           </div>
@@ -502,6 +505,11 @@ export default function LeadReportsPage() {
         <Leaderboard title="Needs Attention" entries={needsAttention} suffix=" pts" emptyLabel="All employees performing well." />
         <Leaderboard title="Most Improved" entries={mostImproved} suffix=" pts" emptyLabel="No previous period data." />
       </div>
+      <EmployeeHistoricalReportModal
+        open={Boolean(reportEmployee)}
+        onClose={() => setReportEmployee(null)}
+        employee={reportEmployee ?? undefined}
+      />
     </div>
     </PermissionGuard>
   );

@@ -197,11 +197,48 @@ function scoreOf(touchRate: number, conversionRate: number, followUpRate: number
  */
 export function useEmployeePerformanceList(params: LeadReportParams) {
   const performance = useUserPerformance(params);
+  const enhanced = useEnhancedEmployeePerformance(performance.data);
+
+  return {
+    data: enhanced.list,
+    isLoading: performance.isLoading || enhanced.isLoading,
+  };
+}
+
+export function useDailyEmployeePerformanceList(date?: string) {
+  const today = useMemo(() => new Date(), []);
+  const targetDate = date ?? today.toISOString().slice(0, 10);
+  const range = useMemo(() => ({ dateFrom: targetDate, dateTo: targetDate }), [targetDate]);
+  const performance = useQuery({
+    queryKey: [KEY, "daily-user-performance", range],
+    queryFn: () => reportsService.dailyUserPerformance(range),
+    enabled: Boolean(range.dateFrom && range.dateTo),
+    staleTime: 60_000,
+  });
+  const enhanced = useEnhancedEmployeePerformance(performance.data, { includeAllUsers: true });
+
+  return {
+    data: enhanced.list,
+    isLoading: performance.isLoading || enhanced.isLoading,
+  };
+}
+
+export function useEmployeeReport(userId: string | undefined, params: LeadReportParams) {
+  return useQuery({
+    queryKey: [KEY, "employee-report", userId, params],
+    queryFn: () => reportsService.employeeReport({ ...params, userId: userId! }),
+    enabled: !!userId,
+  });
+}
+
+function useEnhancedEmployeePerformance(
+  rows: UserPerformanceItem[] | undefined,
+  options?: { includeAllUsers?: boolean },
+) {
   const users = useQuery({ queryKey: ["users"], queryFn: () => usersService.list() });
-
   const days = useMemo(() => last7Days(), []);
-  const userIds = useMemo(() => (performance.data ?? []).map((r) => r.userId), [performance.data]);
-
+  const includeAllUsers = options?.includeAllUsers ?? false;
+  const userIds = useMemo(() => (rows ?? []).map((r) => r.userId), [rows]);
   const activityQueries = useQueries({
     queries: userIds.map((userId) => ({
       queryKey: [KEY, "employee-activity", userId, days[0]],
@@ -213,8 +250,8 @@ export function useEmployeePerformanceList(params: LeadReportParams) {
 
   const list: EmployeePerformance[] = useMemo(() => {
     const userMap = new Map((users.data?.users ?? []).map((u) => [u.id, u]));
-    return (performance.data ?? []).map((row, idx) => {
-      const converted = CONVERTED_LEAD_STATUSES.reduce((s, st) => s + (row.statusBreakdown?.[st] ?? 0), 0);
+    const base = (rows ?? []).map((row, idx) => {
+      const converted = row.converted ?? CONVERTED_LEAD_STATUSES.reduce((s, st) => s + (row.statusBreakdown?.[st] ?? 0), 0);
       const touchRate = row.assigned > 0 ? (row.touched / row.assigned) * 100 : 0;
       const conversionRate = row.assigned > 0 ? (converted / row.assigned) * 100 : 0;
       const fuTotal = row.followedUp + row.missedFollowUps;
@@ -245,11 +282,42 @@ export function useEmployeePerformanceList(params: LeadReportParams) {
         recentActivity,
       };
     });
-  }, [performance.data, users.data, activityQueries, days]);
 
+    if (!includeAllUsers) return base;
+
+    const byId = new Map(base.map((item) => [item.userId, item]));
+    const fallback = [...(users.data?.users ?? [])]
+      .filter((user) => !byId.has(user.id))
+      .map((user) => ({
+        userId: user.id,
+        fullName: user.fullName,
+        assigned: 0,
+        touched: 0,
+        untouched: 0,
+        followedUp: 0,
+        missedFollowUps: 0,
+        statusBreakdown: {},
+        lastActivityAt: undefined,
+        converted: 0,
+        role: user.role,
+        department: user.department,
+        designation: user.designation,
+        profilePhoto: user.profilePhoto,
+        touchRate: 0,
+        conversionRate: 0,
+        followUpCompletionRate: 0,
+        performanceScore: 0,
+        weeklyActivity: days.map((d) => ({ date: d, count: 0 })),
+        recentActivity: [],
+      }));
+
+    return [...base, ...fallback];
+  }, [rows, users.data, activityQueries, days, includeAllUsers]);
+
+  const activitiesLoading = activityQueries.some((q) => q.isLoading);
   return {
-    data: list,
-    isLoading: performance.isLoading || users.isLoading,
+    list,
+    isLoading: users.isLoading || activitiesLoading,
   };
 }
 

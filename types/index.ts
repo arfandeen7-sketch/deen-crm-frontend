@@ -452,6 +452,7 @@ export interface UserPerformanceItem {
   missedFollowUps: number;
   statusBreakdown: Record<string, number>;
   lastActivityAt?: string | null;
+  converted?: number;
 }
 
 export interface LeadTimeSeriesItem {

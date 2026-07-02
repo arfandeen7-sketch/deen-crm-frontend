@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Download, Upload, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -28,10 +28,18 @@ import type { Lead } from "@/types";
 
 export default function LeadsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { can } = useAuth();
-  const { filters, setFilter, resetFilters } = useLeadFilterStore();
+  const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
   const { data, isLoading, isError, refetch } = useLeadsList(filters);
   const { remove } = useLeadMutations();
+
+  useEffect(() => {
+    const assignedTo = searchParams.get("assignedTo");
+    if (assignedTo) {
+      setFilter("assignedTo", assignedTo);
+    }
+  }, [searchParams, setFilter]);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
