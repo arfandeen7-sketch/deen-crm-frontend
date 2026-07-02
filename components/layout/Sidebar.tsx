@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Building2, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -115,28 +116,27 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   }, []);
 
   return (
-    <div className="flex h-full flex-col bg-slate-900 text-slate-300">
+    <div className="flex h-full flex-col bg-zinc-950 text-zinc-400 border-r border-zinc-800/50">
       {/* ── Logo ── */}
-      <div className="flex h-16 items-center justify-between gap-2 border-b border-white/10 px-5">
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-800/50 px-6 py-5">
         <Link
           href="/dashboard/overview"
           className="flex items-center gap-2.5"
           onClick={onNavigate}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white">
-            <Building2 className="h-5 w-5" />
-          </span>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-white">DEEN</p>
-            <p className="text-[10px] uppercase tracking-wider text-slate-400">
-              Properties CRM
-            </p>
-          </div>
+          <Image
+            src="/deen-new-logo.png"
+            alt="DEEN Properties"
+            width={200}
+            height={40}
+            className="h-12 w-auto object-contain"
+            priority
+          />
         </Link>
         {onNavigate && (
           <button
             onClick={onNavigate}
-            className="rounded p-1 text-slate-400 hover:text-white lg:hidden"
+            className="rounded p-1 text-zinc-500 hover:text-white lg:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
@@ -145,7 +145,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-zinc-800">
         {NAV_GROUPS.map((group) => {
           if (group.moduleKey && !hasModule(group.moduleKey)) return null;
           const visibleItems = group.items.filter(
@@ -163,22 +163,22 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <button
                 onClick={() => toggleGroup(group.id)}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-all duration-200",
                   isActive
-                    ? "font-semibold text-white"
-                    : "font-medium text-slate-300 hover:bg-white/5 hover:text-white",
+                    ? "font-medium text-white"
+                    : "font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white",
                 )}
               >
                 <GroupIcon
                   className={cn(
                     "h-4 w-4 shrink-0",
-                    isActive ? "text-indigo-400" : "text-slate-500",
+                    isActive ? "text-amber-500" : "text-zinc-500",
                   )}
                 />
                 <span className="flex-1 truncate">{group.title}</span>
                 <ChevronRight
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 text-slate-600 transition-transform duration-200",
+                    "h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200",
                     isOpen && "rotate-90",
                   )}
                 />
@@ -201,13 +201,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                           href={item.href}
                           onClick={onNavigate}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg py-1.5 pl-9 pr-3 text-sm transition-colors",
+                            "flex items-center gap-3 rounded-md py-1.5 pl-10 pr-3 text-sm transition-all duration-200",
                             itemActive
-                              ? "bg-indigo-600 font-medium text-white"
-                              : "font-normal text-slate-400 hover:bg-white/5 hover:text-white",
+                              ? "bg-amber-500/10 font-medium text-amber-500"
+                              : "font-medium text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300",
                           )}
                         >
-                          <ItemIcon className="h-3.5 w-3.5 shrink-0" />
+                          <ItemIcon className={cn("h-4 w-4 shrink-0", itemActive ? "text-amber-500" : "text-zinc-600")} />
                           {item.label}
                         </Link>
                       </li>
@@ -221,7 +221,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* ── Footer ── */}
-      <div className="border-t border-white/10 px-5 py-3 text-[10px] text-slate-500">
+      <div className="border-t border-zinc-800/50 px-6 py-4 text-[10px] font-medium uppercase tracking-widest text-zinc-600">
         {APP_NAME}
       </div>
     </div>

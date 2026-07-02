@@ -1,13 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #FFFFFF;
+  --panel: #FAFAFA;
+  --section: #F7F7F7;
+  --foreground: #111111;
+  --foreground-secondary: #555555;
+  --foreground-muted: #8A8A8A;
+  --foreground-disabled: #B5B5B5;
+  --accent: #E39A12;
+  --border: #E8E8E8;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-panel: var(--panel);
+  --color-section: var(--section);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-disabled: var(--foreground-disabled);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -22,18 +36,30 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
-/* Thin scrollbars for a more app-like feel */
+/* Base typographic styling */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400; /* Thin/Medium feel */
+  letter-spacing: 0.02em;
+}
+
+/* Thin scrollbars for precision feel */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--border) transparent;
 }
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 9999px;
+  background-color: var(--border);
+  border-radius: 0px;
+}
+
+/* Reset some inputs and buttons to ensure crisp edges */
+input, button, select, textarea {
+  border-radius: 6px;
 }

@@ -18,16 +18,16 @@ function NotificationRow({
   return (
     <button
       onClick={() => onRead(n.id, n.leadId)}
-      className={`w-full px-4 py-3 text-left hover:bg-slate-50 ${!n.isRead ? "bg-indigo-50/40" : ""}`}
+      className={`w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors ${!n.isRead ? "bg-amber-50/50" : ""}`}
     >
       <div className="flex items-start gap-2.5">
         {!n.isRead && (
-          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
         )}
         <div className={`min-w-0 ${n.isRead ? "pl-4" : ""}`}>
-          <p className="truncate text-sm font-medium text-slate-800">{n.title}</p>
-          <p className="mt-0.5 text-xs text-slate-500 line-clamp-2">{n.body}</p>
-          <p className="mt-1 text-[11px] text-slate-400">{timeAgo(n.createdAt)}</p>
+          <p className="truncate text-sm font-semibold text-zinc-900">{n.title}</p>
+          <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">{n.body}</p>
+          <p className="mt-1 text-[11px] font-medium text-zinc-400">{timeAgo(n.createdAt)}</p>
         </div>
       </div>
     </button>
@@ -60,24 +60,24 @@ export function NotificationCenter() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+        className="relative rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
         {badgeCount > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm">
             {badgeCount > 99 ? "99+" : badgeCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-200/50">
+          <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-slate-900">Notifications</h3>
+              <h3 className="text-sm font-semibold text-zinc-900">Notifications</h3>
               {badgeCount > 0 && (
-                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
                   {badgeCount} unread
                 </span>
               )}
@@ -85,7 +85,7 @@ export function NotificationCenter() {
             {badgeCount > 0 && (
               <button
                 onClick={() => markAllRead.mutate()}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600"
+                className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-900 transition-colors"
                 title="Mark all as read"
               >
                 <CheckCheck className="h-3.5 w-3.5" /> All read
@@ -93,17 +93,17 @@ export function NotificationCenter() {
             )}
           </div>
 
-          <div className="max-h-[420px] divide-y divide-slate-50 overflow-y-auto">
+          <div className="max-h-[420px] divide-y divide-zinc-100 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200">
             {isLoading && (
-              <p className="px-4 py-6 text-center text-sm text-slate-400">Loading…</p>
+              <p className="px-4 py-6 text-center text-sm text-zinc-500">Loading…</p>
             )}
             {error && (
-              <p className="px-4 py-6 text-center text-sm text-rose-500">
+              <p className="px-4 py-6 text-center text-sm font-medium text-rose-500">
                 Failed to load notifications
               </p>
             )}
             {!isLoading && !error && (!notifications || notifications.length === 0) && (
-              <p className="px-4 py-6 text-center text-sm text-slate-400">
+              <p className="px-4 py-6 text-center text-sm text-zinc-500">
                 No notifications yet 🎉
               </p>
             )}
@@ -112,11 +112,11 @@ export function NotificationCenter() {
             ))}
           </div>
 
-          <div className="border-t border-slate-100 px-4 py-2.5">
+          <div className="border-t border-zinc-100 px-4 py-2.5">
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
+              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors"
             >
               View all notifications →
             </Link>

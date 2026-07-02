@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50/50">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 lg:block">
         <div className="fixed inset-y-0 w-64">
@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div
           className={cn(
-            "absolute inset-0 bg-slate-900/50 transition-opacity",
+            "absolute inset-0 bg-zinc-950/80 backdrop-blur-sm transition-opacity",
             mobileOpen ? "opacity-100" : "opacity-0",
           )}
           onClick={() => setMobileOpen(false)}
