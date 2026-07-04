@@ -2,6 +2,12 @@
 
 export type UserRole = "master" | "hr_manager" | "sales_manager" | "sales_executive";
 
+export type ModuleName = 'leads' | 'leads_reports' | 'followup' | 'brokers'
+  | 'hrms_attendance' | 'hrms_leave' | 'hrms_payroll' | 'hrms_employees'
+  | 'users' | 'dynamic_fields';
+
+export type PermissionAction = 'view' | 'add' | 'edit' | 'delete';
+
 export type EmploymentStatus = "active" | "on_leave" | "suspended" | "resigned" | "terminated";
 
 export type BrokerStatus = "active" | "inactive" | "suspended";
@@ -380,6 +386,26 @@ export interface ImportResult {
 export interface UsersListResponse {
   users: User[];
   roleCounts: Record<UserRole, number>;
+}
+
+export interface PermissionMetadata {
+  modules: Array<{
+    module: ModuleName;
+    label: string;
+    category: string;
+    actions: PermissionAction[];
+  }>;
+}
+
+export interface UserPermissions {
+  userId: string;
+  role: UserRole;
+  permissionsOverridden: boolean;
+  matrix: Array<{
+    module: ModuleName;
+    actions: { view: boolean; add: boolean; edit: boolean; delete: boolean };
+  }>;
+  permissions: Record<ModuleName, PermissionAction[]>;
 }
 
 // Common list query params

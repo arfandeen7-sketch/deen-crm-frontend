@@ -25,17 +25,25 @@ api.interceptors.request.use((config) => {
 });
 
 // On 401, clear session and bounce to login (client-side only).
+// On 403, refetch permissions and show toast.
 api.interceptors.response.use(
   (res) => res,
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
     const status = error.response?.status;
-    // Don't evict a demo session on 401 (the demo token isn't backend-valid).
+    
     if (status === 401 && typeof window !== "undefined" && !isDemoToken(getStoredToken())) {
       useAuthStore.getState().clear();
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
     }
+    
+    if (status === 403 && typeof window !== "undefined") {
+      const { toast } = await import("sonner");
+      window.dispatchEvent(new CustomEvent("permissions:refetch"));
+      toast.error("You do not have permission to perform this action");
+    }
+    
     return Promise.reject(error);
   },
 );

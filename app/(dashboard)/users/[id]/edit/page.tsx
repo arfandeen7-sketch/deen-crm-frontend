@@ -8,10 +8,12 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { UserForm } from "@/components/forms/UserForm";
+import { PermissionMatrix } from "@/components/permissions/PermissionMatrix";
 import { useUser, useUserMutations } from "@/hooks/useUsers";
 import { updateUserSchema, type CreateUserValues, type UpdateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
 import { PermissionGuard } from "@/components/shared/Guards";
+import { ROLE_LABELS } from "@/constants";
 
 type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden">;
 
@@ -55,6 +57,14 @@ export default function EditUserPage() {
           )}
         </CardBody>
       </Card>
+
+      {!isLoading && !isError && user && user.role !== "master" && (
+        <Card>
+          <CardBody>
+            <PermissionMatrix userId={params.id} roleLabel={ROLE_LABELS[user.role]} />
+          </CardBody>
+        </Card>
+      )}
     </div>
     </PermissionGuard>
   );

@@ -6,9 +6,9 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { 
-  Building2, Eye, EyeOff, Calendar, Clock, Shield, Quote, 
-  Activity, Database, Users, TrendingUp, Lock, Mail, ChevronRight 
+import {
+  Building2, Eye, EyeOff, Calendar, Clock, Shield, Quote,
+  Activity, Database, Users, TrendingUp, Lock, Mail, ChevronRight
 } from "lucide-react";
 import { loginSchema, type LoginValues } from "@/schemas/auth.schema";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,53 +53,53 @@ export default function LoginPage() {
       <div className="hidden lg:flex w-7/12 flex-col justify-between p-12 lg:pr-8">
         {/* Top: Logo */}
         <div>
-           <Image
-             src="/deen-new-logo.png"
-             alt="Deen Properties"
-             width={240}
-             height={80}
-             className="w-auto h-16 object-contain"
-             priority
-           />
+          <Image
+            src="/deen-new-logo.png"
+            alt="Deen Properties"
+            width={240}
+            height={80}
+            className="w-auto h-16 object-contain"
+            priority
+          />
         </div>
 
         {/* Middle: Text & Tags */}
         <div className="max-w-xl">
-           <div className="mb-6 inline-flex items-center gap-2 border border-slate-800 bg-[#0a0a0a]/50 px-3 py-1.5 text-[9px] uppercase tracking-widest text-slate-400">
-              <div className="h-1.5 w-1.5 bg-orange-500" />
-              <span>Real Estate Management Platform</span>
-           </div>
-           
-           <h1 className="mt-4 text-[56px] font-light text-white leading-[1.1] tracking-tight">
-             MANAGE PROPERTIES.<br />
-             TRACK LEADS.<br />
-             CLOSE <span className="text-orange-500 font-normal">DEALS.</span>
-           </h1>
-           
-           <p className="mt-8 text-sm text-slate-500 leading-relaxed max-w-lg font-sans">
-             A unified platform for property management, CRM operations and lead tracking designed for contemporary enterprise real estate teams.
-           </p>
+          <div className="mb-6 inline-flex items-center gap-2 border border-slate-800 bg-[#0a0a0a]/50 px-3 py-1.5 text-[9px] uppercase tracking-widest text-slate-400">
+            <div className="h-1.5 w-1.5 bg-amber-500" />
+            <span>Real Estate Management Platform</span>
+          </div>
 
-           <div className="mt-12 flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-                 <Database className="h-3.5 w-3.5 text-slate-500" />
-                 Property Management
-              </div>
-              <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-                 <Users className="h-3.5 w-3.5 text-slate-500" />
-                 CRM Tracking
-              </div>
-              <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-                 <TrendingUp className="h-3.5 w-3.5 text-slate-500" />
-                 Lead Monitoring
-              </div>
-           </div>
+          <h1 className="mt-4 text-[56px] font-light text-white leading-[1.1] tracking-tight">
+            MANAGE PROPERTIES.<br />
+            TRACK LEADS.<br />
+            CLOSE <span className="text-amber-500 font-normal">DEALS.</span>
+          </h1>
+
+          <p className="mt-8 text-sm text-slate-500 leading-relaxed max-w-lg font-sans">
+            A unified platform for property management, CRM operations and lead tracking designed for contemporary enterprise real estate teams.
+          </p>
+
+          <div className="mt-12 flex flex-wrap gap-4">
+            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
+              <Database className="h-3.5 w-3.5 text-slate-500" />
+              Property Management
+            </div>
+            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
+              <Users className="h-3.5 w-3.5 text-slate-500" />
+              CRM Tracking
+            </div>
+            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
+              <TrendingUp className="h-3.5 w-3.5 text-slate-500" />
+              Lead Monitoring
+            </div>
+          </div>
         </div>
 
         {/* Bottom: Quote and Footer */}
         <div>
-          <div className="border-l-2 border-orange-500/80 pl-6 py-2 mb-16">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-orange-500 tracking-widest mb-4 uppercase">
+          <div className="border-l-2 border-amber-500/80 pl-6 py-2 mb-16">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-amber-500 tracking-widest mb-4 uppercase">
               <Quote className="h-3 w-3" />
               Thoughts That Matter
             </div>
@@ -123,28 +123,28 @@ export default function LoginPage() {
       <div className="flex w-full lg:w-5/12 flex-col justify-between p-8 lg:p-12 lg:pl-16 border-l border-slate-800/50 bg-[#020202]/40 backdrop-blur-sm relative z-10">
         {/* Top Right: Date/Time */}
         <div className="flex justify-end gap-6 text-[10px] text-slate-500 font-mono tracking-widest uppercase">
-           <div className="flex items-center gap-2">
-             <Calendar className="h-3.5 w-3.5 text-orange-500/80" />
-             JUL 2, 2026
-           </div>
-           <div className="flex items-center gap-2">
-             <Clock className="h-3.5 w-3.5 text-orange-500/80" />
-             20:37:24
-           </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-amber-500/80" />
+            JUL 2, 2026
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock className="h-3.5 w-3.5 text-amber-500/80" />
+            20:37:24
+          </div>
         </div>
 
         {/* Center: Login Form */}
         <div className="w-full max-w-[440px] mx-auto my-auto relative mt-20 mb-20">
           {/* Corner borders for the form box */}
-          <div className="absolute -top-px -left-px w-8 h-8 border-t-[1.5px] border-l-[1.5px] border-orange-500/80 z-20" />
-          
+          <div className="absolute -top-px -left-px w-8 h-8 border-t-[1.5px] border-l-[1.5px] border-amber-500/80 z-20" />
+
           <div className="border border-slate-800/80 bg-[#070707] p-8 lg:p-10 relative z-10 shadow-2xl">
             <div className="mb-10 flex items-start justify-between">
               <div>
                 <h2 className="text-[22px] font-light text-white mb-2">WELCOME BACK</h2>
                 <p className="text-[11px] text-slate-500 font-sans">Sign in to continue to your account workspace</p>
               </div>
-              <div className="border border-orange-900/50 bg-orange-500/10 px-2.5 py-1 text-[8px] text-orange-500 tracking-widest uppercase">
+              <div className="border border-amber-900/50 bg-amber-500/10 px-2.5 py-1 text-[8px] text-amber-500 tracking-widest uppercase">
                 Secure Access
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     placeholder="name@deen.ae"
-                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-3 text-sm text-slate-300 placeholder-slate-600 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition-colors font-mono"
+                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-3 text-sm text-slate-300 placeholder-slate-600 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors font-mono"
                     {...register("email")}
                   />
                 </div>
@@ -181,7 +181,7 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-10 text-sm text-slate-300 placeholder-slate-600 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition-colors font-mono"
+                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-10 text-sm text-slate-300 placeholder-slate-600 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors font-mono"
                     {...register("password")}
                   />
                   <button
@@ -195,10 +195,10 @@ export default function LoginPage() {
                 {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isSubmitting}
-                className="mt-4 w-full bg-orange-500 hover:bg-orange-400 text-black text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="mt-4 w-full bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? 'Authenticating...' : 'Authenticate Operator'}
               </button>
@@ -206,7 +206,7 @@ export default function LoginPage() {
 
             {DEMO_AUTH_ENABLED && (
               <div className="mt-8 pt-6 border-t border-slate-800/50">
-                <div className="flex items-center gap-2 text-[9px] text-orange-500 tracking-widest uppercase mb-4">
+                <div className="flex items-center gap-2 text-[9px] text-amber-500 tracking-widest uppercase mb-4">
                   <Activity className="h-3 w-3" />
                   Enterprise Simulation Matrix
                 </div>
