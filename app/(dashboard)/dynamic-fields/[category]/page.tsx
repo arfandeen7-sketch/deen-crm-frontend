@@ -94,7 +94,7 @@ export default function DynamicFieldsPage() {
             className={cn(
               "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
               c.slug === config.slug
-                ? "bg-indigo-600 text-white"
+                ? "bg-gray-900 text-white"
                 : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50",
             )}
           >
@@ -121,7 +121,7 @@ export default function DynamicFieldsPage() {
                 <li key={field.id} className="flex items-center justify-between px-5 py-3">
                   <span className="text-sm font-medium text-slate-800">{field.value}</span>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => openEdit(field)} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600">
+                    <button onClick={() => openEdit(field)} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button onClick={() => setDeleteId(field.id)} className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600">

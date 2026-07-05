@@ -146,7 +146,7 @@ export default function LeadDetailPage() {
                   onClick={() => setActiveTab(t)}
                   className={`rounded-t-md px-4 py-2 text-sm font-medium transition-colors ${
                     activeTab === t
-                      ? "border-b-2 border-indigo-600 text-indigo-600"
+                      ? "border-b-2 border-gray-900 text-gray-900"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >

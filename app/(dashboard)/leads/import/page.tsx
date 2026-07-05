@@ -79,7 +79,7 @@ export default function ImportLeadsPage() {
             }}
             className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-10 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/40"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-gray-900">
               <UploadCloud className="h-6 w-6" />
             </span>
             {file ? (

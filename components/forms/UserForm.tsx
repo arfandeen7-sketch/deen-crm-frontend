@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -11,15 +11,15 @@ import {
 } from "@/schemas/user.schema";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Input";
-import { MODULE_ACCESS_OPTIONS, ROLE_LABELS } from "@/constants";
+import { ROLE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
-import type { User } from "@/types";
+import { PermissionMatrixInput } from "@/components/permissions/PermissionMatrixInput";
+import { permissionsService } from "@/services/permissions/permissions.service";
+import type { User, ModuleName, PermissionAction } from "@/types";
 
-type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden">;
-
-const MODULE_GROUPS = Array.from(
-  new Set(MODULE_ACCESS_OPTIONS.map((m) => m.group)),
-);
+type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden"> & {
+  permissions?: Record<ModuleName, PermissionAction[]>;
+};
 
 export function UserForm({
   initial,
@@ -37,9 +37,16 @@ export function UserForm({
   const [overrideEnabled, setOverrideEnabled] = useState<boolean>(
     initial?.moduleAccessOverridden ?? false,
   );
-  const [selectedModules, setSelectedModules] = useState<string[]>(
-    initial?.moduleAccess ?? [],
-  );
+  const [permissions, setPermissions] = useState<Record<ModuleName, PermissionAction[]>>({} as Record<ModuleName, PermissionAction[]>);
+
+  useEffect(() => {
+    if (isEdit && initial && overrideEnabled) {
+      permissionsService
+        .getUserPermissions(initial.id)
+        .then((data) => setPermissions(data.permissions))
+        .catch(() => {});
+    }
+  }, [isEdit, initial, overrideEnabled]);
 
   const {
     register,
@@ -58,39 +65,10 @@ export function UserForm({
     },
   });
 
-  function toggleModule(key: string) {
-    setSelectedModules((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
-  }
-
-  function toggleGroup(group: string, checked: boolean) {
-    const keys = MODULE_ACCESS_OPTIONS.filter((m) => m.group === group).map((m) => m.key);
-    if (checked) {
-      setSelectedModules((prev) => Array.from(new Set([...prev, ...keys])));
-    } else {
-      setSelectedModules((prev) => prev.filter((k) => !keys.includes(k)));
-    }
-  }
-
-  function isGroupAllSelected(group: string) {
-    const keys = MODULE_ACCESS_OPTIONS.filter((m) => m.group === group).map((m) => m.key);
-    return keys.every((k) => selectedModules.includes(k));
-  }
-
-  const groupedOptions = useMemo(
-    () =>
-      MODULE_GROUPS.map((group) => ({
-        group,
-        options: MODULE_ACCESS_OPTIONS.filter((m) => m.group === group),
-      })),
-    [],
-  );
-
   function handleFormSubmit(values: CreateUserValues) {
     onSubmit({
       ...values,
-      moduleAccess: overrideEnabled ? selectedModules : undefined,
+      permissions: overrideEnabled ? permissions : undefined,
       moduleAccessOverridden: overrideEnabled || undefined,
     });
   }
@@ -136,7 +114,7 @@ export function UserForm({
               onClick={() => setOverrideEnabled((v) => !v)}
               className={cn(
                 "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
-                overrideEnabled ? "bg-indigo-600" : "bg-slate-200",
+                overrideEnabled ? "bg-gray-900" : "bg-slate-200",
               )}
             >
               <span
@@ -150,69 +128,13 @@ export function UserForm({
 
           {overrideEnabled && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">
-                  {selectedModules.length} of {MODULE_ACCESS_OPTIONS.length} modules selected
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="text-xs text-indigo-600 hover:underline"
-                    onClick={() => setSelectedModules(MODULE_ACCESS_OPTIONS.map((m) => m.key))}
-                  >
-                    Select all
-                  </button>
-                  <span className="text-slate-300">|</span>
-                  <button
-                    type="button"
-                    className="text-xs text-slate-500 hover:underline"
-                    onClick={() => setSelectedModules([])}
-                  >
-                    Clear all
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {groupedOptions.map(({ group, options }) => (
-                  <div key={group} className="rounded-lg border border-slate-200 bg-white p-3">
-                    <label className="mb-2.5 flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isGroupAllSelected(group)}
-                        onChange={(e) => toggleGroup(group, e.target.checked)}
-                        className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {group}
-                      </span>
-                    </label>
-                    <ul className="space-y-2">
-                      {options.map((mod) => (
-                        <li key={mod.key}>
-                          <label className="flex items-center gap-2.5 cursor-pointer group">
-                            <input
-                              type="checkbox"
-                              checked={selectedModules.includes(mod.key)}
-                              onChange={() => toggleModule(mod.key)}
-                              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <span className="text-sm text-slate-700 group-hover:text-slate-900">
-                              {mod.label}
-                            </span>
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-
-              {selectedModules.length === 0 && (
-                <p className="text-xs text-amber-600">
-                  No modules selected — the user will have no access when override is enabled.
-                </p>
-              )}
+              <p className="text-xs text-slate-500">
+                Select specific permissions for each module. View permission is automatically granted when any other permission is selected.
+              </p>
+              <PermissionMatrixInput
+                value={permissions}
+                onChange={setPermissions}
+              />
             </div>
           )}
 

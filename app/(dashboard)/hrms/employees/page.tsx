@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, EMPLOYMENT_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { employeeService } from "@/services/hr/hr.service";
 import { PermissionGuard } from "@/components/shared/Guards";
+import { Select } from "@/components/ui/Input";
 import type { User } from "@/types";
 
 export default function EmployeesPage() {
@@ -64,7 +65,7 @@ export default function EmployeesPage() {
             <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <Download className="h-4 w-4" /> Export
             </button>
-            <button onClick={() => router.push("/hrms/employees/create")} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+            <button onClick={() => router.push("/hrms/employees/create")} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
               <Plus className="h-4 w-4" /> Add Employee
             </button>
           </div>
@@ -82,10 +83,10 @@ export default function EmployeesPage() {
             className="rounded-lg border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
-        <select
+        <Select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="h-10 py-0 w-auto"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -93,7 +94,7 @@ export default function EmployeesPage() {
           <option value="on_notice">On Notice</option>
           <option value="resigned">Resigned</option>
           <option value="terminated">Terminated</option>
-        </select>
+        </Select>
       </div>
 
       <DataTable<User>

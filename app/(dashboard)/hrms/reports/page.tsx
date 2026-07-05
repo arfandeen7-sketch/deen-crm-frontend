@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { hrReportsService, type HrReportType } from "@/services/hrms/hr-reports.service";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/shared/Guards";
+import { Select } from "@/components/ui/Input";
 
 const REPORT_TYPES: { value: HrReportType; label: string }[] = [
   { value: "attendance", label: "Attendance Report" },
@@ -70,29 +71,29 @@ export default function HrReportsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <select value={reportType} onChange={(e) => setReportType(e.target.value as HrReportType)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+        <Select value={reportType} onChange={(e) => setReportType(e.target.value as HrReportType)} className="h-10 py-0 w-auto font-medium">
           {REPORT_TYPES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-        </select>
-        <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        </Select>
+        <Select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="h-10 py-0 w-auto">
           {Array.from({ length: 12 }, (_, i) => (
             <option key={i + 1} value={i + 1}>{new Date(2024, i).toLocaleString("default", { month: "long" })}</option>
           ))}
-        </select>
-        <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        </Select>
+        <Select value={year} onChange={(e) => setYear(Number(e.target.value))} className="h-10 py-0 w-auto">
           {Array.from({ length: 5 }, (_, i) => {
             const y = now.getFullYear() - 2 + i;
             return <option key={y} value={y}>{y}</option>;
           })}
-        </select>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="From" />
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="To" />
+        </Select>
+        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg px-3 py-2 text-sm h-10 bg-slate-100/50 border-0" placeholder="From" />
+        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg px-3 py-2 text-sm h-10 bg-slate-100/50 border-0" placeholder="To" />
       </div>
 
       {/* Report Content */}
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-gray-900" />
           </div>
         ) : report ? (
           <div>

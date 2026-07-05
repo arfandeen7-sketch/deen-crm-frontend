@@ -54,7 +54,7 @@ export default function MyLeavesPage() {
         title="My Leaves"
         subtitle="Apply for leave and view history"
         actions={
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
             <Plus className="h-4 w-4" /> Apply Leave
           </button>
         }
@@ -112,7 +112,7 @@ export default function MyLeavesPage() {
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
-            <button type="submit" disabled={apply.isPending} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <button type="submit" disabled={apply.isPending} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {apply.isPending ? "Submitting…" : "Submit"}
             </button>
           </div>

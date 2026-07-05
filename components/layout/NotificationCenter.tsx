@@ -60,12 +60,12 @@ export function NotificationCenter() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+        className="relative rounded-2xl border border-zinc-200 bg-white p-3.5 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors shadow-sm cursor-pointer"
         aria-label="Notifications"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5.5 w-5.5" />
         {badgeCount > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm">
+          <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
             {badgeCount > 99 ? "99+" : badgeCount}
           </span>
         )}

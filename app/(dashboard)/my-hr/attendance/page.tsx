@@ -62,7 +62,7 @@ export default function MyAttendancePage() {
               </div>
               <div className="rounded-lg bg-indigo-50 p-3 text-center">
                 <p className="text-2xl font-bold text-indigo-700">{summary.overtimeHours.toFixed(1)}h</p>
-                <p className="text-xs text-indigo-600">Overtime</p>
+                <p className="text-xs text-gray-900">Overtime</p>
               </div>
             </div>
           </div>

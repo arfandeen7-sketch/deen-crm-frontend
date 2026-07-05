@@ -11,6 +11,7 @@ import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/shared/Guards";
+import { Select } from "@/components/ui/Input";
 import type { Payslip } from "@/types";
 
 export default function PayrollManagementPage() {
@@ -67,7 +68,7 @@ export default function PayrollManagementPage() {
       header: "",
       render: (r) => (
         <div className="flex gap-1">
-          <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-indigo-600 hover:bg-indigo-50" title="Download">
+          <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download">
             <Download className="h-4 w-4" />
           </button>
           <button
@@ -93,7 +94,7 @@ export default function PayrollManagementPage() {
             <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
               <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
             </button>
-            <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               Calculate Payslip
             </button>
           </div>
@@ -101,17 +102,17 @@ export default function PayrollManagementPage() {
       />
 
       <div className="flex gap-3">
-        <select value={month} onChange={(e) => { setMonth(Number(e.target.value)); setPage(1); }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <Select value={month} onChange={(e) => { setMonth(Number(e.target.value)); setPage(1); }} className="h-10 py-0 w-auto">
           {Array.from({ length: 12 }, (_, i) => (
             <option key={i + 1} value={i + 1}>{new Date(2024, i).toLocaleString("default", { month: "long" })}</option>
           ))}
-        </select>
-        <select value={year} onChange={(e) => { setYear(Number(e.target.value)); setPage(1); }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        </Select>
+        <Select value={year} onChange={(e) => { setYear(Number(e.target.value)); setPage(1); }} className="h-10 py-0 w-auto">
           {Array.from({ length: 5 }, (_, i) => {
             const y = now.getFullYear() - 2 + i;
             return <option key={y} value={y}>{y}</option>;
           })}
-        </select>
+        </Select>
       </div>
 
       <DataTable<Payslip>

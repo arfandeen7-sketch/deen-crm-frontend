@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Input";
 
 export type EmployeeSortKey = "assigned" | "touchRate" | "conversionRate" | "followUpCompletionRate" | "performanceScore";
 
@@ -48,10 +49,10 @@ export function EmployeeFilterBar({
         />
       </div>
 
-      <select
+      <Select
         value={department}
         onChange={(e) => onDepartmentChange(e.target.value)}
-        className={cn("h-9 rounded-lg border border-slate-300 px-2 text-sm text-slate-700")}
+        className="h-9 py-0 w-auto text-slate-700"
       >
         <option value="">All Departments</option>
         {departments.map((d) => (
@@ -59,12 +60,12 @@ export function EmployeeFilterBar({
             {d}
           </option>
         ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={role}
         onChange={(e) => onRoleChange(e.target.value)}
-        className="h-9 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
+        className="h-9 py-0 w-auto text-slate-700"
       >
         <option value="">All Roles</option>
         {roles.map((r) => (
@@ -72,19 +73,19 @@ export function EmployeeFilterBar({
             {r}
           </option>
         ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={sortKey}
         onChange={(e) => onSortKeyChange(e.target.value as EmployeeSortKey)}
-        className="h-9 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
+        className="h-9 py-0 w-auto text-slate-700"
       >
         {SORT_OPTIONS.map((o) => (
           <option key={o.key} value={o.key}>
             Sort: {o.label}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

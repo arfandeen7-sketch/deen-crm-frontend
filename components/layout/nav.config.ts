@@ -45,6 +45,9 @@ export interface NavGroup {
   items: NavItem[];
   /** Backend module key — if set, group is hidden unless user.modules includes it (prefix matched). */
   moduleKey?: string;
+  isSingular?: boolean;
+  href?: string;
+  section?: "MENU" | "GENERAL";
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -52,15 +55,19 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "dashboard",
     title: "Dashboard",
     icon: LayoutDashboard,
+    href: "/dashboard/overview",
+    isSingular: true,
+    section: "MENU",
     items: [
       { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
     ],
   },
   {
     id: "leads",
-    title: "Lead Management",
+    title: "Leads",
     icon: Users2,
     moduleKey: "leads",
+    section: "MENU",
     items: [
       { label: "All Leads", href: "/leads", icon: Users2 },
       { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost },
@@ -74,9 +81,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "followup",
-    title: "Follow Up Management",
+    title: "Follow Up",
     icon: CalendarClock,
     moduleKey: "followup",
+    section: "MENU",
     items: [
       { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck },
       { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX },
@@ -85,9 +93,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "users",
-    title: "User Management",
+    title: "Users",
     icon: UserCog,
     moduleKey: "users",
+    section: "MENU",
     items: [
       { label: "All Users", href: "/users", icon: UserCog, permission: "users.manage" },
       { label: "Create User", href: "/users/create", icon: UserPlus, permission: "users.manage" },
@@ -95,9 +104,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "hrms",
-    title: "Human Resource Management",
+    title: "Human Resource",
     icon: Briefcase,
     moduleKey: "hrms",
+    section: "MENU",
     items: [
       { label: "HR Dashboard", href: "/hrms/dashboard", icon: LayoutDashboard, permission: "hrms.employees" },
       { label: "Employees", href: "/hrms/employees", icon: Users2, permission: "hrms.employees" },
@@ -112,9 +122,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "brokers",
-    title: "Broker Management",
+    title: "Brokers",
     icon: Handshake,
     moduleKey: "brokers",
+    section: "MENU",
     items: [
       { label: "All Brokers", href: "/brokers", icon: Handshake },
       { label: "Create Broker", href: "/brokers/create", icon: UserPlus, permission: "brokers.create" },
@@ -124,6 +135,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "my-hr",
     title: "My HR",
     icon: User,
+    section: "GENERAL",
     items: [
       { label: "My Attendance", href: "/my-hr/attendance", icon: ClipboardCheck },
       { label: "My Leaves", href: "/my-hr/leaves", icon: CalendarDays },
@@ -136,6 +148,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Dynamic Fields",
     icon: SlidersHorizontal,
     moduleKey: "dynamic-fields",
+    section: "GENERAL",
     items: MANAGED_DYNAMIC_CATEGORIES.map(
       (c): NavItem => ({
         label: c.label,
@@ -149,6 +162,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "settings",
     title: "Settings",
     icon: Settings2,
+    section: "GENERAL",
     items: [
       { label: "Profile", href: "/settings/profile", icon: User },
       { label: "Change Password", href: "/settings/change-password", icon: KeyRound },

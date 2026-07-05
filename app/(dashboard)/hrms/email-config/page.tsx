@@ -96,7 +96,7 @@ export default function EmailConfigPage() {
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <button type="submit" disabled={save.isPending} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <button type="submit" disabled={save.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               <Save className="h-4 w-4" /> {save.isPending ? "Saving…" : "Save Configuration"}
             </button>
           </div>

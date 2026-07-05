@@ -11,6 +11,7 @@ import { useUserMutations } from "@/hooks/useUsers";
 import { createUserSchema, type CreateUserValues, type UpdateUserValues } from "@/schemas/user.schema";
 import { getErrorMessage } from "@/services/api/client";
 import { PermissionGuard } from "@/components/shared/Guards";
+import type { CreateUserInput } from "@/services/users/users.service";
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -20,12 +21,8 @@ export default function CreateUserPage() {
 
   async function onSubmit(values: SubmitValues) {
     try {
-      const { moduleAccess, moduleAccessOverridden, ...rest } = values;
-      const parsed = createUserSchema.parse(rest);
-      await create.mutateAsync({
-        ...parsed,
-        ...(moduleAccessOverridden && { moduleAccess, moduleAccessOverridden }),
-      });
+      const parsed = createUserSchema.parse(values);
+      await create.mutateAsync(parsed as CreateUserInput);
       toast.success("User created");
       router.push("/users");
     } catch (e) {

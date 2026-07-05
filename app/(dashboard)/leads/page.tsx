@@ -135,7 +135,7 @@ export default function LeadsPage() {
       className: "text-right",
       render: (l) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600">
+          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
             <Pencil className="h-4 w-4" />
           </Link>
           <RoleGuard permission="leads.delete">
@@ -196,7 +196,7 @@ export default function LeadsPage() {
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}
-          rowClassName={(l) => (!l.isTouched ? "bg-sky-50/40 hover:bg-sky-50" : "")}
+          rowClassName={(l) => (!l.isTouched ? "bg-sky-50 hover:bg-sky-100" : "")}
         />
         {data && data.total > 0 && (
           <Pagination

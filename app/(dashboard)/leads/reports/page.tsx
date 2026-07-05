@@ -24,6 +24,7 @@ import { DistributionBarChart } from "@/components/charts/DistributionBarChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { FunnelChart } from "@/components/charts/FunnelChart";
 import { LoadingState, EmptyState } from "@/components/ui/States";
+import { Select } from "@/components/ui/Input";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { PermissionGuard } from "@/components/shared/Guards";
 import { KpiCard } from "@/components/reports/KpiCard";
@@ -241,10 +242,10 @@ export default function LeadReportsPage() {
         subtitle="Analytics, performance metrics, and exportable reports"
         actions={
           <>
-            <select
+            <Select
               value={refreshInterval}
               onChange={(e) => setRefreshInterval(Number(e.target.value))}
-              className="h-10 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
+              className="h-10 py-0 w-auto text-slate-700"
               title="Auto-refresh interval"
             >
               {REFRESH_OPTIONS.map((o) => (
@@ -252,7 +253,7 @@ export default function LeadReportsPage() {
                   Auto-refresh: {o.label}
                 </option>
               ))}
-            </select>
+            </Select>
             <Button variant="outline" onClick={handleManualRefresh}>
               <RefreshCw className="h-4 w-4" /> Refresh
             </Button>
@@ -389,7 +390,7 @@ export default function LeadReportsPage() {
                     className={cn(
                       "rounded px-2.5 py-1 text-xs font-medium transition-colors",
                       period === p.key
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-gray-900 text-white"
                         : "text-slate-500 hover:bg-slate-100",
                     )}
                   >

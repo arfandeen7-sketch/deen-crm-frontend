@@ -73,7 +73,7 @@ export default function UsersPage() {
           <Link href={`/users/${u.id}`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
             <Eye className="h-4 w-4" />
           </Link>
-          <Link href={`/users/${u.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600">
+          <Link href={`/users/${u.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
             <Pencil className="h-4 w-4" />
           </Link>
           <button

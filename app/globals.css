@@ -22,8 +22,8 @@
   --color-foreground-disabled: var(--foreground-disabled);
   --color-accent: var(--accent);
   --color-border: var(--border);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
+  --font-secondary: var(--font-poppins);
 }
 
 html,
@@ -34,7 +34,7 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
 }
@@ -62,4 +62,15 @@ h1, h2, h3, h4, h5, h6 {
 /* Reset some inputs and buttons to ensure crisp edges */
 input, button, select, textarea {
   border-radius: 6px;
+}
+
+/* Invisible scrollbar for sidebar nav (functional but hidden) */
+nav.sidebar-nav-scroll {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
+}
+nav.sidebar-nav-scroll::-webkit-scrollbar {
+  display: none !important; /* Chrome/Safari/Opera */
+  width: 0 !important;
+  height: 0 !important;
 }

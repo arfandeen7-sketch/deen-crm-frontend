@@ -2,7 +2,7 @@ import { AlertTriangle, Inbox, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Spinner({ className }: { className?: string }) {
-  return <Loader2 className={cn("h-5 w-5 animate-spin text-indigo-600", className)} />;
+  return <Loader2 className={cn("h-5 w-5 animate-spin text-gray-900", className)} />;
 }
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
@@ -55,7 +55,7 @@ export function ErrorState({
       {onRetry && (
         <button
           onClick={onRetry}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          className="text-sm font-medium text-gray-900 hover:text-indigo-700"
         >
           Try again
         </button>

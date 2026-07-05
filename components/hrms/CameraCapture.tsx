@@ -89,14 +89,14 @@ export function CameraCapture({ onCapture, onClose, title }: CameraCaptureProps)
           {!stream && !captured && (
             <div className="flex flex-col items-center gap-4 py-12">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50">
-                <Camera className="h-10 w-10 text-indigo-600" />
+                <Camera className="h-10 w-10 text-gray-900" />
               </div>
               <p className="text-sm text-slate-600">
                 Camera access is required to record attendance
               </p>
               <button
                 onClick={startCamera}
-                className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+                className="rounded-lg bg-gray-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
               >
                 Open Camera
               </button>
@@ -116,7 +116,7 @@ export function CameraCapture({ onCapture, onClose, title }: CameraCaptureProps)
               </div>
               <button
                 onClick={capturePhoto}
-                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+                className="flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
               >
                 <Camera className="h-4 w-4" />
                 Capture Photo

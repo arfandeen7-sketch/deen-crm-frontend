@@ -13,6 +13,7 @@ export const createUserSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters"),
   phone: optional,
   role,
+  permissions: z.record(z.array(z.enum(["view", "add", "edit", "delete"]))).optional(),
   moduleAccess: z.array(z.string()).optional(),
   moduleAccessOverridden: z.boolean().optional(),
 });
@@ -21,6 +22,7 @@ export const updateUserSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   phone: optional,
   role,
+  permissions: z.record(z.array(z.enum(["view", "add", "edit", "delete"]))).optional(),
   moduleAccess: z.array(z.string()).optional(),
   moduleAccessOverridden: z.boolean().optional(),
 });

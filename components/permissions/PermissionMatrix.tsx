@@ -115,7 +115,7 @@ export function PermissionMatrix({ userId, roleLabel }: PermissionMatrixProps) {
     return (
       <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-6">
         <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-gray-900" />
         </div>
       </div>
     );
@@ -137,7 +137,7 @@ export function PermissionMatrix({ userId, roleLabel }: PermissionMatrixProps) {
           onClick={() => setOverrideEnabled((v) => !v)}
           className={cn(
             "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
-            overrideEnabled ? "bg-indigo-600" : "bg-slate-200",
+            overrideEnabled ? "bg-gray-900" : "bg-slate-200",
           )}
         >
           <span
@@ -191,7 +191,7 @@ export function PermissionMatrix({ userId, roleLabel }: PermissionMatrixProps) {
                                   disabled={!overrideEnabled}
                                   onChange={() => toggleAction(mod.module, action)}
                                   className={cn(
-                                    "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500",
+                                    "h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-indigo-500",
                                     !overrideEnabled && "cursor-not-allowed opacity-50"
                                   )}
                                 />

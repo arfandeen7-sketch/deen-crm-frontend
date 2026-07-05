@@ -14,7 +14,7 @@ const COLORS = [
   "bg-indigo-300 text-indigo-950",
   "bg-indigo-400 text-white",
   "bg-indigo-500 text-white",
-  "bg-indigo-600 text-white",
+  "bg-gray-900 text-white",
   "bg-indigo-700 text-white",
   "bg-indigo-800 text-white",
 ];

@@ -67,7 +67,7 @@ export function DataTable<T>({
                   type="checkbox"
                   checked={allChecked}
                   onChange={(e) => onToggleAll?.(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-gray-500"
                 />
               </th>
             )}
@@ -91,8 +91,8 @@ export function DataTable<T>({
                 onClick={() => onRowClick?.(row)}
                 className={cn(
                   "transition-colors",
-                  onRowClick && "cursor-pointer hover:bg-slate-50",
-                  selected && "bg-indigo-50/50",
+                  onRowClick && "cursor-pointer hover:bg-gray-50",
+                  selected && "bg-gray-50/50",
                   rowClassName?.(row),
                 )}
               >
@@ -102,7 +102,7 @@ export function DataTable<T>({
                       type="checkbox"
                       checked={selected}
                       onChange={() => onToggleRow?.(id)}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-black"
                     />
                   </td>
                 )}

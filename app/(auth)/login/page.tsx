@@ -20,6 +20,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, hydrated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [dateString, setDateString] = useState("-- --, ----");
+  const [timeString, setTimeString] = useState("--:--:--");
 
   const {
     register,
@@ -37,6 +39,33 @@ export default function LoginPage() {
     if (hydrated && isAuthenticated) router.replace("/dashboard/overview");
   }, [hydrated, isAuthenticated, router]);
 
+  useEffect(() => {
+    function updateDateTime() {
+      const locale = typeof navigator !== "undefined" ? navigator.language : undefined;
+      const now = new Date();
+      const formattedDate = new Intl.DateTimeFormat(locale, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+        .format(now)
+        .toUpperCase();
+      const formattedTime = new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(now);
+
+      setDateString(formattedDate);
+      setTimeString(formattedTime);
+    }
+
+    updateDateTime();
+    const intervalId = setInterval(updateDateTime, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   async function onSubmit(values: LoginValues) {
     try {
       await login(values.email, values.password);
@@ -52,7 +81,7 @@ export default function LoginPage() {
       {/* Left Column */}
       <div className="hidden lg:flex w-7/12 flex-col justify-between p-12 lg:pr-8">
         {/* Top: Logo */}
-        <div>
+        <div className="pb-4">
           <Image
             src="/deen-new-logo.png"
             alt="Deen Properties"
@@ -64,16 +93,16 @@ export default function LoginPage() {
         </div>
 
         {/* Middle: Text & Tags */}
-        <div className="max-w-xl">
+        <div className="max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 border border-slate-800 bg-[#0a0a0a]/50 px-3 py-1.5 text-[9px] uppercase tracking-widest text-slate-400">
             <div className="h-1.5 w-1.5 bg-amber-500" />
             <span>Real Estate Management Platform</span>
           </div>
 
-          <h1 className="mt-4 text-[56px] font-light text-white leading-[1.1] tracking-tight">
-            MANAGE PROPERTIES.<br />
-            TRACK LEADS.<br />
-            CLOSE <span className="text-amber-500 font-normal">DEALS.</span>
+          <h1 className="mt-4 text-[44px] font-light text-white leading-[1.1] tracking-tight">
+            MANAGE PROPERTIES.<br/>
+            TRACK <span className="text-amber-500 font-normal">LEADS. </span>
+            CLOSE DEALS.
           </h1>
 
           <p className="mt-8 text-sm text-slate-500 leading-relaxed max-w-lg font-sans">
@@ -97,7 +126,7 @@ export default function LoginPage() {
         </div>
 
         {/* Bottom: Quote and Footer */}
-        <div>
+        <div className="mt-4">
           <div className="border-l-2 border-amber-500/80 pl-6 py-2 mb-16">
             <div className="flex items-center gap-2 text-[10px] font-bold text-amber-500 tracking-widest mb-4 uppercase">
               <Quote className="h-3 w-3" />
@@ -114,7 +143,7 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-4 text-xs text-slate-600 font-mono mt-8">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-800 text-white font-serif italic text-sm">N</div>
-            <span className="tracking-widest text-[10px] uppercase">DEEN PROPERTIES CRM <span className="text-slate-800 mx-2">|</span> Internal Use Only Operational Core</span>
+            <span className="tracking-widest text-[10px] uppercase">DEEN PROPERTIES CRM <span className="text-slate-800 mx-2">|</span> Internal Use Only</span>
           </div>
         </div>
       </div>
@@ -125,11 +154,11 @@ export default function LoginPage() {
         <div className="flex justify-end gap-6 text-[10px] text-slate-500 font-mono tracking-widest uppercase">
           <div className="flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5 text-amber-500/80" />
-            JUL 2, 2026
+            {dateString}
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-3.5 w-3.5 text-amber-500/80" />
-            20:37:24
+            {timeString}
           </div>
         </div>
 
@@ -144,9 +173,9 @@ export default function LoginPage() {
                 <h2 className="text-[22px] font-light text-white mb-2">WELCOME BACK</h2>
                 <p className="text-[11px] text-slate-500 font-sans">Sign in to continue to your account workspace</p>
               </div>
-              <div className="border border-amber-900/50 bg-amber-500/10 px-2.5 py-1 text-[8px] text-amber-500 tracking-widest uppercase">
+              {/* <div className="border border-amber-900/50 bg-amber-500/10 px-2.5 py-1 text-[8px] text-amber-500 tracking-widest uppercase">
                 Secure Access
-              </div>
+              </div> */}
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
@@ -200,7 +229,7 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 className="mt-4 w-full bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isSubmitting ? 'Authenticating...' : 'Authenticate Operator'}
+                {isSubmitting ? 'Logging in...' : 'Login'}
               </button>
             </form>
 
@@ -228,10 +257,10 @@ export default function LoginPage() {
         </div>
 
         {/* Bottom Right: Status */}
-        <div className="flex justify-end items-center gap-2 text-[9px] text-slate-600 font-mono tracking-widest uppercase">
+        {/* <div className="flex justify-end items-center gap-2 text-[9px] text-slate-600 font-mono tracking-widest uppercase">
           <Shield className="h-3 w-3" />
           Secure SSL Multi-Layer Execution Active
-        </div>
+        </div> */}
       </div>
     </div>
   );

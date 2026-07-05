@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Building2, ChevronRight, X } from "lucide-react";
+import { ChevronDown, X, LogOut, KeyRound, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { can } from "@/lib/rbac";
 import { NAV_GROUPS, type NavItem } from "./nav.config";
-import { APP_NAME } from "@/constants";
+import { APP_NAME, ROLE_LABELS } from "@/constants";
+import { UserAvatar } from "@/components/ui/Avatar";
 
 const SIDEBAR_STORAGE_KEY = "deen_sidebar_open";
 
@@ -47,9 +48,22 @@ function groupContainsActive(pathname: string, items: NavItem[]): boolean {
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { role, hasModule } = useAuth();
+  const { role, hasModule, user, logout } = useAuth();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set<string>());
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
 
   // On mount: hydrate from localStorage and ensure the active group is open.
   useEffect(() => {
@@ -116,9 +130,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   }, []);
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 text-zinc-400 border-r border-zinc-800/50">
+    <div className="flex h-full flex-col bg-[#151515] text-zinc-400 border-r border-zinc-800/30 font-sans">
       {/* ── Logo ── */}
-      <div className="flex items-center justify-between gap-2 border-b border-zinc-800/50 px-6 py-5">
+      <div className="flex items-center justify-between gap-2 px-6 py-6">
         <Link
           href="/dashboard/overview"
           className="flex items-center gap-2.5"
@@ -145,84 +159,188 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-zinc-800">
-        {NAV_GROUPS.map((group) => {
-          if (group.moduleKey && !hasModule(group.moduleKey)) return null;
-          const visibleItems = group.items.filter(
-            (item) => !item.permission || can(role, item.permission),
+      <nav className="flex-1 overflow-y-auto px-4 py-2 sidebar-nav-scroll space-y-6">
+        {["MENU", "GENERAL"].map((sectionName) => {
+          const sectionGroups = NAV_GROUPS.filter(
+            (g) => (g.section || "MENU") === sectionName
           );
-          if (visibleItems.length === 0) return null;
 
-          const isOpen = openGroups.has(group.id);
-          const isActive = groupContainsActive(pathname, visibleItems);
-          const GroupIcon = group.icon;
+          // Filter by visibility/permissions
+          const visibleGroups = sectionGroups.filter((group) => {
+            if (group.moduleKey && !hasModule(group.moduleKey)) return false;
+            const visibleItems = group.items.filter(
+              (item) => !item.permission || can(role, item.permission)
+            );
+            return visibleItems.length > 0 || group.isSingular;
+          });
+
+          if (visibleGroups.length === 0) return null;
 
           return (
-            <div key={group.id} className="mb-0.5">
-              {/* Group header */}
-              <button
-                onClick={() => toggleGroup(group.id)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-all duration-200",
-                  isActive
-                    ? "font-medium text-white"
-                    : "font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white",
-                )}
-              >
-                <GroupIcon
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    isActive ? "text-amber-500" : "text-zinc-500",
-                  )}
-                />
-                <span className="flex-1 truncate">{group.title}</span>
-                <ChevronRight
-                  className={cn(
-                    "h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200",
-                    isOpen && "rotate-90",
-                  )}
-                />
-              </button>
+            <div key={sectionName}>
+              <div className="px-3 mb-3 text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">
+                {sectionName}
+              </div>
+              <div className="space-y-1">
+                {visibleGroups.map((group) => {
+                  const visibleItems = group.items.filter(
+                    (item) => !item.permission || can(role, item.permission)
+                  );
 
-              {/* Collapsible items panel */}
-              <div
-                className={cn(
-                  "overflow-hidden transition-all duration-200 ease-in-out",
-                  isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0",
-                )}
-              >
-                <ul className="mb-1 mt-0.5 space-y-0.5">
-                  {visibleItems.map((item) => {
-                    const itemActive = isItemActive(pathname, item.href);
-                    const ItemIcon = item.icon;
+                  const isOpen = openGroups.has(group.id);
+                  const isActive = groupContainsActive(pathname, visibleItems);
+                  const GroupIcon = group.icon;
+
+                  // Singular items like Dashboard (Overview)
+                  if (group.isSingular && group.href) {
+                    const isSingularActive = pathname === group.href || pathname.startsWith(`${group.href}/`);
                     return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={onNavigate}
+                      <Link
+                        key={group.id}
+                        href={group.href}
+                        onClick={onNavigate}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 font-medium",
+                          isSingularActive
+                            ? "bg-[#242424] text-white"
+                            : "text-zinc-400 hover:bg-[#242424]/40 hover:text-white",
+                        )}
+                      >
+                        <GroupIcon
                           className={cn(
-                            "flex items-center gap-3 rounded-md py-1.5 pl-10 pr-3 text-sm transition-all duration-200",
-                            itemActive
-                              ? "bg-amber-500/10 font-medium text-amber-500"
-                              : "font-medium text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300",
+                            "h-5 w-5 shrink-0",
+                            isSingularActive ? "text-white" : "text-zinc-500",
                           )}
-                        >
-                          <ItemIcon className={cn("h-4 w-4 shrink-0", itemActive ? "text-amber-500" : "text-zinc-600")} />
-                          {item.label}
-                        </Link>
-                      </li>
+                        />
+                        <span className="flex-1 truncate">{group.title}</span>
+                      </Link>
                     );
-                  })}
-                </ul>
+                  }
+
+                  return (
+                    <div key={group.id} className="mb-1">
+                      {/* Group header */}
+                      <button
+                        onClick={() => toggleGroup(group.id)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all duration-200 font-medium",
+                          isActive
+                            ? "text-white bg-[#242424]/30"
+                            : "text-zinc-400 hover:bg-[#242424]/40 hover:text-white",
+                        )}
+                      >
+                        <GroupIcon
+                          className={cn(
+                            "h-5 w-5 shrink-0",
+                            isActive ? "text-white" : "text-zinc-500",
+                          )}
+                        />
+                        <span className="flex-1 truncate">{group.title}</span>
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200",
+                            isOpen && "rotate-180 text-zinc-400",
+                          )}
+                        />
+                      </button>
+
+                      {/* Collapsible items panel */}
+                      <div
+                        className={cn(
+                          "overflow-hidden transition-all duration-200 ease-in-out",
+                          isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0",
+                        )}
+                      >
+                        <ul className="mb-1 mt-1 space-y-1 pl-4 border-l border-zinc-800/50 ml-5">
+                          {visibleItems.map((item) => {
+                            const itemActive = isItemActive(pathname, item.href);
+                            const ItemIcon = item.icon;
+                            return (
+                              <li key={item.href}>
+                                <Link
+                                  href={item.href}
+                                  onClick={onNavigate}
+                                  className={cn(
+                                    "flex items-center gap-3 rounded-md py-2 px-3 text-sm transition-all duration-200 font-medium",
+                                    itemActive
+                                      ? "bg-[#242424] text-white"
+                                      : "text-zinc-500 hover:bg-[#242424]/20 hover:text-zinc-300",
+                                  )}
+                                >
+                                  <ItemIcon
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      itemActive ? "text-white" : "text-zinc-600"
+                                    )}
+                                  />
+                                  {item.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
         })}
       </nav>
 
-      {/* ── Footer ── */}
-      <div className="border-t border-zinc-800/50 px-6 py-4 text-[10px] font-medium uppercase tracking-widest text-zinc-600">
-        {APP_NAME}
+      {/* ── Footer with Profile Card ── */}
+      <div className="relative border-t border-zinc-800/40 p-4" ref={profileRef}>
+        {profileOpen && (
+          <div className="absolute bottom-full left-4 right-4 mb-2 z-50 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 py-1 shadow-2xl text-sm">
+            <div className="border-b border-zinc-800 px-4 py-3">
+              <p className="font-semibold text-white">{user?.fullName}</p>
+              <p className="truncate text-xs font-medium text-zinc-400">{user?.email}</p>
+            </div>
+            <Link
+              href="/settings/profile"
+              onClick={() => {
+                setProfileOpen(false);
+                if (onNavigate) onNavigate();
+              }}
+              className="flex items-center gap-2.5 px-4 py-2.5 font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+            >
+              <UserCircle className="h-4 w-4 text-zinc-500" /> Profile
+            </Link>
+            <Link
+              href="/settings/change-password"
+              onClick={() => {
+                setProfileOpen(false);
+                if (onNavigate) onNavigate();
+              }}
+              className="flex items-center gap-2.5 px-4 py-2.5 font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+            >
+              <KeyRound className="h-4 w-4 text-zinc-500" /> Change Password
+            </Link>
+            <button
+              onClick={() => {
+                setProfileOpen(false);
+                logout();
+              }}
+              className="flex w-full items-center gap-2.5 border-t border-zinc-800 px-4 py-2.5 font-medium text-rose-400 hover:bg-rose-950/30 transition-colors cursor-pointer"
+            >
+              <LogOut className="h-4 w-4" /> Logout
+            </button>
+          </div>
+        )}
+
+        <button
+          onClick={() => setProfileOpen((v) => !v)}
+          className="flex w-full items-center gap-3 rounded-xl bg-[#242424] p-3 text-left hover:bg-[#2b2b2b] transition-colors border border-zinc-800/30 cursor-pointer"
+        >
+          <UserAvatar name={user?.fullName} className="ring-2 ring-zinc-800 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">{user?.fullName}</p>
+            <p className="text-[11px] font-medium text-zinc-400 truncate mt-0.5">
+              {user ? ROLE_LABELS[user.role] : ""}
+            </p>
+          </div>
+        </button>
       </div>
     </div>
   );

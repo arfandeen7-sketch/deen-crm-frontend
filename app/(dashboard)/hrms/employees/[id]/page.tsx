@@ -30,7 +30,7 @@ export default function EmployeeDetailPage() {
             <button onClick={() => router.back()} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
-            <button onClick={() => router.push(`/hrms/employees/${id}/edit`)} className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+            <button onClick={() => router.push(`/hrms/employees/${id}/edit`)} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
               <Edit className="h-4 w-4" /> Edit
             </button>
           </div>

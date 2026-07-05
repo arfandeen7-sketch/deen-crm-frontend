@@ -117,7 +117,7 @@
 - New `NavGroup` interface (`id`, `title`, `icon`, `items[]`) replaces the old `NavSection` flat list.
 - Nine top-level collapsible groups: Dashboard, Lead Management, Follow Up Management, Broker Management, HR Management, Attendance Management, User Management, Dynamic Fields, Settings.
 - Each group renders as a button with icon + title + animated chevron (rotates 90° when expanded).
-- Active-route logic: group header brightens and icon turns indigo when any child is active; active sub-item gets `bg-indigo-600` highlight.
+- Active-route logic: group header brightens and icon turns indigo when any child is active; active sub-item gets `bg-gray-900` highlight.
 - `PARENT_EXCLUSIONS` map prevents the parent list route (e.g. "All Leads") from being highlighted when on a named child route (e.g. `/leads/create`, `/leads/untouched`). Covers: leads, brokers, HR candidates, users, attendance.
 - Active group auto-expands on every `pathname` change via a `useEffect`.
 - Collapse/expand state persisted to `localStorage` key `deen_sidebar_open`; hydrated on mount and merged with current active group.

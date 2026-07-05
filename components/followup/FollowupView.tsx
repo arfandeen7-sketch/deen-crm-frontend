@@ -81,7 +81,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-colors",
                 tab.key === variant
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-gray-900 text-white"
                   : "text-slate-600 hover:bg-slate-100",
               )}
             >

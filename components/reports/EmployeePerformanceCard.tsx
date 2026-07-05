@@ -114,7 +114,7 @@ export function EmployeePerformanceCard({
           <p className="text-[11px] text-slate-500">Touch Rate</p>
         </div>
         <div>
-          <p className="text-lg font-semibold text-indigo-600">{item.conversionRate.toFixed(0)}%</p>
+          <p className="text-lg font-semibold text-gray-900">{item.conversionRate.toFixed(0)}%</p>
           <p className="text-[11px] text-slate-500">Conversion</p>
         </div>
         <div>

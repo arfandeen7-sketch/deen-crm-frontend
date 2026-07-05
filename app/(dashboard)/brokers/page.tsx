@@ -94,7 +94,7 @@ export default function BrokersPage() {
             <Eye className="h-4 w-4" />
           </Link>
           <RoleGuard permission="brokers.create">
-            <Link href={`/brokers/${b.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600">
+            <Link href={`/brokers/${b.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
               <Pencil className="h-4 w-4" />
             </Link>
           </RoleGuard>

@@ -11,6 +11,7 @@ import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { PermissionGuard } from "@/components/shared/Guards";
+import { Select } from "@/components/ui/Input";
 import type { LeaveRequest } from "@/types";
 
 export default function LeaveManagementPage() {
@@ -70,19 +71,19 @@ export default function LeaveManagementPage() {
       />
 
       <div className="flex flex-wrap gap-3">
-        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="h-10 py-0 w-auto">
           <option value="">All Status</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
-        </select>
-        <select value={leaveType} onChange={(e) => { setLeaveType(e.target.value); setPage(1); }} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        </Select>
+        <Select value={leaveType} onChange={(e) => { setLeaveType(e.target.value); setPage(1); }} className="h-10 py-0 w-auto">
           <option value="">All Types</option>
           <option value="annual">Annual</option>
           <option value="sick">Sick</option>
           <option value="emergency">Emergency</option>
           <option value="unpaid">Unpaid</option>
-        </select>
+        </Select>
       </div>
 
       <DataTable<LeaveRequest>

@@ -54,7 +54,7 @@ export function BulkActions({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5">
+      <div className="sticky top-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5">
         <span className="text-sm font-medium text-indigo-900">
           {selectedIds.length} selected
         </span>
