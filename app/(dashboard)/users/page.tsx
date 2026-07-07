@@ -54,6 +54,28 @@ export default function UsersPage() {
     { key: "phone", header: "Phone", render: (u) => u.phone ?? "—" },
     { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} /> },
     {
+      key: "team",
+      header: "Manager/Team",
+      render: (u) => {
+        if (u.role === "sales_executive") {
+          return u.manager ? (
+            <span className="text-sm text-slate-700">{u.manager.fullName}</span>
+          ) : (
+            <span className="text-sm text-slate-400">Unassigned</span>
+          );
+        }
+        if (u.role === "sales_manager") {
+          const teamSize = u._count?.teamMembers ?? 0;
+          return teamSize > 0 ? (
+            <span className="text-sm text-slate-700">{teamSize} member{teamSize !== 1 ? 's' : ''}</span>
+          ) : (
+            <span className="text-sm text-slate-400">No team</span>
+          );
+        }
+        return <span className="text-sm text-slate-400">—</span>;
+      },
+    },
+    {
       key: "status",
       header: "Status",
       render: (u) =>

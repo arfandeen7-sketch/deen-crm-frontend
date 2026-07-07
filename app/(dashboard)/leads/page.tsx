@@ -29,7 +29,7 @@ import type { Lead } from "@/types";
 export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { can } = useAuth();
+  const { can, role } = useAuth();
   const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
   const { data, isLoading, isError, refetch } = useLeadsList(filters);
   const { remove } = useLeadMutations();
@@ -192,7 +192,7 @@ export default function LeadsPage() {
           emptyTitle="No leads found"
           emptyMessage="Try adjusting your filters or create a new lead."
           onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={can("leads.assign")}
+          selectable={can("leads.assign") || role === "sales_executive"}
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}

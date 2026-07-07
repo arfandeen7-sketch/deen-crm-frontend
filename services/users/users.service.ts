@@ -7,6 +7,7 @@ export interface CreateUserInput {
   password: string;
   phone?: string | null;
   role: UserRole;
+  managerId?: string | null;
   permissions?: Record<ModuleName, PermissionAction[]>;
   moduleAccess?: string[];
   moduleAccessOverridden?: boolean;
@@ -16,6 +17,7 @@ export interface UpdateUserInput {
   fullName?: string;
   phone?: string | null;
   role?: UserRole;
+  managerId?: string | null;
   permissions?: Record<ModuleName, PermissionAction[]>;
   moduleAccess?: string[];
   moduleAccessOverridden?: boolean;

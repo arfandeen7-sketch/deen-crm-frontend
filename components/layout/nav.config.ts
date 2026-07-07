@@ -29,6 +29,7 @@ import {
   PieChart,
 } from "lucide-react";
 import type { Permission } from "@/lib/rbac";
+import type { UserRole } from "@/types";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
 export interface NavItem {
@@ -48,6 +49,8 @@ export interface NavGroup {
   isSingular?: boolean;
   href?: string;
   section?: "MENU" | "GENERAL";
+  /** If set, group is only visible to these roles. */
+  roles?: UserRole[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -100,6 +103,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Users", href: "/users", icon: UserCog, permission: "users.manage" },
       { label: "Create User", href: "/users/create", icon: UserPlus, permission: "users.manage" },
+      { label: "Teams", href: "/teams", icon: Users2, permission: "users.manage" },
     ],
   },
   {
@@ -129,6 +133,18 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Brokers", href: "/brokers", icon: Handshake },
       { label: "Create Broker", href: "/brokers/create", icon: UserPlus, permission: "brokers.create" },
+    ],
+  },
+  {
+    id: "my-team",
+    title: "My Team",
+    icon: Users2,
+    href: "/my-team",
+    isSingular: true,
+    section: "GENERAL",
+    roles: ["sales_manager"],
+    items: [
+      { label: "My Team", href: "/my-team", icon: Users2 },
     ],
   },
   {

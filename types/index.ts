@@ -56,6 +56,13 @@ export interface User {
   modules?: string[];
   moduleAccess?: string[] | null;
   moduleAccessOverridden?: boolean;
+  // Team hierarchy fields
+  managerId?: string | null;
+  manager?: Pick<User, "id" | "fullName"> | null;
+  teamMembers?: Pick<User, "id" | "fullName" | "email" | "role">[];
+  _count?: {
+    teamMembers?: number;
+  };
   // Employee fields
   employeeId?: string | null;
   department?: string | null;
@@ -588,4 +595,69 @@ export interface AppNotification {
   leadId?: string | null;
   isRead: boolean;
   createdAt: string;
+}
+
+// ── Team Management ──────────────────────────────────────────────────────────
+
+export interface TeamMember {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  role: UserRole;
+  employeeId?: string | null;
+  department?: string | null;
+  designation?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  stats?: {
+    totalLeads: number;
+    activeLeads: number;
+    convertedLeads: number;
+  };
+}
+
+export interface TeamOverview {
+  id: string;
+  fullName: string;
+  email: string;
+  teamMembers: Pick<User, "id" | "fullName" | "email" | "role">[];
+  stats: {
+    teamSize: number;
+    managerLeads: number;
+    teamLeads: number;
+    totalLeads: number;
+  };
+}
+
+export interface AllTeamsResponse {
+  teams: TeamOverview[];
+  unassignedExecutives: Pick<User, "id" | "fullName" | "email">[];
+  totalTeams: number;
+  totalUnassigned: number;
+}
+
+export interface MyTeamResponse {
+  teamMembers: TeamMember[];
+  count: number;
+}
+
+export interface TeamMembersResponse {
+  manager: Pick<User, "id" | "fullName" | "role">;
+  teamMembers: TeamMember[];
+  count: number;
+}
+
+export interface AssignTeamPayload {
+  managerId: string;
+  executiveIds: string[];
+}
+
+export interface ReassignExecutivePayload {
+  executiveId: string;
+  newManagerId: string | null;
+}
+
+export interface UnassignExecutivePayload {
+  executiveId: string;
 }

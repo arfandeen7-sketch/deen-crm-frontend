@@ -15,6 +15,7 @@ import { ROLE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
 import { PermissionMatrixInput } from "@/components/permissions/PermissionMatrixInput";
 import { permissionsService } from "@/services/permissions/permissions.service";
+import { useUsers } from "@/hooks/useUsers";
 import type { User, ModuleName, PermissionAction } from "@/types";
 
 type SubmitValues = CreateUserValues & Pick<UpdateUserValues, "moduleAccess" | "moduleAccessOverridden"> & {
@@ -33,6 +34,7 @@ export function UserForm({
   onCancel?: () => void;
 }) {
   const isEdit = !!initial;
+  const { data: usersData } = useUsers();
 
   const [overrideEnabled, setOverrideEnabled] = useState<boolean>(
     initial?.moduleAccessOverridden ?? false,
@@ -51,6 +53,7 @@ export function UserForm({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<CreateUserValues>({
     resolver: zodResolver(
@@ -62,8 +65,12 @@ export function UserForm({
       password: "",
       phone: initial?.phone ?? "",
       role: initial?.role ?? "sales_executive",
+      managerId: initial?.managerId ?? "",
     },
   });
+
+  const selectedRole = watch("role");
+  const managers = usersData?.users.filter((u) => u.role === "sales_manager" && u.isActive) ?? [];
 
   function handleFormSubmit(values: CreateUserValues) {
     onSubmit({
@@ -97,6 +104,18 @@ export function UserForm({
             ))}
           </Select>
         </Field>
+        {selectedRole === "sales_executive" && (
+          <Field label="Manager" error={errors.managerId?.message}>
+            <Select {...register("managerId")}>
+              <option value="">No Manager (Unassigned)</option>
+              {managers.map((manager) => (
+                <option key={manager.id} value={manager.id}>
+                  {manager.fullName}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
       </div>
 
       <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">

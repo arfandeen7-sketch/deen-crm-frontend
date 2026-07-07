@@ -33,7 +33,7 @@ interface Props {
 
 export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const router = useRouter();
-  const { can } = useAuth();
+  const { can, role } = useAuth();
 
   const [params, setParams] = useState<LeadQueryParams>({
     page: 1,
@@ -158,6 +158,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   };
 
   const columns: Column<Lead>[] = [...baseColumns, ...extraColumns, actionColumn];
+  const allowRowSelection = enableBulk && (can("leads.assign") || role === "sales_executive");
 
   return (
     <div className="space-y-4">
@@ -237,7 +238,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
           emptyTitle={`No ${category} leads`}
           emptyMessage="No leads match the current filters."
           onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={enableBulk && can("leads.assign")}
+          selectable={allowRowSelection}
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}
