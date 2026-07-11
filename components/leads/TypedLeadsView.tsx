@@ -26,6 +26,14 @@ import type { Lead, LeadQueryParams } from "@/types";
 
 type Category = NonNullable<LeadQueryParams["category"]>;
 
+const CATEGORY_PAGE_KEY: Record<Category, string> = {
+  untouched: "untouched_leads",
+  fresh: "fresh_leads",
+  imported: "imported_leads",
+  assigned: "assigned_leads",
+  unassigned: "unassigned_leads",
+};
+
 interface Props {
   category: Category;
   enableBulk?: boolean;
@@ -33,7 +41,8 @@ interface Props {
 
 export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const router = useRouter();
-  const { canAction, canPage, role } = useAuth();
+  const { canAction, canPage } = useAuth();
+  const pageKey = CATEGORY_PAGE_KEY[category];
 
   const [params, setParams] = useState<LeadQueryParams>({
     page: 1,
@@ -158,7 +167,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   };
 
   const columns: Column<Lead>[] = [...baseColumns, ...extraColumns, actionColumn];
-  const allowRowSelection = enableBulk && (canAction("leads", "all_leads", "assign") || role === "sales_executive");
+  const allowRowSelection = enableBulk && canAction("leads", "all_leads", "bulk_assign");
 
   return (
     <div className="space-y-4">
@@ -192,7 +201,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
               <option key={s} value={s}>{s}</option>
             ))}
           </Select>
-          {category === "assigned" && canPage("leads", "all_leads") && (
+          {category === "assigned" && canPage("leads", "assigned_leads") && (
             <Select
               value={params.assignedTo ?? ""}
               onChange={(e) => setParam("assignedTo", e.target.value || undefined)}
@@ -218,9 +227,11 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
             className="h-10 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
           />
         </div>
-        <Button variant="outline" onClick={handleExport} loading={exporting}>
-          <Download className="h-4 w-4" /> Export
-        </Button>
+        {canAction("leads", pageKey, "export") && (
+          <Button variant="outline" onClick={handleExport} loading={exporting}>
+            <Download className="h-4 w-4" /> Export
+          </Button>
+        )}
       </div>
 
       {enableBulk && (

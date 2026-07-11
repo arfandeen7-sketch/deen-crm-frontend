@@ -4,6 +4,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { employeeSchema, type EmployeeFormValues } from "@/schemas/employee.schema";
 import { useDynamicFields } from "@/hooks/useDynamicFields";
+import { CanAccess } from "@/components/shared/Guards";
 
 interface EmployeeFormProps {
   defaultValues?: Partial<EmployeeFormValues>;
@@ -87,16 +88,18 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
             <label className="mb-1 block text-sm font-medium text-slate-700">Joining Date</label>
             <input type="date" {...register("joiningDate")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Employment Status</label>
-            <select {...register("employmentStatus")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-              <option value="active">Active</option>
-              <option value="probation">Probation</option>
-              <option value="on_notice">On Notice</option>
-              <option value="resigned">Resigned</option>
-              <option value="terminated">Terminated</option>
-            </select>
-          </div>
+          <CanAccess module="hrms" page="employees" action="deactivate">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Employment Status</label>
+              <select {...register("employmentStatus")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <option value="active">Active</option>
+                <option value="probation">Probation</option>
+                <option value="on_notice">On Notice</option>
+                <option value="resigned">Resigned</option>
+                <option value="terminated">Terminated</option>
+              </select>
+            </div>
+          </CanAccess>
         </div>
       </fieldset>
 

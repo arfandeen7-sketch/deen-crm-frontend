@@ -11,6 +11,7 @@ import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { AccessGuard } from "@/components/shared/Guards";
+import { useAuth } from "@/hooks/useAuth";
 import { Select } from "@/components/ui/Input";
 import type { LeaveRequest } from "@/types";
 
@@ -19,6 +20,7 @@ export default function LeaveManagementPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [status, setStatus] = useState("");
   const [leaveType, setLeaveType] = useState("");
+  const { canAction } = useAuth();
 
   const { data, isLoading } = useLeaveList({ page, pageSize, status: status || undefined, leaveType: leaveType || undefined });
   const review = useReviewLeave();
@@ -50,12 +52,16 @@ export default function LeaveManagementPage() {
       render: (r) =>
         r.status === "pending" ? (
           <div className="flex gap-1">
-            <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Approve">
-              <Check className="h-4 w-4" />
-            </button>
-            <button onClick={() => handleReject(r.id)} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
-              <X className="h-4 w-4" />
-            </button>
+            {canAction("hrms", "leave", "approve") && (
+              <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Approve">
+                <Check className="h-4 w-4" />
+              </button>
+            )}
+            {canAction("hrms", "leave", "reject") && (
+              <button onClick={() => handleReject(r.id)} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         ) : null,
     },

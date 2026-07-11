@@ -21,6 +21,7 @@ const SIDEBAR_STORAGE_KEY = "deen_sidebar_open";
 const PARENT_EXCLUSIONS: Record<string, string[]> = {
   "/leads": [
     "/leads/untouched",
+    "/leads/fresh",
     "/leads/imported",
     "/leads/assigned",
     "/leads/unassigned",

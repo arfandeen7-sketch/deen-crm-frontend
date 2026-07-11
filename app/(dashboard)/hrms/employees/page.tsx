@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, EMPLOYMENT_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { employeeService } from "@/services/hr/hr.service";
-import { AccessGuard } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { User } from "@/types";
 
@@ -62,12 +62,16 @@ export default function EmployeesPage() {
         subtitle="Manage all employees"
         actions={
           <div className="flex gap-2">
-            <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Download className="h-4 w-4" /> Export
-            </button>
-            <button onClick={() => router.push("/hrms/employees/create")} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-              <Plus className="h-4 w-4" /> Add Employee
-            </button>
+            <CanAccess module="hrms" page="employees" action="export">
+              <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <Download className="h-4 w-4" /> Export
+              </button>
+            </CanAccess>
+            <CanAccess module="hrms" page="employees" action="create">
+              <button onClick={() => router.push("/hrms/employees/create")} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <Plus className="h-4 w-4" /> Add Employee
+              </button>
+            </CanAccess>
           </div>
         }
       />

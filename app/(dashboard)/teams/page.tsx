@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { TeamCard } from "@/components/teams/TeamCard";
 import { UnassignedExecutives } from "@/components/teams/UnassignedExecutives";
 import { AssignTeamModal } from "@/components/teams/AssignTeamModal";
-import { ConfirmModal } from "@/components/ui/Modal";
+import { ManageTeamModal } from "@/components/teams/ManageTeamModal";
 import { AccessGuard } from "@/components/shared/Guards";
+
 import { useAllTeams, useTeamMutations } from "@/hooks/useTeams";
 import { useUsers } from "@/hooks/useUsers";
 import { getErrorMessage } from "@/services/api/client";
@@ -23,7 +24,8 @@ export default function TeamsPage() {
   
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedExecutive, setSelectedExecutive] = useState<Pick<User, "id" | "fullName" | "email"> | null>(null);
-  const [unassignTarget, setUnassignTarget] = useState<{ executiveId: string; executiveName: string } | null>(null);
+  const [manageModalOpen, setManageModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<TeamOverview | null>(null);
 
   const managers = usersData?.users.filter((u) => u.role === "sales_manager" && u.isActive) ?? [];
   const unassignedExecutives = data?.unassignedExecutives ?? [];
@@ -39,20 +41,35 @@ export default function TeamsPage() {
     }
   };
 
-  const handleUnassign = async () => {
-    if (!unassignTarget) return;
-    try {
-      await unassignExecutive.mutateAsync({ executiveId: unassignTarget.executiveId });
-      toast.success("Executive removed from team");
-      setUnassignTarget(null);
-    } catch (e) {
-      toast.error(getErrorMessage(e));
-    }
-  };
-
   const handleAssignClick = (executive?: Pick<User, "id" | "fullName" | "email">) => {
     setSelectedExecutive(executive ?? null);
     setAssignModalOpen(true);
+  };
+
+  const handleManageTeam = (managedTeam: TeamOverview) => {
+    setSelectedTeam(managedTeam);
+    setManageModalOpen(true);
+  };
+
+  const handleSaveTeamChanges = async (removeIds: string[], addIds: string[]) => {
+    if (!selectedTeam) return;
+    try {
+      for (const executiveId of removeIds) {
+        await unassignExecutive.mutateAsync({ executiveId });
+      }
+      if (addIds.length > 0) {
+        await assignExecutives.mutateAsync({ managerId: selectedTeam.id, executiveIds: addIds });
+      }
+      const parts: string[] = [];
+      if (removeIds.length > 0) parts.push(`${removeIds.length} removed`);
+      if (addIds.length > 0) parts.push(`${addIds.length} added`);
+      toast.success(`Team updated — ${parts.join(", ")}`);
+      setManageModalOpen(false);
+      setSelectedTeam(null);
+      refetch();
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
   };
 
   if (isLoading) {
@@ -113,7 +130,7 @@ export default function TeamsPage() {
                 <TeamCard
                   key={team.id}
                   team={team}
-                  onManageTeam={() => handleAssignClick()}
+                  onManageTeam={handleManageTeam}
                 />
               ))}
             </div>
@@ -150,14 +167,16 @@ export default function TeamsPage() {
           preselectedExecutive={selectedExecutive ?? undefined}
         />
 
-        <ConfirmModal
-          open={!!unassignTarget}
-          onClose={() => setUnassignTarget(null)}
-          onConfirm={handleUnassign}
-          title="Remove from team?"
-          message={`${unassignTarget?.executiveName} will be unassigned and can be reassigned to another manager.`}
-          confirmLabel="Remove"
-          loading={unassignExecutive.isPending}
+        <ManageTeamModal
+          open={manageModalOpen}
+          onClose={() => {
+            setManageModalOpen(false);
+            setSelectedTeam(null);
+          }}
+          team={selectedTeam}
+          unassignedExecutives={unassignedExecutives}
+          onSave={handleSaveTeamChanges}
+          loading={assignExecutives.isPending || unassignExecutive.isPending}
         />
       </div>
     </AccessGuard>

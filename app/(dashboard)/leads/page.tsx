@@ -29,7 +29,7 @@ import type { Lead } from "@/types";
 export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { canAction, role } = useAuth();
+  const { canAction } = useAuth();
   const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
   const { data, isLoading, isError, refetch } = useLeadsList(filters);
   const { remove } = useLeadMutations();
@@ -160,17 +160,21 @@ export default function LeadsPage() {
         subtitle={data ? `${data.total} total leads` : "Manage and track your leads"}
         actions={
           <>
-            <Button variant="outline" onClick={handleExport} loading={exporting}>
-              <Download className="h-4 w-4" /> Export
-            </Button>
+            <CanAccess module="leads" page="all_leads" action="export">
+              <Button variant="outline" onClick={handleExport} loading={exporting}>
+                <Download className="h-4 w-4" /> Export
+              </Button>
+            </CanAccess>
             <CanAccess module="leads" page="all_leads" action="import">
               <Button variant="outline" onClick={() => router.push("/leads/import")}>
                 <Upload className="h-4 w-4" /> Import
               </Button>
             </CanAccess>
-            <Button onClick={() => router.push("/leads/create")}>
-              <Plus className="h-4 w-4" /> Create Lead
-            </Button>
+            <CanAccess module="leads" page="all_leads" action="create">
+              <Button onClick={() => router.push("/leads/create")}>
+                <Plus className="h-4 w-4" /> Create Lead
+              </Button>
+            </CanAccess>
           </>
         }
       />
@@ -192,7 +196,7 @@ export default function LeadsPage() {
           emptyTitle="No leads found"
           emptyMessage="Try adjusting your filters or create a new lead."
           onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={canAction("leads", "all_leads", "assign") || role === "sales_executive"}
+          selectable={canAction("leads", "all_leads", "bulk_assign")}
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}

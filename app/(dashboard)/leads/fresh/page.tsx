@@ -5,16 +5,16 @@ import { LeadTabs } from "@/components/leads/LeadTabs";
 import { TypedLeadsView } from "@/components/leads/TypedLeadsView";
 import { AccessGuard } from "@/components/shared/Guards";
 
-export default function UnassignedLeadsPage() {
+export default function FreshLeadsPage() {
   return (
-    <AccessGuard module="leads" page="unassigned_leads">
+    <AccessGuard module="leads" page="fresh_leads">
       <div className="space-y-5">
         <LeadTabs />
         <PageHeader
-          title="Non Assigned Leads"
-          subtitle="Leads without an assigned sales representative"
+          title="Fresh Leads"
+          subtitle="Newly created leads with no prior activity"
         />
-        <TypedLeadsView category="unassigned" enableBulk />
+        <TypedLeadsView category="fresh" enableBulk />
       </div>
     </AccessGuard>
   );

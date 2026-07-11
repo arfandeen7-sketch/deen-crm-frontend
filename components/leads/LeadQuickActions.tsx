@@ -12,6 +12,7 @@ import {
   UserCheck,
   Phone,
   MessageCircle,
+  Mail,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -146,21 +147,35 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               <UserCheck className="h-4 w-4 text-slate-400" /> Assign Lead
             </button>
           )}
-          <div className="my-1 border-t border-slate-100" />
-          <a
-            href={`tel:${lead.mobileNumber}`}
-            className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-          >
-            <Phone className="h-4 w-4 text-emerald-500" /> Call Lead
-          </a>
-          <a
-            href={`https://wa.me/${normalizedPhone}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-          >
-            <MessageCircle className="h-4 w-4 text-emerald-500" /> WhatsApp
-          </a>
+          {(canAction("leads", "all_leads", "call") || canAction("leads", "all_leads", "whatsapp") || canAction("leads", "all_leads", "email")) && (
+            <div className="my-1 border-t border-slate-100" />
+          )}
+          {canAction("leads", "all_leads", "call") && (
+            <a
+              href={`tel:${lead.mobileNumber}`}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <Phone className="h-4 w-4 text-emerald-500" /> Call Lead
+            </a>
+          )}
+          {canAction("leads", "all_leads", "whatsapp") && (
+            <a
+              href={`https://wa.me/${normalizedPhone}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <MessageCircle className="h-4 w-4 text-emerald-500" /> WhatsApp
+            </a>
+          )}
+          {canAction("leads", "all_leads", "email") && lead.email && (
+            <a
+              href={`mailto:${lead.email}`}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <Mail className="h-4 w-4 text-sky-500" /> Email Lead
+            </a>
+          )}
         </div>
       )}
 

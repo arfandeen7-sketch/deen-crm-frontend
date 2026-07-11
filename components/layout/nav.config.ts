@@ -80,9 +80,10 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Leads", href: "/leads", icon: Users2, navAccess: { module: "leads", page: "all_leads" } },
       { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost, navAccess: { module: "leads", page: "untouched_leads" } },
-      { label: "Imported Leads", href: "/leads/imported", icon: FileDown, navAccess: { module: "leads", page: "all_leads" } },
+      { label: "Fresh Leads", href: "/leads/fresh", icon: UserPlus, navAccess: { module: "leads", page: "fresh_leads" } },
+      { label: "Imported Leads", href: "/leads/imported", icon: FileDown, navAccess: { module: "leads", page: "imported_leads" } },
       { label: "Assigned Leads", href: "/leads/assigned", icon: UserCheck, navAccess: { module: "leads", page: "assigned_leads" } },
-      { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX, navAccess: { module: "leads", page: "all_leads" } },
+      { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX, navAccess: { module: "leads", page: "unassigned_leads" } },
       { label: "Create Lead", href: "/leads/create", icon: UserPlus, navAccess: { module: "leads", page: "all_leads", action: "create" } },
       { label: "Import Leads", href: "/leads/import", icon: Upload, navAccess: { module: "leads", page: "all_leads", action: "import" } },
       { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, navAccess: { module: "lead_reports" } },

@@ -410,7 +410,13 @@ export interface Paginated<T> {
 }
 
 export interface ApiError {
-  error: string;
+  error?: string;
+  message?: string;
+  required?: {
+    module?: string;
+    page?: string;
+    action?: string;
+  };
 }
 
 // Dashboard responses

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useState, useCallback, useEffect } from "react";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldCheck } from "lucide-react";
 import {
@@ -43,6 +43,8 @@ export function UserForm({
     register,
     handleSubmit,
     watch,
+    control,
+    reset,
     formState: { errors },
   } = useForm<CreateUserValues>({
     resolver: zodResolver(
@@ -57,6 +59,20 @@ export function UserForm({
       managerId: initial?.managerId ?? "",
     },
   });
+
+  // Re-sync form values when the user record changes (handles React Query
+  // returning cached data first and fresh data later).
+  useEffect(() => {
+    if (!initial) return;
+    reset({
+      fullName: initial.fullName ?? "",
+      email: initial.email ?? "",
+      password: "",
+      phone: initial.phone ?? "",
+      role: initial.role ?? "sales_executive",
+      managerId: initial.managerId ?? "",
+    });
+  }, [initial?.id, reset]);
 
   const selectedRole = watch("role");
   const managers =
@@ -93,24 +109,44 @@ export function UserForm({
           <Input {...register("phone")} />
         </Field>
         <Field label="Role" required error={errors.role?.message}>
-          <Select {...register("role")}>
-            {Object.entries(ROLE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+                name={field.name}
+              >
+                {Object.entries(ROLE_LABELS).map(([v, label]) => (
+                  <option key={v} value={v}>{label}</option>
+                ))}
+              </Select>
+            )}
+          />
         </Field>
         {selectedRole === "sales_executive" && (
           <Field label="Manager" error={errors.managerId?.message}>
-            <Select {...register("managerId")}>
-              <option value="">No Manager (Unassigned)</option>
-              {managers.map((manager) => (
-                <option key={manager.id} value={manager.id}>
-                  {manager.fullName}
-                </option>
-              ))}
-            </Select>
+            <Controller
+              name="managerId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  key={`manager-select-${managers.length}`}
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || undefined)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  placeholder="Select manager…"
+                >
+                  <option value="">No Manager (Unassigned)</option>
+                  {managers.map((manager) => (
+                    <option key={manager.id} value={manager.id}>{manager.fullName}</option>
+                  ))}
+                </Select>
+              )}
+            />
           </Field>
         )}
       </div>

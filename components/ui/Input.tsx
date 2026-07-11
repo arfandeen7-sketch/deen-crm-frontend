@@ -120,9 +120,16 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     
     parseChildren(children);
 
-    // Determine active display label
+    // Determine active display label.
+    // When internalValue is non-empty but the matching option hasn't loaded yet
+    // (e.g. async manager list), fall back to placeholder rather than options[0]
+    // so we never show a misleading "first option" label.
     const selectedOption = options.find((opt) => opt.value === internalValue);
-    const displayLabel = selectedOption ? selectedOption.label : (options[0]?.label || placeholder || "");
+    const displayLabel = selectedOption
+      ? selectedOption.label
+      : internalValue
+        ? (placeholder ?? "")
+        : (options[0]?.label || placeholder || "");
 
     const handleSelectOption = (optValue: string) => {
       setInternalValue(optValue);

@@ -40,6 +40,7 @@ export function useTeamMutations() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["teams"] });
     qc.invalidateQueries({ queryKey: ["users"] });
+    qc.invalidateQueries({ queryKey: ["dashboard"] });
   };
 
   const assignExecutives = useMutation({

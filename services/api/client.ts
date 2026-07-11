@@ -41,18 +41,41 @@ api.interceptors.response.use(
     if (status === 403 && typeof window !== "undefined") {
       const { toast } = await import("sonner");
       window.dispatchEvent(new CustomEvent("permissions:refetch"));
-      toast.error("You do not have permission to perform this action");
+      const data = error.response?.data as ApiError | undefined;
+      toast.error(buildPermissionMessage(data?.required));
     }
     
     return Promise.reject(error);
   },
 );
 
+/** Normalise a permission key (snake_case) into a readable label. */
+function humanizeKey(key: string): string {
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Generate a user-friendly 403 message from the backend's required field. */
+function buildPermissionMessage(
+  required: ApiError["required"],
+): string {
+  if (!required?.module) return "You do not have permission to perform this action";
+  if (required.action && required.page) {
+    return `You don't have permission to ${humanizeKey(required.action)} ${humanizeKey(required.page)}`;
+  }
+  if (required.action) {
+    return `You don't have permission to ${humanizeKey(required.action)} in ${humanizeKey(required.module)}`;
+  }
+  if (required.page) {
+    return `You don't have permission to access ${humanizeKey(required.page)}`;
+  }
+  return `You don't have permission to access ${humanizeKey(required.module)}`;
+}
+
 /** Normalise an axios error into a human-readable message. */
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ApiError | undefined;
-    return data?.error ?? error.message ?? "Request failed";
+    return data?.error ?? data?.message ?? error.message ?? "Request failed";
   }
   if (error instanceof Error) return error.message;
   return "Something went wrong";

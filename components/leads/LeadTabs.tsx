@@ -3,22 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/contexts/PermissionContext";
 
-const TABS = [
-  { label: "All Leads", href: "/leads" },
-  { label: "Untouched", href: "/leads/untouched" },
-  { label: "Imported", href: "/leads/imported" },
-  { label: "Assigned", href: "/leads/assigned" },
-  { label: "Non Assigned", href: "/leads/unassigned" },
-  { label: "Reports", href: "/leads/reports" },
-];
+const ALL_TABS = [
+  { label: "All Leads",   href: "/leads",             module: "leads",        page: "all_leads" },
+  { label: "Untouched",   href: "/leads/untouched",   module: "leads",        page: "untouched_leads" },
+  { label: "Fresh",       href: "/leads/fresh",       module: "leads",        page: "fresh_leads" },
+  { label: "Imported",    href: "/leads/imported",    module: "leads",        page: "imported_leads" },
+  { label: "Assigned",    href: "/leads/assigned",    module: "leads",        page: "assigned_leads" },
+  { label: "Non Assigned", href: "/leads/unassigned", module: "leads",        page: "unassigned_leads" },
+  { label: "Reports",     href: "/leads/reports",     module: "lead_reports", page: undefined },
+] as const;
 
 export function LeadTabs() {
   const pathname = usePathname();
+  const { canPage, canModule } = usePermissions();
+
+  const visibleTabs = ALL_TABS.filter((tab) =>
+    tab.page ? canPage(tab.module as string, tab.page) : canModule(tab.module as string),
+  );
 
   return (
     <div className="flex overflow-x-auto border-b border-slate-200">
-      {TABS.map((tab) => (
+      {visibleTabs.map((tab) => (
         <Link
           key={tab.href}
           href={tab.href}
