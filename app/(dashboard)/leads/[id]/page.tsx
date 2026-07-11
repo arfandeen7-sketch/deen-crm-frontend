@@ -26,7 +26,7 @@ import { ConfirmModal } from "@/components/ui/Modal";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { StatusBadge, PriorityBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { RoleGuard } from "@/components/shared/Guards";
+import { CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useLeadActivity } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
@@ -88,11 +88,11 @@ export default function LeadDetailPage() {
             <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>
               <Pencil className="h-4 w-4" /> Edit
             </Button>
-            <RoleGuard permission="leads.delete">
+            <CanAccess module="leads" page="all_leads" action="delete">
               <Button variant="danger" onClick={() => setDeleteOpen(true)}>
                 <Trash2 className="h-4 w-4" /> Delete
               </Button>
-            </RoleGuard>
+            </CanAccess>
           </>
         }
       />

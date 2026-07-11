@@ -1,5 +1,5 @@
 import { getData, patchData, postData, putData } from "@/services/api/client";
-import type { User, UserRole, UsersListResponse, ModuleName, PermissionAction } from "@/types";
+import type { User, UserRole, UsersListResponse } from "@/types";
 
 export interface CreateUserInput {
   fullName: string;
@@ -8,9 +8,6 @@ export interface CreateUserInput {
   phone?: string | null;
   role: UserRole;
   managerId?: string | null;
-  permissions?: Record<ModuleName, PermissionAction[]>;
-  moduleAccess?: string[];
-  moduleAccessOverridden?: boolean;
 }
 
 export interface UpdateUserInput {
@@ -18,9 +15,6 @@ export interface UpdateUserInput {
   phone?: string | null;
   role?: UserRole;
   managerId?: string | null;
-  permissions?: Record<ModuleName, PermissionAction[]>;
-  moduleAccess?: string[];
-  moduleAccessOverridden?: boolean;
 }
 
 export interface AssignableUser {

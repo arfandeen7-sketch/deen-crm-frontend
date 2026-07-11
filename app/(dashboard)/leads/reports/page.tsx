@@ -26,7 +26,7 @@ import { FunnelChart } from "@/components/charts/FunnelChart";
 import { LoadingState, EmptyState } from "@/components/ui/States";
 import { Select } from "@/components/ui/Input";
 import { LeadTabs } from "@/components/leads/LeadTabs";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { KpiCard } from "@/components/reports/KpiCard";
 import { EmployeePerformanceCard } from "@/components/reports/EmployeePerformanceCard";
 import { EmployeeHistoricalReportModal } from "@/components/reports/EmployeeHistoricalReportModal";
@@ -233,7 +233,7 @@ export default function LeadReportsPage() {
   }, [employees.data, prevUserPerf.data]);
 
   return (
-    <PermissionGuard permission="leads.reports">
+    <AccessGuard module="lead_reports">
     <div className="space-y-6">
       <LeadTabs />
 
@@ -512,6 +512,6 @@ export default function LeadReportsPage() {
         employee={reportEmployee ?? undefined}
       />
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

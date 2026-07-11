@@ -33,7 +33,7 @@ interface Props {
 
 export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const router = useRouter();
-  const { can, role } = useAuth();
+  const { canAction, canPage, role } = useAuth();
 
   const [params, setParams] = useState<LeadQueryParams>({
     page: 1,
@@ -158,7 +158,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   };
 
   const columns: Column<Lead>[] = [...baseColumns, ...extraColumns, actionColumn];
-  const allowRowSelection = enableBulk && (can("leads.assign") || role === "sales_executive");
+  const allowRowSelection = enableBulk && (canAction("leads", "all_leads", "assign") || role === "sales_executive");
 
   return (
     <div className="space-y-4">
@@ -192,7 +192,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
               <option key={s} value={s}>{s}</option>
             ))}
           </Select>
-          {category === "assigned" && can("leads.view.all") && (
+          {category === "assigned" && canPage("leads", "all_leads") && (
             <Select
               value={params.assignedTo ?? ""}
               onChange={(e) => setParam("assignedTo", e.target.value || undefined)}

@@ -17,7 +17,7 @@ import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
-import { RoleGuard } from "@/components/shared/Guards";
+import { CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,7 +29,7 @@ import type { Lead } from "@/types";
 export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { can, role } = useAuth();
+  const { canAction, role } = useAuth();
   const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
   const { data, isLoading, isError, refetch } = useLeadsList(filters);
   const { remove } = useLeadMutations();
@@ -138,14 +138,14 @@ export default function LeadsPage() {
           <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
             <Pencil className="h-4 w-4" />
           </Link>
-          <RoleGuard permission="leads.delete">
+          <CanAccess module="leads" page="all_leads" action="delete">
             <button
               onClick={() => setDeleteId(l.id)}
               className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
             >
               <Trash2 className="h-4 w-4" />
             </button>
-          </RoleGuard>
+          </CanAccess>
           <LeadQuickActions lead={l} />
         </div>
       ),
@@ -163,11 +163,11 @@ export default function LeadsPage() {
             <Button variant="outline" onClick={handleExport} loading={exporting}>
               <Download className="h-4 w-4" /> Export
             </Button>
-            <RoleGuard permission="leads.import">
+            <CanAccess module="leads" page="all_leads" action="import">
               <Button variant="outline" onClick={() => router.push("/leads/import")}>
                 <Upload className="h-4 w-4" /> Import
               </Button>
-            </RoleGuard>
+            </CanAccess>
             <Button onClick={() => router.push("/leads/create")}>
               <Plus className="h-4 w-4" /> Create Lead
             </Button>
@@ -192,7 +192,7 @@ export default function LeadsPage() {
           emptyTitle="No leads found"
           emptyMessage="Try adjusting your filters or create a new lead."
           onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={can("leads.assign") || role === "sales_executive"}
+          selectable={canAction("leads", "all_leads", "assign") || role === "sales_executive"}
           selectedIds={selected}
           onToggleRow={toggleRow}
           onToggleAll={toggleAll}

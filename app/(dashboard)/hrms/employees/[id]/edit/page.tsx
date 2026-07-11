@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmployeeForm } from "@/components/hrms/EmployeeForm";
 import { useEmployee, useEmployeeMutations } from "@/hooks/useHrms";
 import type { EmployeeFormValues } from "@/schemas/employee.schema";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 
 export default function EditEmployeePage() {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +33,7 @@ export default function EditEmployeePage() {
   };
 
   return (
-    <PermissionGuard permission="hrms.employees">
+    <AccessGuard module="hrms" page="employees" action="edit">
     <div className="space-y-6">
       <PageHeader title="Edit Employee" subtitle={employee.fullName} />
       <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -55,6 +55,6 @@ export default function EditEmployeePage() {
         />
       </div>
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

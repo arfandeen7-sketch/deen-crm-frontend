@@ -30,7 +30,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<ActiveModal>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const { can } = useAuth();
+  const { canAction } = useAuth();
   const { update, bulkAssign } = useLeadMutations();
   const { users } = useAssignableUsers();
   const statuses = useFieldOptions("lead_status");
@@ -138,7 +138,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
           >
             <Calendar className="h-4 w-4 text-slate-400" /> Schedule Follow-Up
           </button>
-          {can("leads.assign") && (
+          {canAction("leads", "all_leads", "assign") && (
             <button
               onClick={() => openModal("assign")}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"

@@ -3,29 +3,40 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { can, type Permission } from "@/lib/rbac";
+import { usePermissions } from "@/contexts/PermissionContext";
 import { LoadingState } from "@/components/ui/States";
 
 /**
- * Page-level guard that redirects to /dashboard/overview when the user lacks
- * the required permission. Use this as a wrapper around page content to
- * prevent direct URL access by unauthorized roles.
+ * Page-level guard using the new 3-level permission system.
+ * Redirects to /dashboard/overview when the user lacks module/page/action access.
  */
-export function PermissionGuard({
-  permission,
+export function AccessGuard({
+  module,
+  page,
+  action,
   children,
 }: {
-  permission: Permission;
+  module: string;
+  page?: string;
+  action?: string;
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { role, hydrated } = useAuth();
+  const { hydrated } = useAuth();
+  const { canModule, canPage, canAction } = usePermissions();
+
+  function hasAccess(): boolean {
+    if (action && page) return canAction(module, page, action);
+    if (page) return canPage(module, page);
+    return canModule(module);
+  }
 
   useEffect(() => {
-    if (hydrated && !can(role, permission)) {
+    if (hydrated && !hasAccess()) {
       router.replace("/dashboard/overview");
     }
-  }, [hydrated, role, router, permission]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, module, page, action]);
 
   if (!hydrated) {
     return (
@@ -35,9 +46,37 @@ export function PermissionGuard({
     );
   }
 
-  if (!can(role, permission)) return null;
+  if (!hasAccess()) return null;
 
   return <>{children}</>;
+}
+
+/**
+ * Inline conditional: renders children only when the user has the given access.
+ * Does not redirect; use AccessGuard for page-level protection.
+ */
+export function CanAccess({
+  module,
+  page,
+  action,
+  fallback = null,
+  children,
+}: {
+  module: string;
+  page?: string;
+  action?: string;
+  fallback?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const { canModule, canPage, canAction } = usePermissions();
+
+  function hasAccess(): boolean {
+    if (action && page) return canAction(module, page, action);
+    if (page) return canPage(module, page);
+    return canModule(module);
+  }
+
+  return hasAccess() ? <>{children}</> : <>{fallback}</>;
 }
 
 /** Blocks rendering until auth is hydrated; redirects to /login if unauthenticated. */
@@ -64,17 +103,39 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/** Renders children only if the current user has the given permission. */
+/**
+ * @deprecated Use AccessGuard instead.
+ * Kept for compatibility; internally delegates to AccessGuard with module-level check.
+ */
+export function PermissionGuard({
+  module,
+  children,
+}: {
+  module: string;
+  children: React.ReactNode;
+}) {
+  return <AccessGuard module={module}>{children}</AccessGuard>;
+}
+
+/**
+ * @deprecated Use CanAccess instead.
+ */
 export function RoleGuard({
-  permission,
+  module,
+  page,
+  action,
   fallback = null,
   children,
 }: {
-  permission: Permission;
+  module: string;
+  page?: string;
+  action?: string;
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const { role } = useAuth();
-  if (!can(role, permission)) return <>{fallback}</>;
-  return <>{children}</>;
+  return (
+    <CanAccess module={module} page={page} action={action} fallback={fallback}>
+      {children}
+    </CanAccess>
+  );
 }

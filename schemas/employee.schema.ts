@@ -14,6 +14,7 @@ export const employeeSchema = z.object({
   bankName: z.string().optional().nullable(),
   bankAccountNumber: z.string().optional().nullable(),
   bankIban: z.string().optional().nullable(),
+  employmentStatus: z.enum(["active", "probation", "on_notice", "resigned", "terminated"]).optional(),
 });
 
 export type EmployeeFormValues = z.infer<typeof employeeSchema>;

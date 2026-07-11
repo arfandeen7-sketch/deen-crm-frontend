@@ -7,9 +7,9 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, X, LogOut, KeyRound, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { can } from "@/lib/rbac";
-import { NAV_GROUPS, type NavItem } from "./nav.config";
-import { APP_NAME, ROLE_LABELS } from "@/constants";
+import { usePermissions } from "@/contexts/PermissionContext";
+import { NAV_GROUPS, type NavItem, type NavAccess } from "./nav.config";
+import { ROLE_LABELS } from "@/constants";
 import { UserAvatar } from "@/components/ui/Avatar";
 
 const SIDEBAR_STORAGE_KEY = "deen_sidebar_open";
@@ -46,9 +46,23 @@ function groupContainsActive(pathname: string, items: NavItem[]): boolean {
   return items.some((item) => isItemActive(pathname, item.href));
 }
 
+function checkNavAccess(
+  canModule: (m: string) => boolean,
+  canPage: (m: string, p: string) => boolean,
+  canAction: (m: string, p: string, a: string) => boolean,
+  navAccess: NavAccess | undefined,
+): boolean {
+  if (!navAccess) return true;
+  const { module, page, action } = navAccess;
+  if (action && page) return canAction(module, page, action);
+  if (page) return canPage(module, page);
+  return canModule(module);
+}
+
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { role, hasModule, user, logout } = useAuth();
+  const { role, user, logout } = useAuth();
+  const { canModule, canPage, canAction } = usePermissions();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set<string>());
   const [profileOpen, setProfileOpen] = useState(false);
@@ -77,7 +91,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
     const activeIds = NAV_GROUPS.filter((g) => {
       const visible = g.items.filter(
-        (i) => !i.permission || can(role, i.permission),
+        (i) => checkNavAccess(canModule, canPage, canAction, i.navAccess),
       );
       return visible.length > 0 && groupContainsActive(pathname, visible);
     }).map((g) => g.id);
@@ -93,7 +107,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       const next = new Set(prev);
       NAV_GROUPS.forEach((g) => {
         const visible = g.items.filter(
-          (i) => !i.permission || can(role, i.permission),
+          (i) => checkNavAccess(canModule, canPage, canAction, i.navAccess),
         );
         if (
           visible.length > 0 &&
@@ -106,7 +120,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       });
       return changed ? next : prev;
     });
-  }, [pathname, role]);
+  }, [pathname, canModule, canPage, canAction]);
 
   // Persist open-group state to localStorage.
   useEffect(() => {
@@ -168,9 +182,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           // Filter by visibility/permissions
           const visibleGroups = sectionGroups.filter((group) => {
             if (group.roles && role && !group.roles.includes(role)) return false;
-            if (group.moduleKey && !hasModule(group.moduleKey)) return false;
+            if (group.moduleKey && !canModule(group.moduleKey)) return false;
             const visibleItems = group.items.filter(
-              (item) => !item.permission || can(role, item.permission)
+              (item) => checkNavAccess(canModule, canPage, canAction, item.navAccess)
             );
             return visibleItems.length > 0 || group.isSingular;
           });
@@ -185,7 +199,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <div className="space-y-1">
                 {visibleGroups.map((group) => {
                   const visibleItems = group.items.filter(
-                    (item) => !item.permission || can(role, item.permission)
+                    (item) => checkNavAccess(canModule, canPage, canAction, item.navAccess)
                   );
 
                   const isOpen = openGroups.has(group.id);

@@ -2,15 +2,17 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "@/types";
+import type { User, AccessMap } from "@/types";
 import { TOKEN_STORAGE_KEY } from "@/constants";
 
 interface AuthState {
   token: string | null;
   user: User | null;
+  access: AccessMap | null;
   hydrated: boolean;
   setAuth: (token: string, user: User) => void;
   setUser: (user: User) => void;
+  setAccess: (access: AccessMap) => void;
   clear: () => void;
   setHydrated: (v: boolean) => void;
 }
@@ -20,14 +22,17 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
+      access: null,
       hydrated: false,
       setAuth: (token, user) => set({ token, user }),
       setUser: (user) => set({ user }),
-      clear: () => set({ token: null, user: null }),
+      setAccess: (access) => set({ access }),
+      clear: () => set({ token: null, user: null, access: null }),
       setHydrated: (v) => set({ hydrated: v }),
     }),
     {
       name: TOKEN_STORAGE_KEY,
+      partialize: (state) => ({ token: state.token, user: state.user }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },

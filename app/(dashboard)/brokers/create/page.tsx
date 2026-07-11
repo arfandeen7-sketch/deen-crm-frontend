@@ -10,7 +10,7 @@ import { BrokerForm } from "@/components/forms/BrokerForm";
 import { useBrokerMutations } from "@/hooks/useBrokers";
 import { brokerSchema, type BrokerFormValues } from "@/schemas/broker.schema";
 import { getErrorMessage } from "@/services/api/client";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 
 export default function CreateBrokerPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function CreateBrokerPage() {
   }
 
   return (
-    <PermissionGuard permission="brokers.create">
+    <AccessGuard module="brokers" page="all_brokers" action="create">
     <div className="space-y-5">
       <Link href="/brokers" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to brokers
@@ -40,6 +40,6 @@ export default function CreateBrokerPage() {
         </CardBody>
       </Card>
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

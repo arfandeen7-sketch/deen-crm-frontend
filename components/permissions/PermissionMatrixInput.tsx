@@ -1,118 +1,320 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ModuleName, PermissionAction } from "@/types";
+import { permissionsService } from "@/services/permissions/permissions.service";
+import {
+  buildGrantsFromSelection,
+  initSelectionFromGrants,
+  type PermissionSelection,
+} from "@/lib/buildGrants";
+import type { GrantEntry, RegistryModule, RegistryPage } from "@/types";
 
-const MODULE_METADATA = [
-  { module: "leads" as ModuleName, label: "Leads", category: "Sales", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-  { module: "leads_reports" as ModuleName, label: "Leads Reports", category: "Sales", actions: ["view", "edit"] as PermissionAction[] },
-  { module: "followup" as ModuleName, label: "Follow-up", category: "Sales", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-  { module: "brokers" as ModuleName, label: "Brokers", category: "Sales", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-  { module: "hrms_attendance" as ModuleName, label: "Attendance", category: "HRMS", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-  { module: "hrms_leave" as ModuleName, label: "Leave Management", category: "HRMS", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-  { module: "hrms_payroll" as ModuleName, label: "Payroll", category: "HRMS", actions: ["view", "add", "edit"] as PermissionAction[] },
-  { module: "hrms_employees" as ModuleName, label: "Employees", category: "HRMS", actions: ["view", "add", "edit"] as PermissionAction[] },
-  { module: "users" as ModuleName, label: "Users", category: "Administration", actions: ["view", "add", "edit"] as PermissionAction[] },
-  { module: "dynamic_fields" as ModuleName, label: "Dynamic Fields", category: "Administration", actions: ["view", "add", "edit", "delete"] as PermissionAction[] },
-];
+// ── Indeterminate checkbox ──────────────────────────────────────────────────
 
-const CATEGORIES = ["Sales", "HRMS", "Administration"];
-const ACTIONS: PermissionAction[] = ["view", "add", "edit", "delete"];
-
-interface PermissionMatrixInputProps {
-  value: Record<ModuleName, PermissionAction[]>;
-  onChange: (permissions: Record<ModuleName, PermissionAction[]>) => void;
-  disabled?: boolean;
+interface IndeterminateCheckboxProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+  indeterminate?: boolean;
 }
 
-export function PermissionMatrixInput({ value, onChange, disabled = false }: PermissionMatrixInputProps) {
-  const [permissions, setPermissions] = useState<Record<ModuleName, PermissionAction[]>>(value);
-
+function IndeterminateCheckbox({
+  indeterminate,
+  className,
+  ...props
+}: IndeterminateCheckboxProps) {
+  const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    setPermissions(value);
-  }, [value]);
+    if (ref.current) ref.current.indeterminate = !!indeterminate;
+  }, [indeterminate]);
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      className={cn(
+        "h-4 w-4 rounded border-slate-300 text-gray-900 accent-gray-900 cursor-pointer",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-  const toggleAction = (module: ModuleName, action: PermissionAction) => {
-    if (disabled) return;
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-    const current = permissions[module] || [];
-    let updated: PermissionAction[];
+type ModuleState = "checked" | "indeterminate" | "unchecked";
+type PageState = "checked" | "indeterminate" | "unchecked";
 
-    if (current.includes(action)) {
-      updated = current.filter((a) => a !== action);
-      if (action === "view") {
-        updated = [];
-      }
-    } else {
-      updated = [...current, action];
-      if (action !== "view" && !current.includes("view")) {
-        updated = ["view", ...updated];
+function getModuleState(mod: RegistryModule, sel: PermissionSelection): ModuleState {
+  const modSel = sel[mod.key];
+  if (!modSel) return "unchecked";
+  let total = 0;
+  let selected = 0;
+  for (const page of mod.pages) {
+    total += page.actions.length;
+    selected += modSel[page.key]?.size ?? 0;
+  }
+  if (selected === 0) return "unchecked";
+  if (selected === total) return "checked";
+  return "indeterminate";
+}
+
+function getPageState(moduleKey: string, page: RegistryPage, sel: PermissionSelection): PageState {
+  const pageSel = sel[moduleKey]?.[page.key];
+  if (!pageSel || pageSel.size === 0) return "unchecked";
+  if (pageSel.size === page.actions.length) return "checked";
+  return "indeterminate";
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
+
+interface PermissionMatrixInputProps {
+  userId?: string;
+  onChange: (grants: GrantEntry[]) => void;
+}
+
+export function PermissionMatrixInput({ userId, onChange }: PermissionMatrixInputProps) {
+  const [registry, setRegistry] = useState<RegistryModule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selection, setSelection] = useState<PermissionSelection>({});
+  const [openModules, setOpenModules] = useState<Set<string>>(new Set());
+  const [openPages, setOpenPages] = useState<Set<string>>(new Set());
+
+  // Notify parent whenever selection changes
+  const notifyParent = useCallback(
+    (sel: PermissionSelection) => {
+      onChange(buildGrantsFromSelection(sel));
+    },
+    [onChange],
+  );
+
+  // Fetch registry + optional initial grants
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const [reg, grants] = await Promise.all([
+          permissionsService.getRegistry(),
+          userId ? permissionsService.getUserGrants(userId).then((r) => r.grants) : Promise.resolve<GrantEntry[]>([]),
+        ]);
+        if (cancelled) return;
+        setRegistry(reg);
+        const initialSel = initSelectionFromGrants(grants);
+        setSelection(initialSel);
+        // Auto-expand modules that have any grants
+        const expanded = new Set(Object.keys(initialSel));
+        setOpenModules(expanded);
+        notifyParent(initialSel);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
+    load();
+    return () => { cancelled = true; };
+  }, [userId, notifyParent]);
 
-    const newPermissions = { ...permissions, [module]: updated };
-    setPermissions(newPermissions);
-    onChange(newPermissions);
-  };
+  // ── Toggle logic ─────────────────────────────────────────────────────────
 
-  const hasAction = (module: ModuleName, action: PermissionAction): boolean => {
-    const modulePerms = permissions[module];
-    return modulePerms ? modulePerms.includes(action) : false;
-  };
+  function toggleModule(mod: RegistryModule, checked: boolean) {
+    setSelection((prev) => {
+      const next = { ...prev };
+      if (checked) {
+        next[mod.key] = {};
+        for (const page of mod.pages) {
+          next[mod.key][page.key] = new Set(page.actions.map((a) => a.key));
+        }
+      } else {
+        delete next[mod.key];
+      }
+      notifyParent(next);
+      return next;
+    });
+  }
+
+  function togglePage(moduleKey: string, page: RegistryPage, checked: boolean) {
+    setSelection((prev) => {
+      const next = { ...prev };
+      if (checked) {
+        if (!next[moduleKey]) next[moduleKey] = {};
+        next[moduleKey] = { ...next[moduleKey], [page.key]: new Set(page.actions.map((a) => a.key)) };
+      } else {
+        if (next[moduleKey]) {
+          const mod = { ...next[moduleKey] };
+          delete mod[page.key];
+          if (Object.keys(mod).length === 0) {
+            delete next[moduleKey];
+          } else {
+            next[moduleKey] = mod;
+          }
+        }
+      }
+      notifyParent(next);
+      return next;
+    });
+  }
+
+  function toggleAction(moduleKey: string, pageKey: string, actionKey: string, checked: boolean) {
+    setSelection((prev) => {
+      const next = { ...prev };
+      if (checked) {
+        if (!next[moduleKey]) next[moduleKey] = {};
+        const pageSet = new Set(next[moduleKey][pageKey] ?? []);
+        pageSet.add(actionKey);
+        next[moduleKey] = { ...next[moduleKey], [pageKey]: pageSet };
+      } else {
+        if (next[moduleKey]?.[pageKey]) {
+          const pageSet = new Set(next[moduleKey][pageKey]);
+          pageSet.delete(actionKey);
+          if (pageSet.size === 0) {
+            const mod = { ...next[moduleKey] };
+            delete mod[pageKey];
+            if (Object.keys(mod).length === 0) {
+              delete next[moduleKey];
+            } else {
+              next[moduleKey] = mod;
+            }
+          } else {
+            next[moduleKey] = { ...next[moduleKey], [pageKey]: pageSet };
+          }
+        }
+      }
+      notifyParent(next);
+      return next;
+    });
+  }
+
+  // ── Accordion toggles ────────────────────────────────────────────────────
+
+  function toggleModuleOpen(key: string) {
+    setOpenModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
+  function togglePageOpen(key: string) {
+    setOpenPages((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-gray-900" />
+      </div>
+    );
+  }
+
+  if (registry.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-slate-400">
+        Permission registry could not be loaded.
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {CATEGORIES.map((category) => {
-        const modules = MODULE_METADATA.filter((m) => m.category === category);
-        if (modules.length === 0) return null;
+    <div className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200">
+      {registry.map((mod) => {
+        const modState = getModuleState(mod, selection);
+        const modOpen = openModules.has(mod.key);
 
         return (
-          <div key={category}>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{category}</h4>
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-2.5 text-left font-medium text-slate-700">Module</th>
-                    {ACTIONS.map((action) => (
-                      <th key={action} className="px-4 py-2.5 text-center font-medium text-slate-700 capitalize">
-                        {action}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {modules.map((mod) => (
-                    <tr key={mod.module} className="hover:bg-slate-50/50">
-                      <td className="px-4 py-3 font-medium text-slate-800">{mod.label}</td>
-                      {ACTIONS.map((action) => {
-                        const available = mod.actions.includes(action);
-                        const checked = hasAction(mod.module, action);
-                        return (
-                          <td key={action} className="px-4 py-3 text-center">
-                            {available ? (
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                disabled={disabled}
-                                onChange={() => toggleAction(mod.module, action)}
-                                className={cn(
-                                  "h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-indigo-500",
-                                  disabled && "cursor-not-allowed opacity-50"
-                                )}
-                              />
-                            ) : (
-                              <span className="text-slate-300">—</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div key={mod.key}>
+            {/* Module row */}
+            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => toggleModuleOpen(mod.key)}
+                className="text-slate-400 hover:text-slate-700 transition-colors"
+                aria-label={modOpen ? "Collapse" : "Expand"}
+              >
+                <ChevronRight
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-150",
+                    modOpen && "rotate-90",
+                  )}
+                />
+              </button>
+              <IndeterminateCheckbox
+                checked={modState === "checked"}
+                indeterminate={modState === "indeterminate"}
+                onChange={(e) => toggleModule(mod, e.target.checked)}
+              />
+              <span className="text-sm font-semibold text-slate-800">{mod.label}</span>
             </div>
+
+            {/* Pages */}
+            {modOpen && (
+              <div className="divide-y divide-slate-100">
+                {mod.pages.map((page) => {
+                  const pageState = getPageState(mod.key, page, selection);
+                  const pageKey = `${mod.key}:${page.key}`;
+                  const pageOpen = openPages.has(pageKey);
+
+                  return (
+                    <div key={page.key} className="pl-10">
+                      {/* Page row */}
+                      <div className="flex items-center gap-3 px-4 py-2.5">
+                        <button
+                          type="button"
+                          onClick={() => togglePageOpen(pageKey)}
+                          className="text-slate-400 hover:text-slate-700 transition-colors"
+                          aria-label={pageOpen ? "Collapse" : "Expand"}
+                        >
+                          <ChevronRight
+                            className={cn(
+                              "h-3.5 w-3.5 transition-transform duration-150",
+                              pageOpen && "rotate-90",
+                            )}
+                          />
+                        </button>
+                        <IndeterminateCheckbox
+                          checked={pageState === "checked"}
+                          indeterminate={pageState === "indeterminate"}
+                          onChange={(e) => togglePage(mod.key, page, e.target.checked)}
+                        />
+                        <span className="text-sm font-medium text-slate-700">{page.label}</span>
+                      </div>
+
+                      {/* Actions */}
+                      {pageOpen && (
+                        <div className="flex flex-wrap gap-x-6 gap-y-2 px-14 pb-3 pt-1">
+                          {page.actions.map((action) => {
+                            const checked =
+                              selection[mod.key]?.[page.key]?.has(action.key) ?? false;
+                            return (
+                              <label
+                                key={action.key}
+                                className="flex cursor-pointer items-center gap-2 text-sm text-slate-600 hover:text-slate-900"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) =>
+                                    toggleAction(mod.key, page.key, action.key, e.target.checked)
+                                  }
+                                  className="h-3.5 w-3.5 rounded border-slate-300 text-gray-900 accent-gray-900 cursor-pointer"
+                                />
+                                <span className="capitalize">{action.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}

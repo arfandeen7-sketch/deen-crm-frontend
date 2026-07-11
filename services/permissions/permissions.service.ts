@@ -1,24 +1,27 @@
-import { getData, putData, postData } from "@/services/api/client";
-import type { UserPermissions, PermissionMetadata, ModuleName, PermissionAction } from "@/types";
+import { api, getData, putData } from "@/services/api/client";
+import type { AccessMap, RegistryModule, GrantEntry, PermissionGrants } from "@/types";
 
 export const permissionsService = {
-  getMyPermissions(): Promise<UserPermissions> {
-    return getData<UserPermissions>("/permissions/me");
+  async getMyAccess(): Promise<AccessMap> {
+    const profile = await getData<{ access: AccessMap }>("/me/profile");
+    return profile.access;
   },
-  
-  getMetadata(): Promise<PermissionMetadata> {
-    return getData<PermissionMetadata>("/permissions/metadata");
+
+  getRegistry(): Promise<RegistryModule[]> {
+    return getData<{ registry: RegistryModule[] }>("/permissions/registry").then(
+      (r) => r.registry,
+    );
   },
-  
-  getUserPermissions(userId: string): Promise<UserPermissions> {
-    return getData<UserPermissions>(`/permissions/user/${userId}`);
+
+  getUserGrants(userId: string): Promise<PermissionGrants> {
+    return getData<PermissionGrants>(`/permissions/user/${userId}`);
   },
-  
-  updateUserPermissions(userId: string, permissions: Record<ModuleName, PermissionAction[]>): Promise<UserPermissions> {
-    return putData<UserPermissions>(`/permissions/user/${userId}`, { permissions });
+
+  async saveUserGrants(userId: string, grants: GrantEntry[]): Promise<void> {
+    await putData<unknown>(`/permissions/user/${userId}`, { grants });
   },
-  
-  resetUserPermissions(userId: string): Promise<UserPermissions> {
-    return postData<UserPermissions>(`/permissions/user/${userId}/reset`);
+
+  async revokeAllGrants(userId: string): Promise<void> {
+    await api.delete(`/permissions/user/${userId}`);
   },
 };

@@ -28,15 +28,21 @@ import {
   LogIn,
   PieChart,
 } from "lucide-react";
-import type { Permission } from "@/lib/rbac";
 import type { UserRole } from "@/types";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
+
+export interface NavAccess {
+  module: string;
+  page?: string;
+  action?: string;
+}
 
 export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  permission?: Permission;
+  /** If set, item is only visible when the user has this access. */
+  navAccess?: NavAccess;
 }
 
 export interface NavGroup {
@@ -44,7 +50,7 @@ export interface NavGroup {
   title: string;
   icon: LucideIcon;
   items: NavItem[];
-  /** Backend module key — if set, group is hidden unless user.modules includes it (prefix matched). */
+  /** Backend module key — if set, group is hidden unless user has module access. */
   moduleKey?: string;
   isSingular?: boolean;
   href?: string;
@@ -72,14 +78,14 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "leads",
     section: "MENU",
     items: [
-      { label: "All Leads", href: "/leads", icon: Users2 },
-      { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost },
-      { label: "Imported Leads", href: "/leads/imported", icon: FileDown },
-      { label: "Assigned Leads", href: "/leads/assigned", icon: UserCheck },
-      { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX },
-      { label: "Create Lead", href: "/leads/create", icon: UserPlus },
-      { label: "Import Leads", href: "/leads/import", icon: Upload, permission: "leads.import" },
-      { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, permission: "leads.reports" },
+      { label: "All Leads", href: "/leads", icon: Users2, navAccess: { module: "leads", page: "all_leads" } },
+      { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost, navAccess: { module: "leads", page: "untouched_leads" } },
+      { label: "Imported Leads", href: "/leads/imported", icon: FileDown, navAccess: { module: "leads", page: "all_leads" } },
+      { label: "Assigned Leads", href: "/leads/assigned", icon: UserCheck, navAccess: { module: "leads", page: "assigned_leads" } },
+      { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX, navAccess: { module: "leads", page: "all_leads" } },
+      { label: "Create Lead", href: "/leads/create", icon: UserPlus, navAccess: { module: "leads", page: "all_leads", action: "create" } },
+      { label: "Import Leads", href: "/leads/import", icon: Upload, navAccess: { module: "leads", page: "all_leads", action: "import" } },
+      { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, navAccess: { module: "lead_reports" } },
     ],
   },
   {
@@ -89,9 +95,9 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "followup",
     section: "MENU",
     items: [
-      { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck },
-      { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX },
-      { label: "Upcoming Follow Ups", href: "/followup/upcoming", icon: CalendarPlus },
+      { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck, navAccess: { module: "followup", page: "todays_followup" } },
+      { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX, navAccess: { module: "followup", page: "missed_followup" } },
+      { label: "Upcoming Follow Ups", href: "/followup/upcoming", icon: CalendarPlus, navAccess: { module: "followup", page: "upcoming_followup" } },
     ],
   },
   {
@@ -101,9 +107,9 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "users",
     section: "MENU",
     items: [
-      { label: "All Users", href: "/users", icon: UserCog, permission: "users.manage" },
-      { label: "Create User", href: "/users/create", icon: UserPlus, permission: "users.manage" },
-      { label: "Teams", href: "/teams", icon: Users2, permission: "users.manage" },
+      { label: "All Users", href: "/users", icon: UserCog, navAccess: { module: "users", page: "all_users" } },
+      { label: "Create User", href: "/users/create", icon: UserPlus, navAccess: { module: "users", page: "all_users", action: "create" } },
+      { label: "Teams", href: "/teams", icon: Users2, navAccess: { module: "users", page: "teams" } },
     ],
   },
   {
@@ -113,15 +119,15 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "hrms",
     section: "MENU",
     items: [
-      { label: "HR Dashboard", href: "/hrms/dashboard", icon: LayoutDashboard, permission: "hrms.employees" },
-      { label: "Employees", href: "/hrms/employees", icon: Users2, permission: "hrms.employees" },
-      { label: "Attendance", href: "/hrms/attendance", icon: ClipboardCheck, permission: "hrms.attendance.manage" },
-      { label: "Leave Management", href: "/hrms/leave", icon: CalendarDays, permission: "hrms.leave.manage" },
-      { label: "Payroll Management", href: "/hrms/payroll", icon: Wallet, permission: "hrms.payroll" },
-      { label: "Payslips", href: "/hrms/payslips", icon: FileText, permission: "hrms.payslip" },
-      { label: "Email Configuration", href: "/hrms/email-config", icon: Mail, permission: "hrms.email" },
-      { label: "Login Activity", href: "/hrms/login-activity", icon: LogIn, permission: "hrms.reports" },
-      { label: "HR Reports", href: "/hrms/reports", icon: PieChart, permission: "hrms.reports" },
+      { label: "HR Dashboard", href: "/hrms/dashboard", icon: LayoutDashboard, navAccess: { module: "hrms", page: "employees" } },
+      { label: "Employees", href: "/hrms/employees", icon: Users2, navAccess: { module: "hrms", page: "employees" } },
+      { label: "Attendance", href: "/hrms/attendance", icon: ClipboardCheck, navAccess: { module: "hrms", page: "attendance" } },
+      { label: "Leave Management", href: "/hrms/leave", icon: CalendarDays, navAccess: { module: "hrms", page: "leave" } },
+      { label: "Payroll Management", href: "/hrms/payroll", icon: Wallet, navAccess: { module: "hrms", page: "payroll" } },
+      { label: "Payslips", href: "/hrms/payslips", icon: FileText, navAccess: { module: "hrms", page: "payslips" } },
+      { label: "Email Configuration", href: "/hrms/email-config", icon: Mail, navAccess: { module: "hrms", page: "employees" } },
+      { label: "Login Activity", href: "/hrms/login-activity", icon: LogIn, navAccess: { module: "hrms", page: "login_activity" } },
+      { label: "HR Reports", href: "/hrms/reports", icon: PieChart, navAccess: { module: "hrms", page: "login_activity" } },
     ],
   },
   {
@@ -131,8 +137,8 @@ export const NAV_GROUPS: NavGroup[] = [
     moduleKey: "brokers",
     section: "MENU",
     items: [
-      { label: "All Brokers", href: "/brokers", icon: Handshake },
-      { label: "Create Broker", href: "/brokers/create", icon: UserPlus, permission: "brokers.create" },
+      { label: "All Brokers", href: "/brokers", icon: Handshake, navAccess: { module: "brokers", page: "all_brokers" } },
+      { label: "Create Broker", href: "/brokers/create", icon: UserPlus, navAccess: { module: "brokers", page: "all_brokers", action: "create" } },
     ],
   },
   {
@@ -163,14 +169,14 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "dynamic-fields",
     title: "Dynamic Fields",
     icon: SlidersHorizontal,
-    moduleKey: "dynamic-fields",
+    moduleKey: "dynamic_fields",
     section: "GENERAL",
     items: MANAGED_DYNAMIC_CATEGORIES.map(
       (c): NavItem => ({
         label: c.label,
         href: `/dynamic-fields/${c.slug}`,
         icon: SlidersHorizontal,
-        permission: "dynamicFields.manage",
+        navAccess: { module: "dynamic_fields", page: "manage_fields" },
       }),
     ),
   },

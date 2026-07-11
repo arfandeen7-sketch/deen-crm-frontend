@@ -23,7 +23,7 @@ export function LeadFilters({
   const projectTypes = useFieldOptions("project_type");
   const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
-  const { can } = useAuth();
+  const { canPage } = useAuth();
 
   const hasFilters = Boolean(
     filters.search ||
@@ -100,7 +100,7 @@ export function LeadFilters({
             <option key={c} value={c}>{c}</option>
           ))}
         </Select>
-        {can("leads.view.all") && (
+        {canPage("leads", "all_leads") && (
           <Select
             value={filters.assignedTo ?? ""}
             onChange={(e) => onChange("assignedTo", e.target.value || undefined)}

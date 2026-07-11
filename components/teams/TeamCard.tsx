@@ -62,7 +62,7 @@ export function TeamCard({ team, onViewDetails, onManageTeam }: TeamCardProps) {
               ) : (
                 team.teamMembers.slice(0, 3).map((member) => (
                   <div key={member.id} className="flex items-center gap-2 text-sm">
-                    <UserAvatar name={member.fullName} size="xs" />
+                    <UserAvatar name={member.fullName} size="sm" />
                     <span className="text-slate-700">{member.fullName}</span>
                   </div>
                 ))

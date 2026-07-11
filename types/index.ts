@@ -2,11 +2,51 @@
 
 export type UserRole = "master" | "hr_manager" | "sales_manager" | "sales_executive";
 
-export type ModuleName = 'leads' | 'leads_reports' | 'followup' | 'brokers'
-  | 'hrms_attendance' | 'hrms_leave' | 'hrms_payroll' | 'hrms_employees'
-  | 'users' | 'dynamic_fields';
+// ── 3-Level Permission System (Module → Page → Action) ──────────────────────
 
-export type PermissionAction = 'view' | 'add' | 'edit' | 'delete';
+export interface AccessMap {
+  isMaster: boolean;
+  modules: string[];
+  pages: Record<string, string[]>;
+  actions: Record<string, string[]>;
+}
+
+export interface RegistryAction {
+  key: string;
+  label: string;
+  sortOrder: number;
+}
+
+export interface RegistryPage {
+  key: string;
+  label: string;
+  sortOrder: number;
+  actions: RegistryAction[];
+}
+
+export interface RegistryModule {
+  key: string;
+  label: string;
+  icon: string;
+  sortOrder: number;
+  pages: RegistryPage[];
+}
+
+export interface GrantEntry {
+  moduleKey: string;
+  pageKey: string;
+  actionKey: string;
+  granted: boolean;
+}
+
+export interface PermissionGrants {
+  userId: string;
+  fullName: string;
+  role: string;
+  isMasterUser: boolean;
+  grants: GrantEntry[];
+  registry: RegistryModule[];
+}
 
 export type EmploymentStatus = "active" | "on_leave" | "suspended" | "resigned" | "terminated";
 
@@ -395,25 +435,6 @@ export interface UsersListResponse {
   roleCounts: Record<UserRole, number>;
 }
 
-export interface PermissionMetadata {
-  modules: Array<{
-    module: ModuleName;
-    label: string;
-    category: string;
-    actions: PermissionAction[];
-  }>;
-}
-
-export interface UserPermissions {
-  userId: string;
-  role: UserRole;
-  permissionsOverridden: boolean;
-  matrix: Array<{
-    module: ModuleName;
-    actions: { view: boolean; add: boolean; edit: boolean; delete: boolean };
-  }>;
-  permissions: Record<ModuleName, PermissionAction[]>;
-}
 
 // Common list query params
 export interface LeadQueryParams {

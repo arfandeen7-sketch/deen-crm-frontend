@@ -4,27 +4,49 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth.store";
 import { authService } from "@/services/auth/auth.service";
+import { permissionsService } from "@/services/permissions/permissions.service";
 import { loginActivityService } from "@/services/hrms/login-activity.service";
 import { isDemoToken } from "@/services/auth/demo";
-import { can, type Permission, ROLE_DEFAULT_MODULES } from "@/lib/rbac";
+import { canAccessModule, canAccessPage, canDoAction } from "@/lib/permissions";
+import type { AccessMap } from "@/types";
+
+const MASTER_ACCESS: AccessMap = {
+  isMaster: true,
+  modules: [],
+  pages: {},
+  actions: {},
+};
 
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, token, hydrated, setAuth, clear } = useAuthStore();
+  const { user, token, access, hydrated, setAuth, setAccess, clear } =
+    useAuthStore();
 
   async function login(email: string, password: string) {
     const res = await authService.login(email, password);
     setAuth(res.token, res.user);
-    if (!isDemoToken(res.token)) {
+    if (isDemoToken(res.token)) {
+      setAccess(MASTER_ACCESS);
+    } else {
       loginActivityService.recordLogin().catch(() => {});
+      try {
+        const accessMap = await permissionsService.getMyAccess();
+        setAccess(accessMap);
+      } catch {
+        // ignore — PermissionProvider will retry on mount
+      }
     }
     return res.user;
   }
 
   async function logout() {
     if (!isDemoToken(token)) {
-      try { await loginActivityService.recordLogout(); } catch { /* ignore */ }
+      try {
+        await loginActivityService.recordLogout();
+      } catch {
+        /* ignore */
+      }
     }
     await authService.logout();
     clear();
@@ -32,36 +54,29 @@ export function useAuth() {
     router.replace("/login");
   }
 
-  /**
-   * Returns true if the user has access to the given module key.
-   * When moduleAccessOverridden is true, uses the custom moduleAccess array.
-   * Otherwise falls back to the role-based default module list.
-   * Uses prefix matching so hasModule("hrms") matches "hrms.attendance" etc.
-   */
   function hasModule(key: string): boolean {
-    if (!user) return false;
-    const { moduleAccessOverridden, moduleAccess, role } = user;
+    return canAccessModule(access, key);
+  }
 
-    if (moduleAccessOverridden && moduleAccess && moduleAccess.length > 0) {
-      return moduleAccess.some((m) => m === key || m.startsWith(`${key}.`));
-    }
+  function canPage(moduleKey: string, pageKey: string): boolean {
+    return canAccessPage(access, moduleKey, pageKey);
+  }
 
-    if (role) {
-      const defaults = ROLE_DEFAULT_MODULES[role];
-      return defaults.some((m) => m === key || m.startsWith(`${key}.`));
-    }
-
-    return false;
+  function canAction(moduleKey: string, pageKey: string, actionKey: string): boolean {
+    return canDoAction(access, moduleKey, pageKey, actionKey);
   }
 
   return {
     user,
     token,
+    access,
     hydrated,
     isAuthenticated: Boolean(token),
     role: user?.role,
-    can: (permission: Permission) => can(user?.role, permission),
+    isMaster: access?.isMaster ?? false,
     hasModule,
+    canPage,
+    canAction,
     login,
     logout,
   };

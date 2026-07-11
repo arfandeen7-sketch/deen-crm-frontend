@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { Payslip } from "@/types";
 
@@ -78,7 +78,7 @@ export default function PayslipsPage() {
   ];
 
   return (
-    <PermissionGuard permission="hrms.payslip">
+    <AccessGuard module="hrms" page="payslips">
     <div className="space-y-6">
       <PageHeader
         title="Payslips"
@@ -119,6 +119,6 @@ export default function PayslipsPage() {
         <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
       )}
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

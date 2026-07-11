@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { Payslip } from "@/types";
 
@@ -84,7 +84,7 @@ export default function PayrollManagementPage() {
   ];
 
   return (
-    <PermissionGuard permission="hrms.payroll">
+    <AccessGuard module="hrms" page="payroll">
     <div className="space-y-6">
       <PageHeader
         title="Payroll Management"
@@ -126,6 +126,6 @@ export default function PayrollManagementPage() {
         <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
       )}
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

@@ -13,7 +13,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { RoleBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { useUsers, useUserMutations } from "@/hooks/useUsers";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/services/api/client";
 import { ROLE_LABELS } from "@/constants";
 import type { User } from "@/types";
@@ -110,7 +110,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <PermissionGuard permission="users.manage">
+    <AccessGuard module="users" page="all_users">
     <div className="space-y-5">
       <PageHeader
         title="Users"
@@ -156,7 +156,7 @@ export default function UsersPage() {
         loading={toggleActive.isPending}
       />
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }
 

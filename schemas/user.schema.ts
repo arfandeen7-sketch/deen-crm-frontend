@@ -14,9 +14,6 @@ export const createUserSchema = z.object({
   phone: optional,
   role,
   managerId: optional,
-  permissions: z.record(z.array(z.enum(["view", "add", "edit", "delete"]))).optional(),
-  moduleAccess: z.array(z.string()).optional(),
-  moduleAccessOverridden: z.boolean().optional(),
 });
 
 export const updateUserSchema = z.object({
@@ -24,9 +21,6 @@ export const updateUserSchema = z.object({
   phone: optional,
   role,
   managerId: optional,
-  permissions: z.record(z.array(z.enum(["view", "add", "edit", "delete"]))).optional(),
-  moduleAccess: z.array(z.string()).optional(),
-  moduleAccessOverridden: z.boolean().optional(),
 });
 
 export type CreateUserValues = z.input<typeof createUserSchema>;

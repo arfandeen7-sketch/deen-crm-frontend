@@ -1,81 +1,82 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { permissionsService } from "@/services/permissions/permissions.service";
 import { useAuthStore } from "@/store/auth.store";
-import type { ModuleName, PermissionAction } from "@/types";
+import { isDemoToken } from "@/services/auth/demo";
+import { canAccessModule, canAccessPage, canDoAction } from "@/lib/permissions";
+import type { AccessMap } from "@/types";
+
+const MASTER_ACCESS: AccessMap = {
+  isMaster: true,
+  modules: [],
+  pages: {},
+  actions: {},
+};
 
 interface PermissionContextValue {
-  permissions: Record<ModuleName, PermissionAction[]> | null;
-  loading: boolean;
-  hasPermission: (module: ModuleName, action: PermissionAction) => boolean;
-  hasModuleAccess: (module: ModuleName) => boolean;
+  access: AccessMap | null;
+  canModule: (moduleKey: string) => boolean;
+  canPage: (moduleKey: string, pageKey: string) => boolean;
+  canAction: (moduleKey: string, pageKey: string, actionKey: string) => boolean;
   refetch: () => Promise<void>;
 }
 
-const PermissionContext = createContext<PermissionContextValue | undefined>(undefined);
+const PermissionContext = createContext<PermissionContextValue | undefined>(
+  undefined,
+);
 
 export function PermissionProvider({ children }: { children: ReactNode }) {
-  const { token, user } = useAuthStore();
-  const [permissions, setPermissions] = useState<Record<ModuleName, PermissionAction[]> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { token, access, setAccess } = useAuthStore();
 
-  const fetchPermissions = useCallback(async () => {
-    if (!token || !user) {
-      setPermissions(null);
-      setLoading(false);
+  const fetchAccess = useCallback(async () => {
+    if (!token) return;
+
+    if (isDemoToken(token)) {
+      setAccess(MASTER_ACCESS);
       return;
     }
 
     try {
-      setLoading(true);
-      const data = await permissionsService.getMyPermissions();
-      setPermissions(data.permissions);
-    } catch (error) {
-      console.error("Failed to fetch permissions:", error);
-      setPermissions(null);
-    } finally {
-      setLoading(false);
+      const accessMap = await permissionsService.getMyAccess();
+      setAccess(accessMap);
+    } catch {
+      // Keep existing access on failure
     }
-  }, [token, user]);
+  }, [token, setAccess]);
 
   useEffect(() => {
-    fetchPermissions();
-  }, [fetchPermissions]);
+    if (token) fetchAccess();
+  }, [token, fetchAccess]);
 
   useEffect(() => {
-    const handler = () => { fetchPermissions(); };
+    const handler = () => {
+      fetchAccess();
+    };
     window.addEventListener("permissions:refetch", handler);
     return () => window.removeEventListener("permissions:refetch", handler);
-  }, [fetchPermissions]);
-
-  const hasPermission = useCallback(
-    (module: ModuleName, action: PermissionAction): boolean => {
-      if (!permissions) return false;
-      const modulePerms = permissions[module];
-      return modulePerms ? modulePerms.includes(action) : false;
-    },
-    [permissions]
-  );
-
-  const hasModuleAccess = useCallback(
-    (module: ModuleName): boolean => {
-      if (!permissions) return false;
-      const modulePerms = permissions[module];
-      return modulePerms ? modulePerms.includes("view") : false;
-    },
-    [permissions]
-  );
+  }, [fetchAccess]);
 
   const value: PermissionContextValue = {
-    permissions,
-    loading,
-    hasPermission,
-    hasModuleAccess,
-    refetch: fetchPermissions,
+    access,
+    canModule: (moduleKey) => canAccessModule(access, moduleKey),
+    canPage: (moduleKey, pageKey) => canAccessPage(access, moduleKey, pageKey),
+    canAction: (moduleKey, pageKey, actionKey) =>
+      canDoAction(access, moduleKey, pageKey, actionKey),
+    refetch: fetchAccess,
   };
 
-  return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>;
+  return (
+    <PermissionContext.Provider value={value}>
+      {children}
+    </PermissionContext.Provider>
+  );
 }
 
 export function usePermissions(): PermissionContextValue {

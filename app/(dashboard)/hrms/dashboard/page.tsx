@@ -4,7 +4,7 @@ import { Users2, UserCheck, CalendarX } from "lucide-react";
 import { useEmployeeList, useLeaveList, useAttendanceList } from "@/hooks/useHrms";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 
 export default function HrDashboardPage() {
   const today = new Date().toISOString().split("T")[0];
@@ -13,7 +13,7 @@ export default function HrDashboardPage() {
   const { data: todayAttendance, isLoading: attLoading } = useAttendanceList({ dateFrom: today, dateTo: today, pageSize: 1 });
 
   return (
-    <PermissionGuard permission="hrms.employees">
+    <AccessGuard module="hrms" page="employees">
     <div className="space-y-6">
       <PageHeader title="HR Dashboard" subtitle="Overview of workforce analytics" />
 
@@ -23,6 +23,6 @@ export default function HrDashboardPage() {
         <StatCard label="Today Records" value={todayAttendance?.total ?? 0} icon={UserCheck} accent="emerald" loading={attLoading} href="/hrms/attendance" />
       </div>
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

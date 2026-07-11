@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { BrokerStatusBadge, StatusBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { RoleGuard } from "@/components/shared/Guards";
+import { CanAccess } from "@/components/shared/Guards";
 import { useBroker, useBrokerLeads } from "@/hooks/useBrokers";
 import { formatDate } from "@/lib/utils";
 
@@ -32,11 +32,11 @@ export default function BrokerDetailPage() {
         title={broker.brokerName}
         subtitle={broker.companyName ?? "Independent broker"}
         actions={
-          <RoleGuard permission="brokers.create">
+          <CanAccess module="brokers" page="all_brokers" action="create">
             <Button variant="outline" onClick={() => router.push(`/brokers/${broker.id}/edit`)}>
               <Pencil className="h-4 w-4" /> Edit
             </Button>
-          </RoleGuard>
+          </CanAccess>
         }
       />
 

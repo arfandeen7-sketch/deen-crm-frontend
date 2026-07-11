@@ -18,7 +18,7 @@ import {
   useDynamicFieldMutations,
 } from "@/hooks/useDynamicFields";
 import { getErrorMessage } from "@/services/api/client";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import type { DynamicField } from "@/types";
 
 export default function DynamicFieldsPage() {
@@ -74,7 +74,7 @@ export default function DynamicFieldsPage() {
   }
 
   return (
-    <PermissionGuard permission="dynamicFields.manage">
+    <AccessGuard module="dynamic_fields" page="manage_fields">
     <div className="space-y-5">
       <PageHeader
         title="Dynamic Fields"
@@ -170,6 +170,6 @@ export default function DynamicFieldsPage() {
         loading={remove.isPending}
       />
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

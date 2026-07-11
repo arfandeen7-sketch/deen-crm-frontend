@@ -11,7 +11,7 @@ import { RoleBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { useUser } from "@/hooks/useUsers";
 import { formatDateTime } from "@/lib/utils";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>();
@@ -22,7 +22,7 @@ export default function UserDetailPage() {
   if (isError || !user) return <ErrorState onRetry={refetch} />;
 
   return (
-    <PermissionGuard permission="users.manage">
+    <AccessGuard module="users" page="all_users">
     <div className="space-y-5">
       <Link href="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to users
@@ -59,6 +59,6 @@ export default function UserDetailPage() {
         </CardBody>
       </Card>
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

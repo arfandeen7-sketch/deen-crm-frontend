@@ -15,9 +15,8 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { BrokerStatusBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { RoleGuard } from "@/components/shared/Guards";
+import { CanAccess } from "@/components/shared/Guards";
 import { useBrokersList, useBrokerMutations } from "@/hooks/useBrokers";
-import { useAuth } from "@/hooks/useAuth";
 import { brokersService } from "@/services/brokers/brokers.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob } from "@/lib/utils";
@@ -26,7 +25,6 @@ import type { Broker } from "@/types";
 
 export default function BrokersPage() {
   const router = useRouter();
-  const { can } = useAuth();
   const [params, setParams] = useState({ page: 1, pageSize: DEFAULT_PAGE_SIZE, search: "", status: "" });
   const { data, isLoading, isError, refetch } = useBrokersList(params);
   const { remove } = useBrokerMutations();
@@ -93,16 +91,16 @@ export default function BrokersPage() {
           <Link href={`/brokers/${b.id}`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
             <Eye className="h-4 w-4" />
           </Link>
-          <RoleGuard permission="brokers.create">
+          <CanAccess module="brokers" page="all_brokers" action="create">
             <Link href={`/brokers/${b.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
               <Pencil className="h-4 w-4" />
             </Link>
-          </RoleGuard>
-          <RoleGuard permission="brokers.delete">
+          </CanAccess>
+          <CanAccess module="brokers" page="all_brokers" action="delete">
             <button onClick={() => setDeleteId(b.id)} className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600">
               <Trash2 className="h-4 w-4" />
             </button>
-          </RoleGuard>
+          </CanAccess>
         </div>
       ),
     },
@@ -115,16 +113,16 @@ export default function BrokersPage() {
         subtitle={data ? `${data.total} brokers` : "Manage your broker network"}
         actions={
           <>
-            <RoleGuard permission="brokers.create">
+            <CanAccess module="brokers" page="all_brokers" action="create">
               <Button variant="outline" onClick={handleExport} loading={exporting}>
                 <Download className="h-4 w-4" /> Export
               </Button>
-            </RoleGuard>
-            <RoleGuard permission="brokers.create">
+            </CanAccess>
+            <CanAccess module="brokers" page="all_brokers" action="create">
               <Button onClick={() => router.push("/brokers/create")}>
                 <Plus className="h-4 w-4" /> Add Broker
               </Button>
-            </RoleGuard>
+            </CanAccess>
           </>
         }
       />

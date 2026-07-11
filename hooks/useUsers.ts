@@ -10,22 +10,21 @@ import {
 } from "@/services/users/users.service";
 import { teamsService } from "@/services/teams/teams.service";
 import { useAuth } from "@/hooks/useAuth";
-import { can } from "@/lib/rbac";
 
-/** Full users list with role counts (master only). */
+/** Full users list with role counts. */
 export function useUsers() {
-  const { role } = useAuth();
+  const { hasModule } = useAuth();
   return useQuery({
     queryKey: ["users"],
     queryFn: () => usersService.list(),
-    enabled: can(role, "users.manage"),
+    enabled: hasModule("users"),
   });
 }
 
-/** Lightweight list of assignable users for dropdowns — uses /users/assignable, accessible to master + sales_manager. */
+/** Lightweight list of assignable users for dropdowns. */
 export function useAssignableUsers() {
-  const { role, user } = useAuth();
-  const enabled = can(role, "leads.assign");
+  const { role, user, canAction } = useAuth();
+  const enabled = canAction("leads", "all_leads", "assign");
   const query = useQuery<AssignableUser[]>({
     queryKey: ["users", "assignable"],
     queryFn: () => usersService.assignable(),

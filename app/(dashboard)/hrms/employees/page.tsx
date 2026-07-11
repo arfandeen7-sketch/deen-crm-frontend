@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABELS, EMPLOYMENT_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { employeeService } from "@/services/hr/hr.service";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { User } from "@/types";
 
@@ -55,7 +55,7 @@ export default function EmployeesPage() {
   ];
 
   return (
-    <PermissionGuard permission="hrms.employees">
+    <AccessGuard module="hrms" page="employees">
     <div className="space-y-6">
       <PageHeader
         title="Employees"
@@ -116,6 +116,6 @@ export default function EmployeesPage() {
         />
       )}
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

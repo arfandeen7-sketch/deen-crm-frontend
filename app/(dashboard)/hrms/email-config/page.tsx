@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "sonner";
 import { Send, Save } from "lucide-react";
 import { useState } from "react";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 
 export default function EmailConfigPage() {
   const { data: config, isLoading } = useSmtpConfig();
@@ -48,7 +48,7 @@ export default function EmailConfigPage() {
   if (isLoading) return <div className="animate-pulse h-96 rounded-xl bg-slate-100" />;
 
   return (
-    <PermissionGuard permission="hrms.email">
+    <AccessGuard module="hrms" page="employees">
     <div className="space-y-6">
       <PageHeader title="Email Configuration" subtitle="Manage SMTP settings for sending payslips and notifications" />
 
@@ -120,6 +120,6 @@ export default function EmailConfigPage() {
         </div>
       </div>
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

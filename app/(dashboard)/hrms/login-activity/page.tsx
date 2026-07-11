@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { DEFAULT_PAGE_SIZE, ROLE_LABELS } from "@/constants";
 
 import { formatDate } from "@/lib/utils";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import type { LoginActivity } from "@/types";
 
 export default function LoginActivityPage() {
@@ -47,7 +47,7 @@ export default function LoginActivityPage() {
   ];
 
   return (
-    <PermissionGuard permission="hrms.reports">
+    <AccessGuard module="hrms" page="login_activity">
     <div className="space-y-6">
       <PageHeader
         title="Login Activity"
@@ -76,6 +76,6 @@ export default function LoginActivityPage() {
         <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
       )}
     </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }

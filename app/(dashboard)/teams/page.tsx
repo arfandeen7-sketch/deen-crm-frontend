@@ -9,7 +9,7 @@ import { TeamCard } from "@/components/teams/TeamCard";
 import { UnassignedExecutives } from "@/components/teams/UnassignedExecutives";
 import { AssignTeamModal } from "@/components/teams/AssignTeamModal";
 import { ConfirmModal } from "@/components/ui/Modal";
-import { PermissionGuard } from "@/components/shared/Guards";
+import { AccessGuard } from "@/components/shared/Guards";
 import { useAllTeams, useTeamMutations } from "@/hooks/useTeams";
 import { useUsers } from "@/hooks/useUsers";
 import { getErrorMessage } from "@/services/api/client";
@@ -57,7 +57,7 @@ export default function TeamsPage() {
 
   if (isLoading) {
     return (
-      <PermissionGuard permission="users.manage">
+      <AccessGuard module="users" page="teams">
         <div className="space-y-5">
           <PageHeader title="Teams" subtitle="Manage sales teams and assignments" />
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -66,12 +66,12 @@ export default function TeamsPage() {
             ))}
           </div>
         </div>
-      </PermissionGuard>
+      </AccessGuard>
     );
   }
 
   return (
-    <PermissionGuard permission="users.manage">
+    <AccessGuard module="users" page="teams">
       <div className="space-y-5">
         <PageHeader
           title="Teams"
@@ -160,7 +160,7 @@ export default function TeamsPage() {
           loading={unassignExecutive.isPending}
         />
       </div>
-    </PermissionGuard>
+    </AccessGuard>
   );
 }
 

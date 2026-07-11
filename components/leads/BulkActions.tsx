@@ -22,8 +22,8 @@ export function BulkActions({
   const { bulkAssign, bulkStatus } = useLeadMutations();
   const { users } = useAssignableUsers();
   const statuses = useFieldOptions("lead_status");
-  const { can, role } = useAuth();
-  const canAssign = can("leads.assign");
+  const { canAction, role } = useAuth();
+  const canAssign = canAction("leads", "all_leads", "assign");
   const canBulkStatus = canAssign || role === "sales_executive";
   const [assignOpen, setAssignOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);

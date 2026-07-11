@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { employeeSchema, type EmployeeFormValues } from "@/schemas/employee.schema";
 import { useDynamicFields } from "@/hooks/useDynamicFields";
@@ -17,7 +17,7 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
     handleSubmit,
     formState: { errors },
   } = useForm<EmployeeFormValues>({
-    resolver: zodResolver(employeeSchema) as never,
+    resolver: zodResolver(employeeSchema) as unknown as Resolver<EmployeeFormValues>,
     defaultValues: {
       role: "sales_executive",
       employmentStatus: "active",
