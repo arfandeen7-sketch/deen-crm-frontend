@@ -70,14 +70,40 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function TableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="space-y-2 p-4">
-      {Array.from({ length: rows }).map((_, r) => (
-        <div key={r} className="flex gap-3">
-          {Array.from({ length: cols }).map((_, c) => (
-            <Skeleton key={c} className="h-6 flex-1" />
-          ))}
-        </div>
-      ))}
+    <div className="overflow-hidden rounded-lg bg-background">
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-0">
+          <thead>
+            <tr>
+              {Array.from({ length: cols }).map((_, c) => (
+                <th
+                  key={`h-${c}`}
+                  className="border-b border-border bg-section px-5 py-3.5 text-left"
+                >
+                  <Skeleton className="h-3 w-16" />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: rows }).map((_, r) => (
+              <tr key={r}>
+                {Array.from({ length: cols }).map((_, c) => (
+                  <td
+                    key={c}
+                    className={cn(
+                      "border-b border-border bg-background px-5 py-3.5",
+                      r === rows - 1 && "border-b-0",
+                    )}
+                  >
+                    <Skeleton className="h-4 w-full max-w-32" />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

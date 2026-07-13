@@ -66,6 +66,7 @@ export default function PayrollManagementPage() {
     {
       key: "actions",
       header: "",
+      stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
           <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download">

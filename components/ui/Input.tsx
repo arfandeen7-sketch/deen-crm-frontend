@@ -1,7 +1,8 @@
 "use client";
 
-import { forwardRef, useState, useEffect, useRef, useImperativeHandle } from "react";
+import { forwardRef, useState, useEffect, useRef, useImperativeHandle, useLayoutEffect } from "react";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,9 +68,52 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const nativeSelectRef = useRef<HTMLSelectElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
 
     // Expose the native select ref so external libraries like react-hook-form work perfectly
     useImperativeHandle(ref, () => nativeSelectRef.current as HTMLSelectElement);
+
+    // Calculate dropdown position when opened (uses fixed positioning via portal to escape overflow clipping)
+    useLayoutEffect(() => {
+      if (!isOpen || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+      const maxH = 240;
+      const flip = spaceBelow < Math.min(maxH, 160) && spaceAbove > spaceBelow;
+      setDropdownPos({
+        top: flip ? Math.max(8, rect.top - Math.min(maxH, spaceAbove) - 4) : rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        maxHeight: flip ? Math.min(maxH, spaceAbove) : Math.min(maxH, spaceBelow),
+      });
+    }, [isOpen]);
+
+    // Reposition on scroll or resize while open
+    useEffect(() => {
+      if (!isOpen) return;
+      function update() {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom - 8;
+        const spaceAbove = rect.top - 8;
+        const maxH = 240;
+        const flip = spaceBelow < Math.min(maxH, 160) && spaceAbove > spaceBelow;
+        setDropdownPos({
+          top: flip ? Math.max(8, rect.top - Math.min(maxH, spaceAbove) - 4) : rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+          maxHeight: flip ? Math.min(maxH, spaceAbove) : Math.min(maxH, spaceBelow),
+        });
+      }
+      window.addEventListener("scroll", update, true);
+      window.addEventListener("resize", update);
+      return () => {
+        window.removeEventListener("scroll", update, true);
+        window.removeEventListener("resize", update);
+      };
+    }, [isOpen]);
 
     // Support controlled and uncontrolled state
     const [internalValue, setInternalValue] = useState<string>(
@@ -85,7 +129,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     // Click outside listener to close the dropdown
     useEffect(() => {
       function handleClickOutside(event: MouseEvent) {
-        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        const target = event.target as Node;
+        if (
+          containerRef.current && !containerRef.current.contains(target) &&
+          dropdownRef.current && !dropdownRef.current.contains(target)
+        ) {
           setIsOpen(false);
         }
       }
@@ -188,9 +236,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
         </button>
 
-        {/* Custom Options List Popover */}
-        {isOpen && !props.disabled && (
-          <div className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-100 bg-white p-1 shadow-lg shadow-black/5 animate-in fade-in slide-in-from-top-1 duration-150">
+        {/* Custom Options List Popover - rendered via portal to escape overflow clipping in modals */}
+        {isOpen && !props.disabled && dropdownPos && createPortal(
+          <div
+            ref={dropdownRef}
+            style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, maxHeight: dropdownPos.maxHeight, zIndex: 9999 }}
+            className="overflow-y-auto rounded-xl border border-slate-100 bg-white p-1 shadow-lg shadow-black/5 animate-in fade-in slide-in-from-top-1 duration-150"
+          >
             {options.length === 0 ? (
               <div className="px-3 py-2 text-xs text-slate-400 text-center">No options available</div>
             ) : (
@@ -212,7 +264,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 );
               })
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );

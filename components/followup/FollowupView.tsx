@@ -117,7 +117,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
       {view === "calendar" ? (
         <CalendarView rows={rows} onSelect={(id) => router.push(`/leads/${id}`)} />
       ) : (
-        <Card>
+        <>
           <DataTable
             columns={columns}
             rows={rows}
@@ -139,7 +139,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
               onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
             />
           )}
-        </Card>
+        </>
       )}
     </div>
   );

@@ -56,6 +56,7 @@ export default function MyPayslipsPage() {
     {
       key: "actions",
       header: "Actions",
+      stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
           <button onClick={() => handleDownload(r.id, r.month, r.year)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download PDF">

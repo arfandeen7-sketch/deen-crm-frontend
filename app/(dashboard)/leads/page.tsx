@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Pencil, Trash2 } from "lucide-react";
+import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, DollarSign, Maximize2, Home } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -85,14 +85,88 @@ export default function LeadsPage() {
         <div className="flex items-center gap-2.5">
           <UserAvatar name={l.leadName} size="sm" />
           <div>
-            <p className="font-medium text-slate-900">{l.leadName}</p>
+            <p className="font-medium text-slate-900">
+              {l.leadName}{l.lastName ? ` ${l.lastName}` : ""}
+            </p>
             <p className="text-xs text-slate-500">{l.mobileNumber}</p>
+            {l.email && <p className="text-xs text-slate-400">{l.email}</p>}
           </div>
         </div>
       ),
     },
-    { key: "source", header: "Source", render: (l) => l.source },
-    { key: "project", header: "Project", render: (l) => l.projectName ?? "—" },
+    {
+      key: "source",
+      header: "Source",
+      render: (l) => (
+        <div className="space-y-0.5">
+          <p className="text-sm text-slate-700">{l.source}</p>
+          {l.ingestionSource !== "manual" && l.ingestionSource !== "import" && (
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+              {l.ingestionSource}
+            </code>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "property",
+      header: "Property",
+      render: (l) => (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-slate-700" title={l.projectName ?? undefined}>
+            {l.projectName ?? "—"}
+          </p>
+          {(l.locality || l.city) && (
+            <p className="text-xs text-slate-400">
+              {[l.locality, l.city].filter(Boolean).join(", ")}
+            </p>
+          )}
+          {(l.projectType || l.configuration) && (
+            <p className="text-xs text-slate-400">
+              {[l.projectType, l.configuration].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "pricing",
+      header: "Price / Size",
+      render: (l) => (
+        <div className="space-y-0.5">
+          {l.price ? (
+            <p className="flex items-center gap-1 text-sm text-slate-700">
+              <DollarSign className="h-3 w-3 text-slate-400" />
+              {Number(l.price).toLocaleString()} AED
+            </p>
+          ) : (
+            <p className="text-sm text-slate-400">—</p>
+          )}
+          {l.propertySize && (
+            <p className="flex items-center gap-1 text-xs text-slate-400">
+              <Maximize2 className="h-3 w-3" />
+              {l.propertySize} sqft
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "serviceType",
+      header: "Service",
+      render: (l) => (
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+          l.serviceType?.toLowerCase() === "buy"
+            ? "bg-emerald-50 text-emerald-700"
+            : l.serviceType?.toLowerCase() === "rent"
+            ? "bg-blue-50 text-blue-700"
+            : "bg-slate-100 text-slate-600"
+        }`}>
+          <Home className="mr-1 h-3 w-3" />
+          {l.serviceType}
+        </span>
+      ),
+    },
     { key: "status", header: "Status", render: (l) => <StatusBadge status={l.leadStatus} /> },
     { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
     {
@@ -117,31 +191,31 @@ export default function LeadsPage() {
       ),
     },
     {
-      key: "comment",
-      header: "Last Comment",
-      render: (l) =>
-        l.comments ? (
-          <span className="max-w-[160px] truncate text-xs text-slate-600" title={l.comments}>
-            {l.comments}
-          </span>
-        ) : (
-          <span className="text-xs text-slate-400">—</span>
-        ),
-    },
-    {
       key: "actions",
       header: "",
+      stickyRight: true,
       headerClassName: "text-right",
       className: "text-right",
       render: (l) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-gray-900">
+          {l.responseLink && (
+            <a
+              href={l.responseLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="View in Property Finder"
+              className="rounded p-1.5 text-slate-400 hover:text-blue-600"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
             <Pencil className="h-4 w-4" />
           </Link>
           <CanAccess module="leads" page="all_leads" action="delete">
             <button
               onClick={() => setDeleteId(l.id)}
-              className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+              className="rounded p-1.5 text-slate-400 hover:text-rose-600"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -185,34 +259,32 @@ export default function LeadsPage() {
 
       <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
 
-      <Card>
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(l) => l.id}
-          loading={isLoading}
-          error={isError}
-          onRetry={refetch}
-          emptyTitle="No leads found"
-          emptyMessage="Try adjusting your filters or create a new lead."
-          onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={canAction("leads", "all_leads", "bulk_assign")}
-          selectedIds={selected}
-          onToggleRow={toggleRow}
-          onToggleAll={toggleAll}
-          rowClassName={(l) => (!l.isTouched ? "bg-sky-50 hover:bg-sky-100" : "")}
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(l) => l.id}
+        loading={isLoading}
+        error={isError}
+        onRetry={refetch}
+        emptyTitle="No leads found"
+        emptyMessage="Try adjusting your filters or create a new lead."
+        onRowClick={(l) => router.push(`/leads/${l.id}`)}
+        selectable={canAction("leads", "all_leads", "bulk_assign")}
+        selectedIds={selected}
+        onToggleRow={toggleRow}
+        onToggleAll={toggleAll}
+        rowClassName={(l) => (!l.isTouched ? "bg-amber-50 hover:bg-amber-100" : "")}
+      />
+      {data && data.total > 0 && (
+        <Pagination
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={(p) => setFilter("page", p)}
+          onPageSizeChange={(s) => setFilter("pageSize", s)}
         />
-        {data && data.total > 0 && (
-          <Pagination
-            page={data.page}
-            pageSize={data.pageSize}
-            total={data.total}
-            totalPages={data.totalPages}
-            onPageChange={(p) => setFilter("page", p)}
-            onPageSizeChange={(s) => setFilter("pageSize", s)}
-          />
-        )}
-      </Card>
+      )}
 
       <ConfirmModal
         open={!!deleteId}

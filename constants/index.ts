@@ -15,21 +15,21 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const ROLE_BADGE_CLASSES: Record<UserRole, string> = {
-  master: "bg-violet-100 text-violet-700 ring-violet-600/20",
-  hr_manager: "bg-pink-100 text-pink-700 ring-pink-600/20",
-  sales_manager: "bg-blue-100 text-blue-700 ring-blue-600/20",
-  sales_executive: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
+  master: "bg-violet-100 text-violet-700",
+  hr_manager: "bg-pink-100 text-pink-700",
+  sales_manager: "bg-blue-100 text-blue-700",
+  sales_executive: "bg-emerald-100 text-emerald-700",
 };
 
 // Lead status -> badge color (matches seeded lead_status values).
 export const LEAD_STATUS_COLORS: Record<string, string> = {
-  Fresh: "bg-sky-100 text-sky-700 ring-sky-600/20",
-  Interested: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  "Existing Client": "bg-indigo-100 text-indigo-700 ring-gray-900/20",
-  Cold: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  "Not Interested": "bg-rose-100 text-rose-700 ring-rose-600/20",
-  "No Answer Msg Dropped": "bg-amber-100 text-amber-700 ring-amber-600/20",
-  "Not Receiving Calls": "bg-orange-100 text-orange-700 ring-orange-600/20",
+  Fresh: "bg-sky-100 text-sky-700",
+  Interested: "bg-emerald-100 text-emerald-700",
+  "Existing Client": "bg-indigo-100 text-indigo-700",
+  Cold: "bg-slate-100 text-slate-600",
+  "Not Interested": "bg-rose-100 text-rose-700",
+  "No Answer Msg Dropped": "bg-amber-100 text-amber-700",
+  "Not Receiving Calls": "bg-orange-100 text-orange-700",
 };
 
 // Statuses considered a "conversion" for KPI/performance calculations.
@@ -41,46 +41,46 @@ export const CONVERTED_LEAD_STATUSES = ["Interested", "Existing Client"];
 export const LEAD_FUNNEL_STAGES = ["Fresh", "Interested", "Existing Client"];
 
 export const LEAD_PRIORITY_COLORS: Record<string, string> = {
-  Hot: "bg-rose-100 text-rose-700 ring-rose-600/20",
-  Warm: "bg-amber-100 text-amber-700 ring-amber-600/20",
-  Cold: "bg-sky-100 text-sky-700 ring-sky-600/20",
+  Hot: "bg-rose-100 text-rose-700",
+  Warm: "bg-amber-100 text-amber-700",
+  Cold: "bg-sky-100 text-sky-700",
 };
 
 export const BROKER_STATUS_COLORS: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  inactive: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  suspended: "bg-rose-100 text-rose-700 ring-rose-600/20",
+  active: "bg-emerald-100 text-emerald-700",
+  inactive: "bg-slate-100 text-slate-600",
+  suspended: "bg-rose-100 text-rose-700",
 };
 
 export const ATTENDANCE_STATUS_COLORS: Record<string, string> = {
-  present: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  absent: "bg-rose-100 text-rose-700 ring-rose-600/20",
-  half_day: "bg-amber-100 text-amber-700 ring-amber-600/20",
-  late: "bg-orange-100 text-orange-700 ring-orange-600/20",
-  leave: "bg-sky-100 text-sky-700 ring-sky-600/20",
-  weekend: "bg-slate-100 text-slate-500 ring-slate-400/20",
-  holiday: "bg-violet-100 text-violet-700 ring-violet-600/20",
+  present: "bg-emerald-100 text-emerald-700",
+  absent: "bg-rose-100 text-rose-700",
+  half_day: "bg-amber-100 text-amber-700",
+  late: "bg-orange-100 text-orange-700",
+  leave: "bg-sky-100 text-sky-700",
+  weekend: "bg-slate-100 text-slate-500",
+  holiday: "bg-violet-100 text-violet-700",
 };
 
 export const LEAVE_STATUS_COLORS: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-700 ring-amber-600/20",
-  approved: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  rejected: "bg-rose-100 text-rose-700 ring-rose-600/20",
-  cancelled: "bg-slate-100 text-slate-600 ring-slate-500/20",
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-rose-100 text-rose-700",
+  cancelled: "bg-slate-100 text-slate-600",
 };
 
 export const PAYROLL_STATUS_COLORS: Record<string, string> = {
-  draft: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  generated: "bg-sky-100 text-sky-700 ring-sky-600/20",
-  sent: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
+  draft: "bg-slate-100 text-slate-600",
+  generated: "bg-sky-100 text-sky-700",
+  sent: "bg-emerald-100 text-emerald-700",
 };
 
 export const EMPLOYMENT_STATUS_COLORS: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700 ring-emerald-600/20",
-  on_leave: "bg-sky-100 text-sky-700 ring-sky-600/20",
-  suspended: "bg-orange-100 text-orange-700 ring-orange-600/20",
-  resigned: "bg-slate-100 text-slate-600 ring-slate-500/20",
-  terminated: "bg-rose-100 text-rose-700 ring-rose-600/20",
+  active: "bg-emerald-100 text-emerald-700",
+  on_leave: "bg-sky-100 text-sky-700",
+  suspended: "bg-orange-100 text-orange-700",
+  resigned: "bg-slate-100 text-slate-600",
+  terminated: "bg-rose-100 text-rose-700",
 };
 
 // Official shift timing (Asia/Dubai)

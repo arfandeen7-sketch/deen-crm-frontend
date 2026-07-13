@@ -49,6 +49,7 @@ export default function LeaveManagementPage() {
     {
       key: "actions",
       header: "Actions",
+      stickyRight: true,
       render: (r) =>
         r.status === "pending" ? (
           <div className="flex gap-1">

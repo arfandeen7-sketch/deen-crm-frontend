@@ -10,6 +10,8 @@ export interface Column<T> {
   render: (row: T) => React.ReactNode;
   className?: string;
   headerClassName?: string;
+  /** Pin this column to the right side of a horizontally scrolling table. */
+  stickyRight?: boolean;
 }
 
 export interface DataTableProps<T> {
@@ -57,65 +59,87 @@ export function DataTable<T>({
     return <EmptyState title={emptyTitle} message={emptyMessage} action={emptyAction} />;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/70 text-xs uppercase tracking-wide text-slate-500">
-            {selectable && (
-              <th className="w-10 px-4 py-3">
-                <input
-                  type="checkbox"
-                  checked={allChecked}
-                  onChange={(e) => onToggleAll?.(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-gray-500"
-                />
-              </th>
-            )}
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={cn("px-4 py-3 font-medium", col.headerClassName)}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rows.map((row) => {
-            const id = rowKey(row);
-            const selected = selectedIds.includes(id);
-            return (
-              <tr
-                key={id}
-                onClick={() => onRowClick?.(row)}
-                className={cn(
-                  "transition-colors",
-                  onRowClick && "cursor-pointer hover:bg-gray-50",
-                  selected && "bg-gray-50/50",
-                  rowClassName?.(row),
-                )}
-              >
-                {selectable && (
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      onChange={() => onToggleRow?.(id)}
-                      className="h-4 w-4 rounded border-slate-300 text-gray-900 focus:ring-black"
-                    />
-                  </td>
-                )}
-                {columns.map((col) => (
-                  <td key={col.key} className={cn("px-4 py-3 text-slate-700", col.className)}>
-                    {col.render(row)}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="overflow-hidden rounded-lg bg-background">
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-0 text-left text-sm">
+          <thead>
+            <tr className="text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary">
+              {selectable && (
+                <th className="w-12 whitespace-nowrap bg-section px-5 py-3.5 rounded-l-lg">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    onChange={(e) => onToggleAll?.(e.target.checked)}
+                    className="h-4 w-4 rounded border-border bg-background accent-foreground focus:ring-foreground"
+                  />
+                </th>
+              )}
+              {columns.map((col) => (
+                <th
+                  key={col.key}
+                  className={cn(
+                    "whitespace-nowrap bg-section px-5 py-3.5 first:rounded-l-lg last:rounded-r-lg",
+                    col.stickyRight &&
+                      "sticky right-0 z-10 bg-section",
+                    col.headerClassName,
+                  )}
+                >
+                  {col.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => {
+              const id = rowKey(row);
+              const selected = selectedIds.includes(id);
+              const isLast = index === rows.length - 1;
+              return (
+                <tr
+                  key={id}
+                  onClick={() => onRowClick?.(row)}
+                  className={cn(
+                    "group bg-background transition-colors",
+                    onRowClick && "cursor-pointer hover:bg-zinc-50",
+                    selected && "bg-zinc-50",
+                    rowClassName?.(row),
+                  )}
+                >
+                  {selectable && (
+                    <td
+                      className={cn(
+                        "bg-inherit whitespace-nowrap border-b border-border px-5 py-3.5",
+                        isLast && "border-b-0",
+                      )}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => onToggleRow?.(id)}
+                        className="h-4 w-4 rounded border-border bg-background accent-foreground focus:ring-foreground"
+                      />
+                    </td>
+                  )}
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className={cn(
+                        "bg-inherit whitespace-nowrap border-b border-border px-5 py-3.5 text-sm text-foreground-secondary",
+                        isLast && "border-b-0",
+                        col.stickyRight && "sticky right-0 z-10 bg-inherit",
+                        col.className,
+                      )}
+                    >
+                      {col.render(row)}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

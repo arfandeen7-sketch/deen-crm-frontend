@@ -59,24 +59,34 @@ export function BulkActions({
 
   return (
     <>
-      <div className="sticky top-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5">
-        <span className="text-sm font-medium text-indigo-900">
+      <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-zinc-900 px-5 py-3 shadow-lg shadow-black/20">
+        <span className="text-sm font-medium text-white">
           {selectedIds.length} selected
         </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="h-4 w-px bg-zinc-700" />
+        <div className="flex items-center gap-2">
           {canAssign && (
-            <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
+            <button
+              onClick={() => setAssignOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+            >
               <UserCheck className="h-4 w-4" /> Assign
-            </Button>
+            </button>
           )}
           {canBulkStatus && (
-            <Button size="sm" variant="outline" onClick={() => setStatusOpen(true)}>
+            <button
+              onClick={() => setStatusOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+            >
               <Tag className="h-4 w-4" /> Update Status
-            </Button>
+            </button>
           )}
-          <Button size="sm" variant="ghost" onClick={onClear}>
+          <button
+            onClick={onClear}
+            className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+          >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
 

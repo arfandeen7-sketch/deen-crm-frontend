@@ -20,6 +20,7 @@ export function LeadFilters({
 }) {
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
+  const projects = useFieldOptions("project_name");
   const projectTypes = useFieldOptions("project_type");
   const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
@@ -34,7 +35,11 @@ export function LeadFilters({
       filters.dateFrom ||
       filters.dateTo ||
       filters.projectType ||
-      filters.configuration,
+      filters.configuration ||
+      filters.projectName ||
+      filters.city ||
+      filters.locality ||
+      filters.ingestionSource,
   );
 
   return (
@@ -99,6 +104,41 @@ export function LeadFilters({
           {configurations.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
+        </Select>
+        <Select
+          value={filters.projectName ?? ""}
+          onChange={(e) => onChange("projectName", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All projects</option>
+          {projects.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </Select>
+        <SearchInput
+          value={filters.city ?? ""}
+          onChange={(v) => onChange("city", v || undefined)}
+          placeholder="Filter by city…"
+          className="h-10 w-auto sm:w-44"
+        />
+        <SearchInput
+          value={filters.locality ?? ""}
+          onChange={(v) => onChange("locality", v || undefined)}
+          placeholder="Filter by locality…"
+          className="h-10 w-auto sm:w-44"
+        />
+        <Select
+          value={filters.ingestionSource ?? ""}
+          onChange={(e) => onChange("ingestionSource", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All sources</option>
+          <option value="property_finder">Property Finder</option>
+          <option value="facebook">Facebook</option>
+          <option value="instagram">Instagram</option>
+          <option value="google">Google</option>
+          <option value="manual">Manual</option>
+          <option value="import">Import</option>
         </Select>
         {canPage("leads", "all_leads") && (
           <Select

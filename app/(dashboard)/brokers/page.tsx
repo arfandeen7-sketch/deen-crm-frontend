@@ -84,6 +84,7 @@ export default function BrokersPage() {
     {
       key: "actions",
       header: "",
+      stickyRight: true,
       headerClassName: "text-right",
       className: "text-right",
       render: (b) => (
@@ -146,29 +147,27 @@ export default function BrokersPage() {
         </Select>
       </Card>
 
-      <Card>
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(b) => b.id}
-          loading={isLoading}
-          error={isError}
-          onRetry={refetch}
-          emptyTitle="No brokers"
-          emptyMessage="Add your first broker to get started."
-          onRowClick={(b) => router.push(`/brokers/${b.id}`)}
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(b) => b.id}
+        loading={isLoading}
+        error={isError}
+        onRetry={refetch}
+        emptyTitle="No brokers"
+        emptyMessage="Add your first broker to get started."
+        onRowClick={(b) => router.push(`/brokers/${b.id}`)}
+      />
+      {data && data.total > 0 && (
+        <Pagination
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
+          onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
         />
-        {data && data.total > 0 && (
-          <Pagination
-            page={data.page}
-            pageSize={data.pageSize}
-            total={data.total}
-            totalPages={data.totalPages}
-            onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-            onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
-          />
-        )}
-      </Card>
+      )}
 
       <ConfirmModal
         open={!!deleteId}

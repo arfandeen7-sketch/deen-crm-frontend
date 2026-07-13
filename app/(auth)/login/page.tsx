@@ -227,7 +227,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-4 w-full bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="mt-4 w-full bg-black hover:bg-zinc-800 text-white text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? 'Logging in...' : 'Login'}
               </button>

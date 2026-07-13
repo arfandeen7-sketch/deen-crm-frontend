@@ -137,25 +137,29 @@ export default function ImportLeadsPage() {
             </div>
 
             {result.errors.length > 0 ? (
-              <div className="overflow-hidden rounded-lg border border-slate-200">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                    <tr>
-                      <th className="px-4 py-2">Row</th>
-                      <th className="px-4 py-2">Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {result.errors.map((err, i) => (
-                      <tr key={i}>
-                        <td className="px-4 py-2 font-medium text-slate-700">{err.row}</td>
-                        <td className="flex items-center gap-2 px-4 py-2 text-rose-600">
-                          <AlertCircle className="h-4 w-4" /> {err.reason}
-                        </td>
+              <div className="overflow-hidden rounded-lg bg-background">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-separate border-spacing-0 text-left text-sm">
+                    <thead>
+                      <tr className="text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary">
+                        <th className="whitespace-nowrap border-b border-border bg-section px-5 py-3.5">Row</th>
+                        <th className="whitespace-nowrap border-b border-border bg-section px-5 py-3.5">Reason</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {result.errors.map((err, i) => (
+                        <tr key={i} className="border-b border-border last:border-b-0">
+                          <td className="whitespace-nowrap border-b border-border px-5 py-3.5 text-sm font-medium text-foreground-secondary">
+                            {err.row}
+                          </td>
+                          <td className="flex items-center gap-2 border-b border-border px-5 py-3.5 text-sm text-rose-600">
+                            <AlertCircle className="h-4 w-4 shrink-0" /> {err.reason}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
               <p className="flex items-center gap-2 text-sm text-emerald-700">

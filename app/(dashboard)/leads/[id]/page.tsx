@@ -17,6 +17,11 @@ import {
   Handshake,
   DollarSign,
   Maximize2,
+  ExternalLink,
+  Home,
+  Hash,
+  Layers,
+  BedDouble,
 } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -81,7 +86,7 @@ export default function LeadDetailPage() {
       </Link>
 
       <PageHeader
-        title={lead.leadName}
+        title={`${lead.leadName}${lead.lastName ? ` ${lead.lastName}` : ""}`}
         subtitle={`${lead.source} · ${lead.serviceType}`}
         actions={
           <>
@@ -112,21 +117,58 @@ export default function LeadDetailPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <Card>
-            <CardHeader title="Lead Information" />
+            <CardHeader title="Contact Information" />
             <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
               <InfoRow icon={Phone} label="Mobile" value={lead.mobileNumber} />
               <InfoRow icon={Phone} label="Alternate Mobile" value={lead.alternateMobile} />
               <InfoRow icon={Mail} label="Email" value={lead.email} />
-              <InfoRow icon={Building2} label="Project" value={lead.projectName} />
-              <InfoRow icon={MapPin} label="City" value={lead.city} />
-              <InfoRow icon={MapPin} label="Locality" value={lead.locality} />
               <InfoRow icon={Calendar} label="Lead Date" value={formatDate(lead.leadDate)} />
               <InfoRow icon={Calendar} label="Follow Up Date" value={formatDate(lead.followUpDate)} />
-              {lead.price && <InfoRow icon={DollarSign} label="Price (AED)" value={lead.price} />}
-              {lead.propertySize && <InfoRow icon={Maximize2} label="Property Size" value={`${lead.propertySize} sqft`} />}
-              {lead.unitNumber && <InfoRow icon={Building2} label="Unit Number" value={lead.unitNumber} />}
             </CardBody>
           </Card>
+
+          <Card>
+            <CardHeader title="Property Details" />
+            <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+              <InfoRow icon={Building2} label="Project" value={lead.projectName} />
+              <InfoRow icon={MapPin} label="City" value={lead.city} />
+              <InfoRow icon={MapPin} label="Locality / Area" value={lead.locality} />
+              <InfoRow icon={Layers} label="Property Type" value={lead.projectType} />
+              <InfoRow icon={BedDouble} label="Configuration" value={lead.configuration} />
+              <InfoRow icon={Building2} label="Unit Number" value={lead.unitNumber} />
+              <InfoRow
+                icon={DollarSign}
+                label="Price (AED)"
+                value={lead.price ? Number(lead.price).toLocaleString() : undefined}
+              />
+              <InfoRow icon={Maximize2} label="Property Size" value={lead.propertySize ? `${lead.propertySize} sqft` : undefined} />
+              <InfoRow icon={Home} label="Service Type" value={lead.serviceType} />
+            </CardBody>
+          </Card>
+
+          {(lead.responseLink || lead.externalLeadId) && (
+            <Card>
+              <CardHeader title="Property Finder" />
+              <CardBody className="space-y-3">
+                {lead.externalLeadId && (
+                  <InfoRow icon={Hash} label="External Lead ID" value={lead.externalLeadId} />
+                )}
+                {lead.responseLink && (
+                  <div className="pt-1">
+                    <a
+                      href={lead.responseLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      View in Property Finder
+                    </a>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          )}
 
           <Card>
             <CardHeader title="Notes & Comments" />

@@ -69,6 +69,7 @@ export default function PayslipsPage() {
     {
       key: "actions",
       header: "Actions",
+      stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
           {canAction("hrms", "payslips", "download") && (

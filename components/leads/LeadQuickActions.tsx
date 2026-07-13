@@ -107,7 +107,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
     <div className="relative" ref={ref} onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        className="rounded p-1.5 text-slate-400 hover:text-slate-700"
         aria-label="Quick actions"
       >
         <MoreHorizontal className="h-4 w-4" />
@@ -253,7 +253,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
         onClose={closeModal}
         title="Assign Lead"
         description={`Assign ${lead.leadName} to a user`}
-        size="sm"
+        size="md"
         footer={
           <>
             <Button variant="outline" onClick={closeModal}>Cancel</Button>

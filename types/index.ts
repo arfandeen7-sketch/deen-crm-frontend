@@ -155,6 +155,7 @@ export interface Broker {
 export interface Lead {
   id: string;
   leadName: string;
+  lastName?: string | null;
   leadDate: string;
   followUpDate?: string | null;
   projectName?: string | null;
@@ -181,6 +182,7 @@ export interface Lead {
   createdBy: string;
   ingestionSource: LeadIngestionSource;
   externalLeadId?: string | null;
+  responseLink?: string | null;
   createdAt: string;
   updatedAt: string;
   assignedUser?: Pick<User, "id" | "fullName"> | null;
@@ -459,6 +461,7 @@ export interface LeadQueryParams {
   category?: "fresh" | "untouched" | "imported" | "assigned" | "unassigned";
   projectType?: string;
   configuration?: string;
+  ingestionSource?: string;
 }
 
 // ── Lead Report types ────────────────────────────────────────────────────────

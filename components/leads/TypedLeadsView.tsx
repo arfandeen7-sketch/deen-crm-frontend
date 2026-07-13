@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Download, Eye } from "lucide-react";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
@@ -153,6 +152,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const actionColumn: Column<Lead> = {
     key: "actions",
     header: "",
+    stickyRight: true,
     headerClassName: "text-right",
     className: "text-right",
     render: (l) => (
@@ -238,33 +238,31 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
         <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
       )}
 
-      <Card>
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(l) => l.id}
-          loading={isLoading}
-          error={isError}
-          onRetry={refetch}
-          emptyTitle={`No ${category} leads`}
-          emptyMessage="No leads match the current filters."
-          onRowClick={(l) => router.push(`/leads/${l.id}`)}
-          selectable={allowRowSelection}
-          selectedIds={selected}
-          onToggleRow={toggleRow}
-          onToggleAll={toggleAll}
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(l) => l.id}
+        loading={isLoading}
+        error={isError}
+        onRetry={refetch}
+        emptyTitle={`No ${category} leads`}
+        emptyMessage="No leads match the current filters."
+        onRowClick={(l) => router.push(`/leads/${l.id}`)}
+        selectable={allowRowSelection}
+        selectedIds={selected}
+        onToggleRow={toggleRow}
+        onToggleAll={toggleAll}
+      />
+      {data && data.total > 0 && (
+        <Pagination
+          page={data.page}
+          pageSize={data.pageSize}
+          total={data.total}
+          totalPages={data.totalPages}
+          onPageChange={(p) => setParam("page", p)}
+          onPageSizeChange={(s) => setParam("pageSize", s)}
         />
-        {data && data.total > 0 && (
-          <Pagination
-            page={data.page}
-            pageSize={data.pageSize}
-            total={data.total}
-            totalPages={data.totalPages}
-            onPageChange={(p) => setParam("page", p)}
-            onPageSizeChange={(s) => setParam("pageSize", s)}
-          />
-        )}
-      </Card>
+      )}
     </div>
   );
 }

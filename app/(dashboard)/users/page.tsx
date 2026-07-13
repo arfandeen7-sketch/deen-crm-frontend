@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Eye, Pencil, Power, Users2, ShieldCheck, UserCog } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { DataTable, type Column } from "@/components/tables/DataTable";
@@ -80,14 +79,15 @@ export default function UsersPage() {
       header: "Status",
       render: (u) =>
         u.isActive ? (
-          <Badge className="bg-emerald-100 text-emerald-700 ring-emerald-600/20">Active</Badge>
+          <Badge className="bg-emerald-100 text-emerald-700">Active</Badge>
         ) : (
-          <Badge className="bg-slate-100 text-slate-500 ring-slate-500/20">Inactive</Badge>
+          <Badge className="bg-slate-100 text-slate-500">Inactive</Badge>
         ),
     },
     {
       key: "actions",
       header: "",
+      stickyRight: true,
       headerClassName: "text-right",
       className: "text-right",
       render: (u) => (
@@ -128,18 +128,16 @@ export default function UsersPage() {
         <RoleCountCard label={ROLE_LABELS.sales_executive} count={counts?.sales_executive} icon={Users2} accent="bg-emerald-50 text-emerald-600" />
       </div>
 
-      <Card>
-        <DataTable
-          columns={columns}
-          rows={data?.users ?? []}
-          rowKey={(u) => u.id}
-          loading={isLoading}
-          error={isError}
-          onRetry={refetch}
-          emptyTitle="No users"
-          onRowClick={(u) => router.push(`/users/${u.id}`)}
-        />
-      </Card>
+      <DataTable
+        columns={columns}
+        rows={data?.users ?? []}
+        rowKey={(u) => u.id}
+        loading={isLoading}
+        error={isError}
+        onRetry={refetch}
+        emptyTitle="No users"
+        onRowClick={(u) => router.push(`/users/${u.id}`)}
+      />
 
       <ConfirmModal
         open={!!toggleUser}
