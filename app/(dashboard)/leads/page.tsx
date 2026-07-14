@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, DollarSign, Maximize2, Home } from "lucide-react";
+import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, DollarSign, Maximize2, Home, BedDouble, MapPin, Calendar } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -77,6 +77,8 @@ export default function LeadsPage() {
     }
   }
 
+  const isPFLead = (l: Lead) => l.source === "Property Finder";
+
   const columns: Column<Lead>[] = [
     {
       key: "name",
@@ -112,18 +114,21 @@ export default function LeadsPage() {
       key: "property",
       header: "Property",
       render: (l) => (
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-slate-700" title={l.projectName ?? undefined}>
-            {l.projectName ?? "—"}
-          </p>
-          {(l.locality || l.city) && (
-            <p className="text-xs text-slate-400">
-              {[l.locality, l.city].filter(Boolean).join(", ")}
+        <div className="min-w-0 space-y-0.5">
+          {l.projectName ? (
+            <p className="truncate text-sm font-medium text-slate-800" title={l.projectName}>
+              {l.projectName}
             </p>
+          ) : (
+            <p className="text-sm text-slate-400">—</p>
           )}
-          {(l.projectType || l.configuration) && (
-            <p className="text-xs text-slate-400">
-              {[l.projectType, l.configuration].filter(Boolean).join(" · ")}
+          {l.projectType && (
+            <p className="text-xs text-slate-500">{l.projectType}</p>
+          )}
+          {(l.locality || l.city) && (
+            <p className="flex items-center gap-1 text-xs text-slate-400">
+              <MapPin className="h-3 w-3" />
+              {[l.locality, l.city].filter(Boolean).join(", ")}
             </p>
           )}
         </div>
@@ -131,16 +136,22 @@ export default function LeadsPage() {
     },
     {
       key: "pricing",
-      header: "Price / Size",
+      header: "Price",
       render: (l) => (
         <div className="space-y-0.5">
           {l.price ? (
-            <p className="flex items-center gap-1 text-sm text-slate-700">
+            <p className="flex items-center gap-1 text-sm font-medium text-slate-800">
               <DollarSign className="h-3 w-3 text-slate-400" />
               {Number(l.price).toLocaleString()} AED
             </p>
           ) : (
             <p className="text-sm text-slate-400">—</p>
+          )}
+          {l.configuration && (
+            <p className="flex items-center gap-1 text-xs text-slate-400">
+              <BedDouble className="h-3 w-3" />
+              {l.configuration}
+            </p>
           )}
           {l.propertySize && (
             <p className="flex items-center gap-1 text-xs text-slate-400">
@@ -152,18 +163,18 @@ export default function LeadsPage() {
       ),
     },
     {
-      key: "serviceType",
-      header: "Service",
+      key: "category",
+      header: "Category",
       render: (l) => (
         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
           l.serviceType?.toLowerCase() === "buy"
-            ? "bg-emerald-50 text-emerald-700"
+            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
             : l.serviceType?.toLowerCase() === "rent"
-            ? "bg-blue-50 text-blue-700"
+            ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
             : "bg-slate-100 text-slate-600"
         }`}>
           <Home className="mr-1 h-3 w-3" />
-          {l.serviceType}
+          {l.serviceType ?? "—"}
         </span>
       ),
     },
@@ -171,7 +182,7 @@ export default function LeadsPage() {
     { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
     {
       key: "assigned",
-      header: "Assigned",
+      header: "Assigned To",
       render: (l) =>
         l.assignedUser ? (
           <span className="text-sm text-slate-700">{l.assignedUser.fullName}</span>
@@ -179,7 +190,21 @@ export default function LeadsPage() {
           <span className="text-xs text-slate-400">Unassigned</span>
         ),
     },
-    { key: "followup", header: "Follow Up", render: (l) => formatDate(l.followUpDate) },
+    {
+      key: "inquiry",
+      header: "Inquiry Date",
+      render: (l) => (
+        <div className="space-y-0.5">
+          <p className="flex items-center gap-1 text-xs text-slate-600">
+            <Calendar className="h-3 w-3 text-slate-400" />
+            {formatDate(isPFLead(l) ? l.createdAt : l.leadDate)}
+          </p>
+          {l.followUpDate && (
+            <p className="text-xs text-slate-400">Follow up: {formatDate(l.followUpDate)}</p>
+          )}
+        </div>
+      ),
+    },
     {
       key: "createdBy",
       header: "Created By",

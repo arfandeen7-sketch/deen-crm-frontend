@@ -35,7 +35,8 @@ import { CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useLeadActivity } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
-import { formatDate, formatDateTime, humanize, timeAgo } from "@/lib/utils";
+import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency } from "@/lib/utils";
+import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection";
 
 function InfoRow({
   icon: Icon,
@@ -127,26 +128,31 @@ export default function LeadDetailPage() {
             </CardBody>
           </Card>
 
-          <Card>
-            <CardHeader title="Property Details" />
-            <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-              <InfoRow icon={Building2} label="Project" value={lead.projectName} />
-              <InfoRow icon={MapPin} label="City" value={lead.city} />
-              <InfoRow icon={MapPin} label="Locality / Area" value={lead.locality} />
-              <InfoRow icon={Layers} label="Property Type" value={lead.projectType} />
-              <InfoRow icon={BedDouble} label="Configuration" value={lead.configuration} />
-              <InfoRow icon={Building2} label="Unit Number" value={lead.unitNumber} />
-              <InfoRow
-                icon={DollarSign}
-                label="Price (AED)"
-                value={lead.price ? Number(lead.price).toLocaleString() : undefined}
-              />
-              <InfoRow icon={Maximize2} label="Property Size" value={lead.propertySize ? `${lead.propertySize} sqft` : undefined} />
-              <InfoRow icon={Home} label="Service Type" value={lead.serviceType} />
-            </CardBody>
-          </Card>
+          <PropertyFinderSection lead={lead} />
 
-          {(lead.responseLink || lead.externalLeadId) && (
+          {/* Fallback for non-Property Finder leads */}
+          {lead.source !== 'Property Finder' && (
+            <Card>
+              <CardHeader title="Property Details" />
+              <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+                <InfoRow icon={Building2} label="Project" value={lead.projectName} />
+                <InfoRow icon={MapPin} label="City" value={lead.city} />
+                <InfoRow icon={MapPin} label="Locality / Area" value={lead.locality} />
+                <InfoRow icon={Layers} label="Property Type" value={lead.projectType} />
+                <InfoRow icon={BedDouble} label="Configuration" value={lead.configuration} />
+                <InfoRow icon={Building2} label="Unit Number" value={lead.unitNumber} />
+                <InfoRow
+                  icon={DollarSign}
+                  label="Price (AED)"
+                  value={lead.price ? Number(lead.price).toLocaleString() : undefined}
+                />
+                <InfoRow icon={Maximize2} label="Property Size" value={lead.propertySize ? `${lead.propertySize} sqft` : undefined} />
+                <InfoRow icon={Home} label="Service Type" value={lead.serviceType} />
+              </CardBody>
+            </Card>
+          )}
+
+          {lead.source !== 'Property Finder' && (lead.responseLink || lead.externalLeadId) && (
             <Card>
               <CardHeader title="Property Finder" />
               <CardBody className="space-y-3">
