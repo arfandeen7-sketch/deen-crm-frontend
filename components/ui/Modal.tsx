@@ -48,30 +48,30 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-2xl bg-white shadow-xl",
+          "relative z-10 w-full overflow-hidden rounded-[8px] bg-background shadow-xl",
           sizes[size],
         )}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4">
+          <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
             <div>
               {title && (
-                <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+                <h2 className="text-base font-semibold text-foreground">{title}</h2>
               )}
               {description && (
-                <p className="mt-1 text-sm text-slate-500">{description}</p>
+                <p className="mt-1 text-sm text-foreground-muted">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="rounded-[6px] p-1 text-foreground-muted hover:bg-panel hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>
@@ -79,7 +79,7 @@ export function Modal({
         )}
         <div className="max-h-[70vh] overflow-y-auto px-6 py-5">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+          <div className="flex justify-end gap-2 border-t border-border bg-panel px-6 py-4">
             {footer}
           </div>
         )}
@@ -131,7 +131,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p className="text-sm text-slate-600">{message}</p>
+      <p className="text-sm text-foreground-secondary">{message}</p>
     </Modal>
   );
 }

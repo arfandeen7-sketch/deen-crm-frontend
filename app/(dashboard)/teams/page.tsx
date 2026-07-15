@@ -106,25 +106,22 @@ export default function TeamsPage() {
             label="Total Teams"
             value={data?.totalTeams ?? 0}
             icon={Users2}
-            accent="bg-indigo-50 text-indigo-600"
           />
           <StatCard
             label="Total Executives"
             value={(data?.teams.reduce((sum, t) => sum + t.stats.teamSize, 0) ?? 0) + (data?.totalUnassigned ?? 0)}
             icon={Users2}
-            accent="bg-emerald-50 text-emerald-600"
           />
           <StatCard
             label="Unassigned"
             value={data?.totalUnassigned ?? 0}
             icon={Users2}
-            accent="bg-amber-50 text-amber-600"
           />
         </div>
 
         {data?.teams && data.teams.length > 0 && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Sales Teams</h2>
+            <h2 className="mb-4 text-lg font-semibold text-foreground">Sales Teams</h2>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               {data.teams.map((team) => (
                 <TeamCard
@@ -145,10 +142,10 @@ export default function TeamsPage() {
         )}
 
         {data?.teams.length === 0 && unassignedExecutives.length === 0 && (
-          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
-            <Users2 className="mx-auto h-12 w-12 text-slate-300" />
-            <h3 className="mt-4 text-lg font-medium text-slate-900">No teams yet</h3>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-[8px] border border-border bg-background p-12 text-center">
+            <Users2 className="mx-auto h-12 w-12 text-foreground-disabled" />
+            <h3 className="mt-4 text-lg font-medium text-foreground">No teams yet</h3>
+            <p className="mt-2 text-sm text-foreground-muted">
               Create sales managers and executives, then assign them to teams.
             </p>
           </div>
@@ -187,21 +184,19 @@ function StatCard({
   label,
   value,
   icon: Icon,
-  accent,
 }: {
   label: string;
   value: number;
   icon: React.ElementType;
-  accent: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <span className={`flex h-11 w-11 items-center justify-center rounded-lg ${accent}`}>
+    <div className="flex items-center gap-3 rounded-[8px] border border-border bg-background p-5">
+      <span className="flex h-11 w-11 items-center justify-center rounded-[6px] bg-panel text-foreground-secondary">
         <Icon className="h-5 w-5" />
       </span>
       <div>
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="text-xl font-semibold text-slate-900">{value}</p>
+        <p className="text-sm text-foreground-muted">{label}</p>
+        <p className="text-xl font-semibold text-foreground">{value}</p>
       </div>
     </div>
   );

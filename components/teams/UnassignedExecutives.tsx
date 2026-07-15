@@ -27,13 +27,13 @@ export function UnassignedExecutives({ executives, onAssign }: UnassignedExecuti
           {executives.map((exec) => (
             <div
               key={exec.id}
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3"
+              className="flex items-center justify-between rounded-[6px] border border-border bg-background p-3"
             >
               <div className="flex items-center gap-3">
                 <UserAvatar name={exec.fullName} size="sm" />
                 <div>
-                  <p className="font-medium text-slate-900">{exec.fullName}</p>
-                  <p className="text-xs text-slate-500">{exec.email}</p>
+                  <p className="font-medium text-foreground">{exec.fullName}</p>
+                  <p className="text-xs text-foreground-muted">{exec.email}</p>
                 </div>
               </div>
               {onAssign && (

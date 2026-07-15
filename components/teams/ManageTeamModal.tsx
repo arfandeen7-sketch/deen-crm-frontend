@@ -101,16 +101,16 @@ export function ManageTeamModal({
 
         {/* ── Team Leader ───────────────────────────────────── */}
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-muted">
             Team Leader
           </p>
-          <div className="flex items-center gap-3 rounded-lg border border-violet-200 bg-violet-50 p-3">
+          <div className="flex items-center gap-3 rounded-[6px] border border-border bg-panel p-3">
             <UserAvatar name={team.fullName} size="md" />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-900">{team.fullName}</p>
-              <p className="text-xs text-slate-500 truncate">{team.email}</p>
+              <p className="font-semibold text-foreground">{team.fullName}</p>
+              <p className="text-xs text-foreground-muted truncate">{team.email}</p>
             </div>
-            <Badge className="shrink-0 bg-violet-100 text-violet-700 ring-violet-600/20">
+            <Badge className="shrink-0 bg-background text-foreground-secondary">
               <Crown className="mr-1 inline h-3 w-3" />Manager
             </Badge>
           </div>
@@ -119,18 +119,18 @@ export function ManageTeamModal({
         {/* ── Current Members ───────────────────────────────── */}
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
               Team Members
             </p>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+            <span className="rounded-full bg-panel px-2 py-0.5 text-xs font-medium text-foreground-secondary">
               {team.teamMembers.length}
             </span>
           </div>
 
           {team.teamMembers.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
-              <UserPlus className="mx-auto mb-2 h-7 w-7 text-slate-300" />
-              <p className="text-sm text-slate-400">
+            <div className="rounded-[6px] border border-dashed border-border bg-panel px-4 py-6 text-center">
+              <UserPlus className="mx-auto mb-2 h-7 w-7 text-foreground-disabled" />
+              <p className="text-sm text-foreground-muted">
                 No members assigned yet — add executives below.
               </p>
             </div>
@@ -141,18 +141,18 @@ export function ManageTeamModal({
                 return (
                   <div
                     key={member.id}
-                    className={`flex items-center gap-3 rounded-lg border p-3 transition-all ${
+                    className={`flex items-center gap-3 rounded-[6px] border p-3 transition-all ${
                       marked
-                        ? "border-rose-300 bg-rose-50"
-                        : "border-slate-200 bg-white"
+                        ? "border-foreground/30 bg-panel"
+                        : "border-border bg-background"
                     }`}
                   >
                     <UserAvatar name={member.fullName} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-foreground">
                         {member.fullName}
                       </p>
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-foreground-muted truncate">
                         {member.email}
                       </p>
                     </div>
@@ -160,10 +160,10 @@ export function ManageTeamModal({
                       type="button"
                       onClick={() => toggleRemove(member.id)}
                       disabled={loading}
-                      className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
+                      className={`flex shrink-0 items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
                         marked
-                          ? "bg-rose-200 text-rose-700 hover:bg-rose-300"
-                          : "bg-slate-100 text-slate-600 hover:bg-rose-100 hover:text-rose-600"
+                          ? "bg-foreground text-white hover:bg-foreground/90"
+                          : "bg-panel text-foreground-secondary hover:bg-foreground hover:text-white"
                       }`}
                     >
                       <UserMinus className="h-3.5 w-3.5" />
@@ -180,10 +180,10 @@ export function ManageTeamModal({
         {addableExecutives.length > 0 && (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
                 Add Executives
               </p>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+              <span className="rounded-full bg-panel px-2 py-0.5 text-xs font-medium text-foreground-secondary">
                 {addableExecutives.length} unassigned
               </span>
             </div>
@@ -196,25 +196,25 @@ export function ManageTeamModal({
                     type="button"
                     disabled={loading}
                     onClick={() => toggleAdd(exec.id)}
-                    className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all disabled:opacity-50 ${
+                    className={`flex w-full items-center gap-3 rounded-[6px] border p-3 text-left transition-all disabled:opacity-50 ${
                       selected
-                        ? "border-indigo-500 bg-indigo-50"
-                        : "border-slate-200 bg-white hover:bg-slate-50"
+                        ? "border-foreground bg-panel"
+                        : "border-border bg-background hover:bg-panel"
                     }`}
                   >
                     <UserAvatar name={exec.fullName} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-foreground">
                         {exec.fullName}
                       </p>
-                      <p className="text-xs text-slate-500 truncate">{exec.email}</p>
+                      <p className="text-xs text-foreground-muted truncate">{exec.email}</p>
                     </div>
                     {selected ? (
-                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent">
                         <Check className="h-3 w-3 text-white" />
                       </div>
                     ) : (
-                      <div className="h-5 w-5 shrink-0 rounded-full border-2 border-slate-200" />
+                      <div className="h-5 w-5 shrink-0 rounded-full border-2 border-border" />
                     )}
                   </button>
                 );
@@ -224,14 +224,14 @@ export function ManageTeamModal({
         )}
 
         {addableExecutives.length === 0 && (
-          <p className="rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-400">
+          <p className="rounded-[6px] bg-panel px-4 py-3 text-xs text-foreground-muted">
             No unassigned executives available to add to this team.
           </p>
         )}
 
         {/* ── Pending-changes summary ───────────────────────── */}
         {hasChanges && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <div className="rounded-[6px] border border-border bg-panel p-3 text-xs text-foreground-secondary">
             {toRemove.length > 0 && (
               <span>
                 {toRemove.length} member{toRemove.length > 1 ? "s" : ""} will be removed.{" "}

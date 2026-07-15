@@ -72,7 +72,7 @@ export function AssignTeamModal({
     >
       <div className="space-y-5">
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
+          <label className="mb-2 block text-sm font-medium text-foreground-secondary">
             Select Manager
           </label>
           <div className="space-y-2">
@@ -80,19 +80,19 @@ export function AssignTeamModal({
               <button
                 key={manager.id}
                 onClick={() => setSelectedManager(manager.id)}
-                className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                className={`flex w-full items-center gap-3 rounded-[6px] border p-3 text-left transition-colors ${
                   selectedManager === manager.id
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
+                    ? "border-foreground bg-panel"
+                    : "border-border bg-background hover:bg-panel"
                 }`}
               >
                 <UserAvatar name={manager.fullName} size="sm" />
                 <div className="flex-1">
-                  <p className="font-medium text-slate-900">{manager.fullName}</p>
-                  <p className="text-xs text-slate-500">{manager.email}</p>
+                  <p className="font-medium text-foreground">{manager.fullName}</p>
+                  <p className="text-xs text-foreground-muted">{manager.email}</p>
                 </div>
                 {selectedManager === manager.id && (
-                  <div className="h-5 w-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                  <div className="h-5 w-5 rounded-full bg-accent flex items-center justify-center">
                     <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 12 12">
                       <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -104,7 +104,7 @@ export function AssignTeamModal({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
+          <label className="mb-2 block text-sm font-medium text-foreground-secondary">
             Select Executives ({selectedExecutives.length} selected)
           </label>
           <div className="max-h-64 space-y-2 overflow-y-auto">
@@ -113,19 +113,19 @@ export function AssignTeamModal({
                 key={exec.id}
                 onClick={() => toggleExecutive(exec.id)}
                 disabled={preselectedExecutive?.id === exec.id}
-                className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                className={`flex w-full items-center gap-3 rounded-[6px] border p-3 text-left transition-colors ${
                   selectedExecutives.includes(exec.id)
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
+                    ? "border-foreground bg-panel"
+                    : "border-border bg-background hover:bg-panel"
                 } ${preselectedExecutive?.id === exec.id ? "opacity-50" : ""}`}
               >
                 <UserAvatar name={exec.fullName} size="sm" />
                 <div className="flex-1">
-                  <p className="font-medium text-slate-900">{exec.fullName}</p>
-                  <p className="text-xs text-slate-500">{exec.email}</p>
+                  <p className="font-medium text-foreground">{exec.fullName}</p>
+                  <p className="text-xs text-foreground-muted">{exec.email}</p>
                 </div>
                 {selectedExecutives.includes(exec.id) && (
-                  <div className="h-5 w-5 rounded-full bg-indigo-600 flex items-center justify-center">
+                  <div className="h-5 w-5 rounded-full bg-accent flex items-center justify-center">
                     <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 12 12">
                       <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
