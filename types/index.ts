@@ -189,6 +189,29 @@ export interface Lead {
   creator?: Pick<User, "id" | "fullName"> | null;
   broker?: Pick<Broker, "id" | "brokerName"> | null;
   statusHistory?: LeadStatusHistory[];
+  // Property Finder enrichment fields
+  pfPropertyTitle?: string | null;
+  pfPropertyReference?: string | null;
+  pfListingId?: string | null;
+  pfPropertyCategory?: string | null;
+  pfPropertyType?: string | null;
+  pfCurrency?: string | null;
+  pfBedrooms?: string | null;
+  pfBathrooms?: string | null;
+  pfFurnishedStatus?: string | null;
+  pfCompletionStatus?: string | null;
+  pfCommunityName?: string | null;
+  pfBuildingName?: string | null;
+  pfEmirate?: string | null;
+  pfListingStatus?: string | null;
+  pfAgentName?: string | null;
+  pfAgencyName?: string | null;
+  pfPermitNumber?: string | null;
+  pfChannel?: string | null;
+  pfLeadStatus?: string | null;
+  pfEntityType?: string | null;
+  pfPublicProfileId?: string | null;
+  pfTags?: string | null;
 }
 
 export interface LeadStatusHistory {

@@ -22,15 +22,17 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
-import { toDatetimeLocal } from "@/lib/utils";
+import { toDatetimeLocal, cn } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 type ActiveModal = "status" | "comment" | "followup" | "assign" | null;
 
 export function LeadQuickActions({ lead }: { lead: Lead }) {
   const [open, setOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [active, setActive] = useState<ActiveModal>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { canAction } = useAuth();
   const { update, bulkAssign } = useLeadMutations();
   const { users } = useAssignableUsers();
@@ -41,13 +43,64 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
   const [followUpDate, setFollowUpDate] = useState(toDatetimeLocal(lead.followUpDate));
   const [assignTo, setAssignTo] = useState(lead.assignedTo ?? "");
 
+  // Close other dropdowns when this one opens (one-at-a-time)
   useEffect(() => {
-    if (open) return;
+    if (!open) return;
+    window.dispatchEvent(new CustomEvent("lead-dropdown-open", { detail: { id: lead.id } }));
+  }, [open, lead.id]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id !== lead.id) setOpen(false);
+    };
+    window.addEventListener("lead-dropdown-open", handler);
+    return () => window.removeEventListener("lead-dropdown-open", handler);
+  }, [lead.id]);
+
+  // Click outside to close
+  useEffect(() => {
+    if (!open) return;
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // Fix z-index: lift the containing td and tr above other rows when open
+  useEffect(() => {
+    if (!ref.current) return;
+    const td = ref.current.closest("td");
+    const tr = ref.current.closest("tr");
+    if (open) {
+      if (td) td.style.zIndex = "50";
+      if (tr) {
+        tr.style.position = "relative";
+        tr.style.zIndex = "40";
+      }
+      // Calculate whether to open upward based on available space in the scroll container
+      const rect = ref.current.getBoundingClientRect();
+      const scrollContainer = ref.current.closest('.overflow-x-auto') as HTMLElement | null;
+      const containerBottom = scrollContainer
+        ? scrollContainer.getBoundingClientRect().bottom
+        : window.innerHeight;
+      const spaceBelow = containerBottom - rect.bottom;
+      setOpenUpward(spaceBelow < 320);
+    } else {
+      if (td) td.style.zIndex = "";
+      if (tr) {
+        tr.style.position = "";
+        tr.style.zIndex = "";
+      }
+    }
+    return () => {
+      if (td) td.style.zIndex = "";
+      if (tr) {
+        tr.style.position = "";
+        tr.style.zIndex = "";
+      }
+    };
   }, [open]);
 
   function openModal(m: ActiveModal) {
@@ -114,7 +167,13 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-30 mt-1 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+        <div
+          ref={menuRef}
+          className={cn(
+            "absolute right-0 z-50 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
+            openUpward ? "bottom-full mb-1" : "mt-1",
+          )
+          }>
           <Link
             href={`/leads/${lead.id}`}
             className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"

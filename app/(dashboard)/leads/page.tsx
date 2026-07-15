@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, DollarSign, Maximize2, Home, BedDouble, MapPin, Calendar } from "lucide-react";
+import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, Calendar } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -79,10 +79,12 @@ export default function LeadsPage() {
 
   const isPFLead = (l: Lead) => l.source === "Property Finder";
 
+  const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
+
   const columns: Column<Lead>[] = [
     {
       key: "name",
-      header: "Lead",
+      header: "Name",
       render: (l) => (
         <div className="flex items-center gap-2.5">
           <UserAvatar name={l.leadName} size="sm" />
@@ -90,11 +92,15 @@ export default function LeadsPage() {
             <p className="font-medium text-slate-900">
               {l.leadName}{l.lastName ? ` ${l.lastName}` : ""}
             </p>
-            <p className="text-xs text-slate-500">{l.mobileNumber}</p>
             {l.email && <p className="text-xs text-slate-400">{l.email}</p>}
           </div>
         </div>
       ),
+    },
+    {
+      key: "contact",
+      header: "Contact",
+      render: (l) => <span className="text-sm text-slate-700">{l.mobileNumber}</span>,
     },
     {
       key: "source",
@@ -110,76 +116,7 @@ export default function LeadsPage() {
         </div>
       ),
     },
-    {
-      key: "property",
-      header: "Property",
-      render: (l) => (
-        <div className="min-w-0 space-y-0.5">
-          {l.projectName ? (
-            <p className="truncate text-sm font-medium text-slate-800" title={l.projectName}>
-              {l.projectName}
-            </p>
-          ) : (
-            <p className="text-sm text-slate-400">—</p>
-          )}
-          {l.projectType && (
-            <p className="text-xs text-slate-500">{l.projectType}</p>
-          )}
-          {(l.locality || l.city) && (
-            <p className="flex items-center gap-1 text-xs text-slate-400">
-              <MapPin className="h-3 w-3" />
-              {[l.locality, l.city].filter(Boolean).join(", ")}
-            </p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "pricing",
-      header: "Price",
-      render: (l) => (
-        <div className="space-y-0.5">
-          {l.price ? (
-            <p className="flex items-center gap-1 text-sm font-medium text-slate-800">
-              <DollarSign className="h-3 w-3 text-slate-400" />
-              {Number(l.price).toLocaleString()} AED
-            </p>
-          ) : (
-            <p className="text-sm text-slate-400">—</p>
-          )}
-          {l.configuration && (
-            <p className="flex items-center gap-1 text-xs text-slate-400">
-              <BedDouble className="h-3 w-3" />
-              {l.configuration}
-            </p>
-          )}
-          {l.propertySize && (
-            <p className="flex items-center gap-1 text-xs text-slate-400">
-              <Maximize2 className="h-3 w-3" />
-              {l.propertySize} sqft
-            </p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "category",
-      header: "Category",
-      render: (l) => (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-          l.serviceType?.toLowerCase() === "buy"
-            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-            : l.serviceType?.toLowerCase() === "rent"
-            ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
-            : "bg-slate-100 text-slate-600"
-        }`}>
-          <Home className="mr-1 h-3 w-3" />
-          {l.serviceType ?? "—"}
-        </span>
-      ),
-    },
     { key: "status", header: "Status", render: (l) => <StatusBadge status={l.leadStatus} /> },
-    { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
     {
       key: "assigned",
       header: "Assigned To",
@@ -188,6 +125,95 @@ export default function LeadsPage() {
           <span className="text-sm text-slate-700">{l.assignedUser.fullName}</span>
         ) : (
           <span className="text-xs text-slate-400">Unassigned</span>
+        ),
+    },
+    { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
+    {
+      key: "broker",
+      header: "Broker",
+      render: (l) =>
+        l.broker ? (
+          <span className="text-sm text-slate-700">{l.broker.brokerName}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "project",
+      header: "Project",
+      render: (l) =>
+        l.pfBuildingName ? (
+          <span className="text-sm text-slate-700">{l.pfBuildingName}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "community",
+      header: "Community",
+      render: (l) =>
+        l.pfCommunityName ? (
+          <span className="text-sm text-slate-700">{l.pfCommunityName}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      render: (l) =>
+        l.pfPropertyType ? (
+          <span className="text-sm capitalize text-slate-700">{l.pfPropertyType}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "category",
+      header: "Category",
+      render: (l) =>
+        l.pfPropertyCategory ? (
+          <span className="text-sm capitalize text-slate-700">{l.pfPropertyCategory}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "price",
+      header: "Price",
+      render: (l) =>
+        l.price ? (
+          <span className="text-sm font-medium text-slate-800">
+            AED {Number(l.price).toLocaleString()}
+          </span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "unit",
+      header: "Unit",
+      render: (l) =>
+        l.unitNumber ? <span className="text-sm text-slate-700">{l.unitNumber}</span> : <Dash />,
+    },
+    {
+      key: "size",
+      header: "Size",
+      render: (l) =>
+        l.propertySize ? (
+          <span className="text-sm text-slate-700">{l.propertySize} sqft</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "configuration",
+      header: "Configuration",
+      render: (l) =>
+        l.configuration ? (
+          <span className="text-sm text-slate-700">{l.configuration}</span>
+        ) : (
+          <Dash />
         ),
     },
     {

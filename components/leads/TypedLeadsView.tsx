@@ -90,19 +90,36 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const baseColumns: Column<Lead>[] = [
     {
       key: "name",
-      header: "Lead",
+      header: "Name",
       render: (l) => (
         <div className="flex items-center gap-2.5">
           <UserAvatar name={l.leadName} size="sm" />
           <div>
-            <p className="font-medium text-slate-900">{l.leadName}</p>
-            <p className="text-xs text-slate-500">{l.mobileNumber}</p>
+            <p className="font-medium text-slate-900">
+              {l.leadName}{l.lastName ? ` ${l.lastName}` : ""}
+            </p>
+            {l.email && <p className="text-xs text-slate-400">{l.email}</p>}
           </div>
         </div>
       ),
     },
+    {
+      key: "contact",
+      header: "Contact",
+      render: (l) => <span className="text-sm text-slate-700">{l.mobileNumber}</span>,
+    },
     { key: "source", header: "Source", render: (l) => l.source },
     { key: "status", header: "Status", render: (l) => <StatusBadge status={l.leadStatus} /> },
+    {
+      key: "assigned",
+      header: "Assigned To",
+      render: (l) =>
+        l.assignedUser ? (
+          <span className="text-sm text-slate-700">{l.assignedUser.fullName}</span>
+        ) : (
+          <span className="text-xs text-slate-400">Unassigned</span>
+        ),
+    },
     { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
   ];
 
@@ -127,16 +144,6 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
     }
     if (category === "assigned") {
       return [
-        {
-          key: "assignedTo",
-          header: "Assigned To",
-          render: (l) =>
-            l.assignedUser ? (
-              <span className="text-sm text-slate-700">{l.assignedUser.fullName}</span>
-            ) : (
-              <span className="text-xs text-slate-400">—</span>
-            ),
-        },
         {
           key: "assignedDate",
           header: "Assigned Date",
