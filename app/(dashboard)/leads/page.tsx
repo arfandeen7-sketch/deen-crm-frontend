@@ -108,11 +108,7 @@ export default function LeadsPage() {
       render: (l) => (
         <div className="space-y-0.5">
           <p className="text-sm text-slate-700">{l.source}</p>
-          {l.ingestionSource !== "manual" && l.ingestionSource !== "import" && (
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
-              {l.ingestionSource}
-            </code>
-          )}
+          {l.ingestionSource !== "manual" && l.ingestionSource !== "import"}
         </div>
       ),
     },

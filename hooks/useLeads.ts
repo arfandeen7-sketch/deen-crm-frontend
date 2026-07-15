@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { leadsService, type LeadInput } from "@/services/leads/leads.service";
 import type { LeadQueryParams } from "@/types";
+import { POLL_FAST } from "@/constants";
 
 const KEY = "leads";
 
@@ -15,6 +16,7 @@ export function useLeadsList(params: LeadQueryParams) {
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => leadsService.list(params),
+    refetchInterval: POLL_FAST,
   });
 }
 
@@ -23,6 +25,7 @@ export function useLead(id: string | undefined) {
     queryKey: [KEY, "detail", id],
     queryFn: () => leadsService.get(id as string),
     enabled: !!id,
+    refetchInterval: POLL_FAST,
   });
 
   // Viewing a lead's detail page marks it as touched server-side (see backend

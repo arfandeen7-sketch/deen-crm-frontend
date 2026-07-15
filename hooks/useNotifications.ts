@@ -3,14 +3,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationsService } from "@/services/notifications/notifications.service";
 import type { AppNotification } from "@/types";
+import { POLL_FAST } from "@/constants";
 
-/** Badge count — polls every 60 s. */
+/** Badge count — polls on POLL_FAST interval. */
 export function useUnreadCount(): number {
   const { data } = useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: () => notificationsService.unreadCount(),
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: POLL_FAST,
+    staleTime: POLL_FAST,
   });
   return data?.count ?? 0;
 }
@@ -23,7 +24,8 @@ export function useNotifications(unreadOnly = false) {
       const res = await notificationsService.list({ pageSize: 20, unread: unreadOnly || undefined });
       return res.data;
     },
-    staleTime: 20_000,
+    staleTime: POLL_FAST,
+    refetchInterval: POLL_FAST,
     retry: 1,
   });
 }

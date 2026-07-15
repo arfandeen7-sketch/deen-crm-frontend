@@ -10,6 +10,7 @@ import { emailService, type SmtpConfigInput, type EmailTemplateInput } from "@/s
 import { loginActivityService, type LoginActivityQuery } from "@/services/hrms/login-activity.service";
 import { hrReportsService, type HrReportQuery, type HrReportType } from "@/services/hrms/hr-reports.service";
 import type { AttendanceCheckPayload, EmploymentStatus, LeaveApplyPayload, LeaveStatus } from "@/types";
+import { POLL_FAST, POLL_SLOW } from "@/constants";
 
 // ── Employee Hooks ───────────────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ export function useEmployeeList(params: EmployeeQuery) {
   return useQuery({
     queryKey: ["employees", "list", params],
     queryFn: () => employeeService.list(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -25,6 +27,7 @@ export function useEmployee(id: string | undefined) {
     queryKey: ["employees", "detail", id],
     queryFn: () => employeeService.get(id as string),
     enabled: !!id,
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -56,6 +59,7 @@ export function useAttendanceList(params: AttendanceQuery) {
   return useQuery({
     queryKey: ["attendance", "list", params],
     queryFn: () => attendanceService.list(params),
+    refetchInterval: POLL_FAST,
   });
 }
 
@@ -63,6 +67,7 @@ export function useMyAttendance(params: Omit<AttendanceQuery, "userId"> = {}) {
   return useQuery({
     queryKey: ["attendance", "my-list", params],
     queryFn: () => attendanceService.myList(params),
+    refetchInterval: POLL_FAST,
   });
 }
 
@@ -70,6 +75,7 @@ export function useTodayAttendance() {
   return useQuery({
     queryKey: ["attendance", "today"],
     queryFn: () => attendanceService.today(),
+    refetchInterval: POLL_FAST,
   });
 }
 
@@ -78,6 +84,7 @@ export function useAttendanceUserSummary(userId: string, params: { month: number
     queryKey: ["attendance", "user-summary", userId, params],
     queryFn: () => attendanceService.userSummary(userId, params),
     enabled: !!userId,
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -103,6 +110,7 @@ export function useLeaveList(params: LeaveQuery) {
   return useQuery({
     queryKey: ["leave", "list", params],
     queryFn: () => leaveService.list(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -110,6 +118,7 @@ export function useMyLeaves(params: Omit<LeaveQuery, "userId"> = {}) {
   return useQuery({
     queryKey: ["leave", "my-list", params],
     queryFn: () => leaveService.myList(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -117,6 +126,7 @@ export function useLeaveBalance(userId?: string) {
   return useQuery({
     queryKey: ["leave", "balance", userId],
     queryFn: () => leaveService.balance(userId),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -169,6 +179,7 @@ export function usePayslipList(params: PayslipQuery) {
   return useQuery({
     queryKey: ["payslips", "list", params],
     queryFn: () => payslipService.list(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -176,6 +187,7 @@ export function useMyPayslips(params: Omit<PayslipQuery, "userId"> = {}) {
   return useQuery({
     queryKey: ["payslips", "my-list", params],
     queryFn: () => payslipService.myList(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -184,6 +196,7 @@ export function usePayslip(id: string | undefined) {
     queryKey: ["payslips", "detail", id],
     queryFn: () => payslipService.get(id as string),
     enabled: !!id,
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -269,6 +282,7 @@ export function useLoginActivityList(params: LoginActivityQuery) {
   return useQuery({
     queryKey: ["login-activity", "list", params],
     queryFn: () => loginActivityService.list(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -279,5 +293,6 @@ export function useHrReport(type: HrReportType, params: HrReportQuery = {}) {
     queryKey: ["hr-reports", type, params],
     queryFn: () => hrReportsService.getReport(type, params),
     enabled: !!type,
+    refetchInterval: POLL_SLOW,
   });
 }

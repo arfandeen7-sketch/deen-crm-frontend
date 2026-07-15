@@ -10,6 +10,7 @@ import {
 } from "@/services/users/users.service";
 import { teamsService } from "@/services/teams/teams.service";
 import { useAuth } from "@/hooks/useAuth";
+import { POLL_SLOW } from "@/constants";
 
 /** Full users list with role counts. */
 export function useUsers() {
@@ -18,6 +19,7 @@ export function useUsers() {
     queryKey: ["users"],
     queryFn: () => usersService.list(),
     enabled: hasModule("users"),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -92,6 +94,7 @@ export function useUser(id: string | undefined) {
     queryKey: ["users", "detail", id],
     queryFn: () => usersService.get(id as string),
     enabled: !!id,
+    refetchInterval: POLL_SLOW,
   });
 }
 

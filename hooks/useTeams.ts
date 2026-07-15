@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { teamsService } from "@/services/teams/teams.service";
 import { useAuth } from "@/hooks/useAuth";
+import { POLL_SLOW } from "@/constants";
 import type {
   AssignTeamPayload,
   ReassignExecutivePayload,
@@ -15,6 +16,7 @@ export function useAllTeams() {
     queryKey: ["teams", "all"],
     queryFn: () => teamsService.getAllTeams(),
     enabled: role === "master",
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -24,6 +26,7 @@ export function useMyTeam() {
     queryKey: ["teams", "my-team"],
     queryFn: () => teamsService.getMyTeam(),
     enabled: role === "sales_manager",
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -32,6 +35,7 @@ export function useTeamMembers(managerId: string | undefined) {
     queryKey: ["teams", "members", managerId],
     queryFn: () => teamsService.getTeamMembers(managerId as string),
     enabled: !!managerId,
+    refetchInterval: POLL_SLOW,
   });
 }
 

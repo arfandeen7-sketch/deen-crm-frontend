@@ -11,6 +11,7 @@ import {
   type BrokerQuery,
 } from "@/services/brokers/brokers.service";
 import type { Broker } from "@/types";
+import { POLL_FAST, POLL_SLOW } from "@/constants";
 
 const KEY = "brokers";
 
@@ -18,6 +19,7 @@ export function useBrokersList(params: BrokerQuery) {
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => brokersService.list(params),
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -26,6 +28,7 @@ export function useBroker(id: string | undefined) {
     queryKey: [KEY, "detail", id],
     queryFn: () => brokersService.get(id as string),
     enabled: !!id,
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -34,6 +37,7 @@ export function useBrokerLeads(id: string | undefined) {
     queryKey: [KEY, "leads", id],
     queryFn: () => brokersService.leads(id as string),
     enabled: !!id,
+    refetchInterval: POLL_FAST,
   });
 }
 

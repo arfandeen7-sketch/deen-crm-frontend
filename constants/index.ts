@@ -2,6 +2,10 @@ import type { UserRole } from "@/types";
 
 export const APP_NAME = "DEEN Properties CRM";
 
+/** Polling intervals — used as refetchInterval on TanStack Query hooks. */
+export const POLL_FAST = 20_000;  // 20 s — live lists: leads, dashboard, follow-ups, attendance, notifications
+export const POLL_SLOW = 60_000;  // 60 s — reference data: users, brokers, employees, leave, payslips
+
 export const TOKEN_STORAGE_KEY = "deen_crm_token";
 
 export const PAGE_SIZES = [10, 25, 50, 100] as const;

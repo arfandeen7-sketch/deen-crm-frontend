@@ -5,7 +5,7 @@ import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { reportsService } from "@/services/leads/reports.service";
 import { activityService } from "@/services/leads/activity.service";
 import { usersService } from "@/services/users/users.service";
-import { CONVERTED_LEAD_STATUSES } from "@/constants";
+import { CONVERTED_LEAD_STATUSES, POLL_SLOW } from "@/constants";
 import type {
   LeadReportParams,
   LeadReportKpis,
@@ -89,6 +89,7 @@ export function useEmployeeActivity(userId: string | undefined, params: { dateFr
     queryFn: () =>
       activityService.global({ actorId: userId, pageSize: params.pageSize ?? 100, dateFrom: params.dateFrom, dateTo: params.dateTo }),
     enabled: !!userId,
+    refetchInterval: POLL_SLOW,
   });
 }
 
@@ -214,6 +215,7 @@ export function useDailyEmployeePerformanceList(date?: string) {
     queryFn: () => reportsService.dailyUserPerformance(range),
     enabled: Boolean(range.dateFrom && range.dateTo),
     staleTime: 60_000,
+    refetchInterval: POLL_SLOW,
   });
   const enhanced = useEnhancedEmployeePerformance(performance.data, { includeAllUsers: true });
 
@@ -228,6 +230,7 @@ export function useEmployeeReport(userId: string | undefined, params: LeadReport
     queryKey: [KEY, "employee-report", userId, params],
     queryFn: () => reportsService.employeeReport({ ...params, userId: userId! }),
     enabled: !!userId,
+    refetchInterval: POLL_SLOW,
   });
 }
 
