@@ -11,7 +11,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export const api: AxiosInstance = axios.create({
   baseURL: `${BASE_URL}/api`,
-  headers: { "Content-Type": "application/json" },
 });
 
 // Attach Bearer token from the auth store on every request.

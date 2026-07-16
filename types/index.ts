@@ -232,8 +232,14 @@ export interface AttendanceRecord {
   date: string;
   checkInTime?: string | null;
   checkOutTime?: string | null;
+  checkInPhoto?: string | null;
+  checkOutPhoto?: string | null;
   checkInPhotoUrl?: string | null;
   checkOutPhotoUrl?: string | null;
+  checkInLatitude?: number | null;
+  checkInLongitude?: number | null;
+  checkOutLatitude?: number | null;
+  checkOutLongitude?: number | null;
   status: AttendanceStatus;
   totalWorkingHours?: number | null;
   isManualOverride?: boolean;
@@ -252,17 +258,47 @@ export interface AttendanceReport {
 }
 
 export interface AttendanceCheckPayload {
-  photo: string; // base64 encoded image
+  photo: Blob | File;
+  latitude: number;
+  longitude: number;
+}
+
+export interface AttendanceConfig {
+  id: number;
+  officeName: string;
+  officeLatitude: number;
+  officeLongitude: number;
+  geofenceRadius: number;
+  workStartTime: string;
+  lateStartTime: string;
+  halfDayStartTime: string;
+  minFullDayHours: number;
+  minHalfDayHours: number;
+  weekendDays: string;
+  isActive: boolean;
+  updatedAt: string;
+  updatedBy?: string | null;
 }
 
 export interface AttendanceSummary {
-  presentDays: number;
-  absentDays: number;
-  lateDays: number;
-  halfDays: number;
-  leaveDays: number;
-  overtimeHours: number;
-  totalWorkingDays: number;
+  userId?: string;
+  month?: number;
+  year?: number;
+  total: number;
+  present: number;
+  late: number;
+  half_day: number;
+  absent: number;
+  leave: number;
+  weekend: number;
+  holiday: number;
+  presentDays?: number;
+  absentDays?: number;
+  lateDays?: number;
+  halfDays?: number;
+  leaveDays?: number;
+  overtimeHours?: number;
+  totalWorkingDays?: number;
 }
 
 // ── HRMS: Leave Management ───────────────────────────────────────────────────

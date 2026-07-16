@@ -5,6 +5,7 @@ import type {
   AttendanceCheckPayload,
   AttendanceReport,
   AttendanceSummary,
+  AttendanceConfig,
   Paginated,
 } from "@/types";
 
@@ -44,11 +45,21 @@ export const attendanceService = {
   get(id: string): Promise<AttendanceRecord> {
     return getData<AttendanceRecord>(`/attendance/${id}`);
   },
-  checkIn(payload: AttendanceCheckPayload): Promise<AttendanceRecord> {
-    return postData<AttendanceRecord>("/attendance/check-in", payload);
+  async checkIn(payload: AttendanceCheckPayload): Promise<AttendanceRecord> {
+    const formData = new FormData();
+    formData.append("photo", payload.photo);
+    formData.append("latitude", String(payload.latitude));
+    formData.append("longitude", String(payload.longitude));
+    const res = await api.post<{ data: AttendanceRecord }>("/attendance/check-in", formData);
+    return res.data.data;
   },
-  checkOut(payload: AttendanceCheckPayload): Promise<AttendanceRecord> {
-    return postData<AttendanceRecord>("/attendance/check-out", payload);
+  async checkOut(payload: AttendanceCheckPayload): Promise<AttendanceRecord> {
+    const formData = new FormData();
+    formData.append("photo", payload.photo);
+    formData.append("latitude", String(payload.latitude));
+    formData.append("longitude", String(payload.longitude));
+    const res = await api.post<{ data: AttendanceRecord }>("/attendance/check-out", formData);
+    return res.data.data;
   },
   manualCreate(body: ManualAttendanceInput): Promise<AttendanceRecord> {
     return postData<AttendanceRecord>("/attendance", body);
@@ -70,5 +81,11 @@ export const attendanceService = {
       responseType: "blob",
     });
     return res.data as Blob;
+  },
+  getConfig(): Promise<AttendanceConfig> {
+    return getData<AttendanceConfig>("/attendance/config");
+  },
+  updateConfig(body: Partial<AttendanceConfig>): Promise<AttendanceConfig> {
+    return putData<AttendanceConfig>("/attendance/config", body);
   },
 };

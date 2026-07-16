@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Camera, X, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,15 +20,17 @@ export function CameraCapture({ onCapture, onClose, title }: CameraCaptureProps)
   const startCamera = useCallback(async () => {
     try {
       setError(null);
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setError("Camera API not available. Ensure you are on HTTPS or localhost.");
+        return;
+      }
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: 640, height: 480 },
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
       setStream(mediaStream);
-    } catch {
-      setError("Unable to access camera. Please grant permission.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to access camera. Please grant permission.";
+      setError(msg);
     }
   }, []);
 
@@ -68,6 +70,24 @@ export function CameraCapture({ onCapture, onClose, title }: CameraCaptureProps)
     stopCamera();
     onClose();
   }, [stopCamera, onClose]);
+
+  // Assign stream to video element after it renders
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [stream]);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">

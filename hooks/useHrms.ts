@@ -104,6 +104,22 @@ export function useAttendanceCheckOut() {
   });
 }
 
+export function useAttendanceConfig() {
+  return useQuery({
+    queryKey: ["attendance", "config"],
+    queryFn: () => attendanceService.getConfig(),
+    refetchInterval: POLL_SLOW,
+  });
+}
+
+export function useUpdateAttendanceConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<import("@/types").AttendanceConfig>) => attendanceService.updateConfig(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance", "config"] }),
+  });
+}
+
 // ── Leave Hooks ──────────────────────────────────────────────────────────────
 
 export function useLeaveList(params: LeaveQuery) {

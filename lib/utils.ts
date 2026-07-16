@@ -113,3 +113,15 @@ export function formatCurrency(value?: number | string | null): string {
     maximumFractionDigits: 0,
   }).format(num);
 }
+
+/** Extract error message from API error response. */
+export function getErrorMessage(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const err = error as any;
+    if (err.response?.data?.error) return err.response.data.error;
+    if (err.response?.data?.message) return err.response.data.message;
+    if (err.message) return err.message;
+  }
+  return "An unexpected error occurred";
+}

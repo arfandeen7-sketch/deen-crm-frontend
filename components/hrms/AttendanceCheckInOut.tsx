@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import { LogIn, LogOut, Clock, CheckCircle2 } from "lucide-react";
-import { CameraCapture } from "./CameraCapture";
-import { useAttendanceCheckIn, useAttendanceCheckOut, useTodayAttendance } from "@/hooks/useHrms";
+import { CameraCaptureWithLocation } from "./CameraCaptureWithLocation";
+import { useAttendanceCheckIn, useAttendanceCheckOut, useTodayAttendance, useAttendanceConfig } from "@/hooks/useHrms";
 import { SHIFT_CONFIG } from "@/constants";
 import { toast } from "sonner";
 
 export function AttendanceCheckInOut() {
   const [showCamera, setShowCamera] = useState<"checkin" | "checkout" | null>(null);
   const { data: today, isLoading } = useTodayAttendance();
+  const { data: config } = useAttendanceConfig();
   const checkIn = useAttendanceCheckIn();
   const checkOut = useAttendanceCheckOut();
 
-  const handleCapture = (base64: string) => {
+  const handleCapture = (photo: Blob, latitude: number, longitude: number) => {
     if (showCamera === "checkin") {
       checkIn.mutate(
-        { photo: base64 },
+        { photo, latitude, longitude },
         {
           onSuccess: () => {
             toast.success("Check-in recorded successfully");
@@ -27,7 +28,7 @@ export function AttendanceCheckInOut() {
       );
     } else if (showCamera === "checkout") {
       checkOut.mutate(
-        { photo: base64 },
+        { photo, latitude, longitude },
         {
           onSuccess: () => {
             toast.success("Check-out recorded successfully");
@@ -115,16 +116,26 @@ export function AttendanceCheckInOut() {
 
         {today?.totalWorkingHours != null && (
           <p className="mt-4 text-center text-sm text-slate-600">
-            Working Hours: <span className="font-semibold">{today.totalWorkingHours.toFixed(1)}h</span>
+            Working Hours: <span className="font-semibold">{Number(today.totalWorkingHours).toFixed(1)}h</span>
           </p>
         )}
       </div>
 
       {showCamera && (
-        <CameraCapture
+        <CameraCaptureWithLocation
           title={showCamera === "checkin" ? "Check In — Capture Photo" : "Check Out — Capture Photo"}
           onCapture={handleCapture}
           onClose={() => setShowCamera(null)}
+          officeLocation={
+            config
+              ? {
+                  latitude: config.officeLatitude,
+                  longitude: config.officeLongitude,
+                  name: config.officeName,
+                  radius: config.geofenceRadius,
+                }
+              : undefined
+          }
         />
       )}
     </>

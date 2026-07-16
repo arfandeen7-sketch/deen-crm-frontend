@@ -21,11 +21,18 @@ export default function MyAttendancePage() {
   const { data, isLoading } = useMyAttendance({ page, pageSize });
   const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
 
+  const formatHours = (value: AttendanceRecord["totalWorkingHours"]) => {
+    if (value === null || value === undefined) return "—";
+    const num = Number(value);
+    if (Number.isNaN(num)) return "—";
+    return `${num.toFixed(1)}h`;
+  };
+
   const columns: Column<AttendanceRecord>[] = [
     { key: "date", header: "Date", render: (r) => formatDate(r.date) },
     { key: "checkIn", header: "Check In", render: (r) => r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
     { key: "checkOut", header: "Check Out", render: (r) => r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
-    { key: "hours", header: "Hours", render: (r) => r.totalWorkingHours != null ? `${r.totalWorkingHours.toFixed(1)}h` : "—" },
+    { key: "hours", header: "Hours", render: (r) => formatHours(r.totalWorkingHours) },
     { key: "status", header: "Status", render: (r) => <Badge className={ATTENDANCE_STATUS_COLORS[r.status]}>{r.status.replace("_", " ")}</Badge> },
   ];
 
@@ -61,7 +68,7 @@ export default function MyAttendancePage() {
                 <p className="text-xs text-sky-600">Leave</p>
               </div>
               <div className="rounded-lg bg-indigo-50 p-3 text-center">
-                <p className="text-2xl font-bold text-indigo-700">{summary.overtimeHours.toFixed(1)}h</p>
+                <p className="text-2xl font-bold text-indigo-700">{summary.overtimeHours != null ? `${summary.overtimeHours.toFixed(1)}h` : "—"}</p>
                 <p className="text-xs text-gray-900">Overtime</p>
               </div>
             </div>
