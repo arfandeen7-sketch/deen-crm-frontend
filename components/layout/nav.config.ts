@@ -27,6 +27,8 @@ import {
   Mail,
   LogIn,
   PieChart,
+  Plug,
+  Activity,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
@@ -189,6 +191,17 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Profile", href: "/settings/profile", icon: User },
       { label: "Change Password", href: "/settings/change-password", icon: KeyRound },
+    ],
+  },
+  {
+    id: "integrations",
+    title: "Integrations",
+    icon: Plug,
+    moduleKey: "integrations",
+    section: "GENERAL",
+    items: [
+      { label: "All Integrations", href: "/integrations", icon: Plug, navAccess: { module: "integrations", page: "all_integrations" } },
+      { label: "Dashboard", href: "/integrations/dashboard", icon: Activity, navAccess: { module: "integrations", page: "all_integrations", action: "health" } },
     ],
   },
 ];

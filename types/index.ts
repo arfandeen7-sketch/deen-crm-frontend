@@ -750,3 +750,162 @@ export interface ReassignExecutivePayload {
 export interface UnassignExecutivePayload {
   executiveId: string;
 }
+
+// ── Integrations (OAuth Lead Sources) ───────────────────────────────────────
+
+export type IntegrationProvider = "meta" | "google";
+export type IntegrationStatus =
+  | "pending"
+  | "active"
+  | "error"
+  | "reauthorization_required"
+  | "disconnected";
+export type IntegrationHealthStatus = "healthy" | "degraded" | "down" | "unknown";
+export type ConnectedAccountType =
+  | "meta_page"
+  | "meta_instagram_business"
+  | "meta_ad_account"
+  | "google_customer";
+export type SyncJobStatus = "queued" | "running" | "completed" | "failed" | "dead_letter";
+export type WebhookEventStatus =
+  | "received"
+  | "queued"
+  | "processing"
+  | "processed"
+  | "retryable_failed"
+  | "duplicate"
+  | "dead_letter";
+
+export interface IntegrationProviderInfo {
+  key: IntegrationProvider;
+  label: string;
+  icon: string;
+}
+
+export interface Integration {
+  id: string;
+  provider: IntegrationProvider;
+  status: IntegrationStatus;
+  displayName: string;
+  ownerUserId: string;
+  createdAt: string;
+  updatedAt: string;
+  lastHealthCheckAt?: string | null;
+  healthStatus: IntegrationHealthStatus;
+  connectedAccounts?: ConnectedAccount[];
+}
+
+export interface ConnectedAccount {
+  id: string;
+  integrationId: string;
+  externalAccountId: string;
+  accountType: ConnectedAccountType;
+  name: string;
+  parentExternalAccountId?: string | null;
+  metadata?: Record<string, unknown>;
+  selected?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface LeadForm {
+  id?: string;
+  externalFormId: string;
+  name: string;
+  externalAccountId: string;
+  metadata?: Record<string, unknown>;
+  enabled?: boolean;
+}
+
+export interface ConnectResponse {
+  authorizationUrl: string;
+  state: string;
+  expiresAt: string;
+  integrationId: string;
+}
+
+export interface HealthCheckResponse {
+  integrationId: string;
+  status: IntegrationStatus;
+  healthy: boolean;
+  issues: string[];
+}
+
+export interface CredentialHealth {
+  status: IntegrationStatus;
+  lastRefreshAt?: string | null;
+  accessTokenExpiresAt?: string | null;
+  daysUntilExpiry?: number | null;
+}
+
+export interface WebhookStats {
+  received: number;
+  processed: number;
+  failed: number;
+  duplicate: number;
+  deadLetter: number;
+  oldestUnprocessedAgeMs?: number | null;
+}
+
+export interface SyncStats {
+  total: number;
+  completed: number;
+  failed: number;
+  running: number;
+  lastCompletedAt?: string | null;
+  avgDurationMs?: number | null;
+}
+
+export interface LeadStats {
+  totalIngested: number;
+  duplicates: number;
+}
+
+export interface HealthReport {
+  integrationId: string;
+  provider: IntegrationProvider;
+  status: IntegrationStatus;
+  credentialHealth: CredentialHealth;
+  accountCount: number;
+  leadSourceCount: number;
+  webhookStats: WebhookStats;
+  syncStats: SyncStats;
+  leadStats: LeadStats;
+}
+
+export interface IntegrationsDashboard {
+  summary: {
+    totalIntegrations: number;
+    activeIntegrations: number;
+    needingAttention: number;
+    totalLeadsIngested: number;
+    totalDuplicates: number;
+    totalDeadLetterEvents: number;
+    totalFailedSyncs: number;
+  };
+  integrations: HealthReport[];
+}
+
+export interface SyncJob {
+  id: string;
+  status: SyncJobStatus;
+  jobType: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  result?: {
+    fetchedCount?: number;
+    createdCount?: number;
+    duplicateCount?: number;
+  } | null;
+  errorMessage?: string | null;
+}
+
+export interface WebhookEvent {
+  id: string;
+  status: WebhookEventStatus;
+  eventType?: string;
+  payload?: Record<string, unknown>;
+  receivedAt?: string | null;
+  processedAt?: string | null;
+  errorMessage?: string | null;
+}

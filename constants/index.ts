@@ -131,3 +131,45 @@ export const MANAGED_DYNAMIC_CATEGORIES = [
   { slug: "designation", category: "designation", label: "Designations" },
   { slug: "bank-name", category: "bank_name", label: "Bank Names" },
 ] as const;
+
+// ── Integrations ────────────────────────────────────────────────────────────
+
+export const INTEGRATION_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-700",
+  active: "bg-emerald-100 text-emerald-700",
+  error: "bg-rose-100 text-rose-700",
+  reauthorization_required: "bg-orange-100 text-orange-700",
+  disconnected: "bg-slate-100 text-slate-600",
+};
+
+export const INTEGRATION_HEALTH_COLORS: Record<string, string> = {
+  healthy: "bg-emerald-100 text-emerald-700",
+  degraded: "bg-amber-100 text-amber-700",
+  down: "bg-rose-100 text-rose-700",
+  unknown: "bg-slate-100 text-slate-500",
+};
+
+export const SYNC_JOB_STATUS_COLORS: Record<string, string> = {
+  queued: "bg-sky-100 text-sky-700",
+  running: "bg-amber-100 text-amber-700",
+  completed: "bg-emerald-100 text-emerald-700",
+  failed: "bg-rose-100 text-rose-700",
+  dead_letter: "bg-slate-100 text-slate-600",
+};
+
+export const WEBHOOK_EVENT_STATUS_COLORS: Record<string, string> = {
+  received: "bg-sky-100 text-sky-700",
+  queued: "bg-slate-100 text-slate-600",
+  processing: "bg-amber-100 text-amber-700",
+  processed: "bg-emerald-100 text-emerald-700",
+  retryable_failed: "bg-orange-100 text-orange-700",
+  duplicate: "bg-violet-100 text-violet-700",
+  dead_letter: "bg-rose-100 text-rose-700",
+};
+
+export const CONNECTED_ACCOUNT_TYPE_LABELS: Record<string, string> = {
+  meta_page: "Facebook Page",
+  meta_instagram_business: "Instagram Business",
+  meta_ad_account: "Meta Ad Account",
+  google_customer: "Google Ads Customer",
+};

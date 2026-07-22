@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Phone, KeyRound } from "lucide-react";
+import { Mail, Phone, KeyRound, Plug, Activity } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RoleBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { LoadingState } from "@/components/ui/States";
+import { CanAccess } from "@/components/shared/Guards";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ProfilePage() {
@@ -44,6 +45,31 @@ export default function ProfilePage() {
           </div>
         </CardBody>
       </Card>
+
+      <CanAccess module="integrations" page="all_integrations">
+        <Card className="max-w-xl">
+          <CardHeader title="Integrations" />
+          <CardBody className="space-y-3">
+            <p className="text-sm text-foreground-muted">Manage OAuth-based lead source integrations.</p>
+            <div className="flex gap-2">
+              <CanAccess module="integrations" page="all_integrations">
+                <Link href="/integrations">
+                  <Button variant="outline" size="sm">
+                    <Plug className="h-4 w-4" /> Manage Integrations
+                  </Button>
+                </Link>
+              </CanAccess>
+              <CanAccess module="integrations" page="all_integrations" action="health">
+                <Link href="/integrations/dashboard">
+                  <Button variant="outline" size="sm">
+                    <Activity className="h-4 w-4" /> Dashboard
+                  </Button>
+                </Link>
+              </CanAccess>
+            </div>
+          </CardBody>
+        </Card>
+      </CanAccess>
     </div>
   );
 }
