@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, Filter, Trash2 } from "lucide-react";
 import { useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { timeAgo } from "@/lib/utils";
 import type { AppNotification } from "@/types";
 
@@ -12,11 +13,11 @@ function NotificationCard({
   onRead,
 }: {
   notification: AppNotification;
-  onRead: (id: string, leadId?: string | null) => void;
+  onRead: (id: string, leadId?: string | null, type?: string) => void;
 }) {
   return (
     <div
-      onClick={() => onRead(notification.id, notification.leadId)}
+      onClick={() => onRead(notification.id, notification.leadId, notification.type)}
       className={`group relative border-b border-zinc-100 px-6 py-4 transition-colors cursor-pointer hover:bg-zinc-50 ${
         !notification.isRead ? "bg-amber-50/30" : "bg-white"
       }`}
@@ -57,10 +58,17 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const { data: notifications, isLoading, error } = useNotifications(filter === "unread");
   const { markRead, markAllRead } = useNotificationMutations();
+  const { isMaster, canPage } = useAuth();
 
-  async function handleRead(id: string, leadId?: string | null) {
+  async function handleRead(id: string, leadId?: string | null, type?: string) {
     await markRead.mutateAsync(id);
-    if (leadId) {
+    if (type === "regularization") {
+      const isHr = isMaster || canPage("hrms", "attendance_regularization");
+      router.push(isHr ? "/hrms/attendance/regularization" : "/my-hr/attendance-correction");
+    } else if (type === "leave_request" || type === "leave_review" || type === "leave_cancelled") {
+      const isHr = isMaster || canPage("hrms", "leave");
+      router.push(isHr ? "/hrms/leave/requests" : "/my-hr/leave");
+    } else if (leadId) {
       router.push(`/leads/${leadId}`);
     }
   }

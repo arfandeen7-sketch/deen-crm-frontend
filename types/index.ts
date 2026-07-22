@@ -249,7 +249,7 @@ export interface AttendanceRecord {
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
-  user?: Pick<User, "id" | "fullName" | "role" | "department"> | null;
+  user?: Pick<User, "id" | "fullName" | "role" | "department" | "employeeId"> | null;
 }
 
 export interface AttendanceReport {
@@ -303,29 +303,202 @@ export interface AttendanceSummary {
 
 // ── HRMS: Leave Management ───────────────────────────────────────────────────
 
+export type LeaveHalfDayPeriod = "first_half" | "second_half";
+export type LeaveTransactionType =
+  | "allocation"
+  | "monthly_accrual"
+  | "carry_forward"
+  | "adjustment"
+  | "consumed"
+  | "reversed"
+  | "encashed";
+
+export interface LeaveTypeConfig {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  isPaid: boolean;
+  applicableRoles: string | null;
+  genderRestriction: string | null;
+  probationAllowed: boolean;
+  requiresMedicalCertificate: boolean;
+  requiresAttachment: boolean;
+  annualAllocation: number;
+  maxDaysPerRequest: number | null;
+  maximumConsecutiveDays: number | null;
+  maximumRequestsPerMonth: number | null;
+  minimumNoticeDays: number | null;
+  halfDayAllowed: boolean;
+  futureDateAllowed: boolean;
+  backDateAllowed: boolean;
+  backDateLimitDays: number | null;
+  weekendCounted: boolean;
+  holidayCounted: boolean;
+  canCombineWith: string | null;
+  negativeBalanceAllowed: boolean;
+  resetEveryYear: boolean;
+  monthlyAccrual: boolean;
+  carryForwardEnabled: boolean;
+  carryForwardPercentage: number;
+  carryForwardExpiryMonths: number | null;
+  maxCarryForward: number | null;
+  encashmentEnabled: boolean;
+  encashmentPercentage: number;
+  manualAllocationAllowed: boolean;
+  approvalRequired: boolean;
+  approvalLevels: number;
+  autoApprove: boolean;
+  notifyHR: boolean;
+  notifyMaster: boolean;
+  notifyManager: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeavePolicy {
+  id: number;
+  financialYearStartMonth: number;
+  financialYearStartDay: number;
+  minimumNoticeDays: number;
+  maximumFutureLeaveDays: number | null;
+  maximumBackdatedLeaveDays: number | null;
+  defaultCarryForwardPercentage: number;
+  defaultCarryForwardExpiryMonths: number | null;
+  attendanceIntegrationEnabled: boolean;
+  payrollIntegrationEnabled: boolean;
+  holidayCountedInLeave: boolean;
+  weekendCountedInLeave: boolean;
+  updatedAt: string;
+}
+
 export interface LeaveRequest {
   id: string;
   userId: string;
-  leaveType: LeaveType;
+  leaveTypeCode: string;
+  leaveType?: LeaveTypeConfig | null;
   dateFrom: string;
   dateTo: string;
-  totalDays: number;
-  reason?: string | null;
+  totalDays: string;
+  isHalfDay: boolean;
+  halfDayPeriod: LeaveHalfDayPeriod | null;
+  reason: string | null;
+  attachmentUrl: string | null;
+  attachmentSignedUrl?: string | null;
   status: LeaveStatus;
-  reviewedBy?: string | null;
-  reviewedAt?: string | null;
-  reviewNote?: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
   createdAt: string;
   updatedAt: string;
-  user?: Pick<User, "id" | "fullName" | "department"> | null;
+  user?: Pick<User, "id" | "fullName" | "department" | "employeeId"> | null;
   reviewer?: Pick<User, "id" | "fullName"> | null;
 }
 
 export interface LeaveApplyPayload {
-  leaveType: LeaveType;
+  leaveTypeCode: string;
   dateFrom: string;
   dateTo: string;
+  isHalfDay: boolean;
+  halfDayPeriod?: LeaveHalfDayPeriod;
   reason?: string;
+}
+
+export interface LeaveBalanceEntry {
+  leaveTypeCode: string;
+  leaveTypeName: string;
+  allocated: number;
+  carryForward: number;
+  adjustment: number;
+  consumed: number;
+  reversed: number;
+  available: number;
+  isPaid: boolean;
+  negativeBalanceAllowed: boolean;
+}
+
+export interface LeaveAudit {
+  id: string;
+  leaveRequestId: string;
+  action: string;
+  changedBy: string;
+  oldStatus: string | null;
+  newStatus: string | null;
+  reason: string | null;
+  meta: Record<string, unknown> | null;
+  createdAt: string;
+  changer?: Pick<User, "id" | "fullName"> | null;
+}
+
+export interface LeaveCalendarDay {
+  date: string;
+  type: "present" | "late" | "half_day" | "absent" | "leave" | "weekend" | "holiday";
+  leaveRequestId?: string;
+  leaveTypeCode?: string;
+  leaveTypeName?: string;
+  leaveStatus?: LeaveStatus;
+}
+
+export interface EmployeeLeaveDashboard {
+  balances: LeaveBalanceEntry[];
+  pendingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+  upcomingLeaves: LeaveRequest[];
+  calendar: { month: number; year: number; days: LeaveCalendarDay[] };
+}
+
+export interface HrLeaveDashboard {
+  pendingCount: number;
+  approvedToday: number;
+  rejectedToday: number;
+  onLeaveToday: number;
+  upcomingLeaves: Array<{
+    userId: string;
+    fullName: string;
+    employeeId: string | null;
+    department: string | null;
+    leaveTypeCode: string;
+    leaveTypeName: string;
+    dateFrom: string;
+    dateTo: string;
+    totalDays: string;
+  }>;
+}
+
+export interface LeaveReportRow {
+  userId: string;
+  fullName: string;
+  employeeId: string | null;
+  department: string | null;
+  totalLeaveDays: number;
+  paidLeaveDays: number;
+  unpaidLeaveDays: number;
+  pendingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+  byType: Record<string, number>;
+}
+
+export interface LeaveBalanceAllRow {
+  userId: string;
+  fullName: string;
+  employeeId: string | null;
+  department: string | null;
+  balances: LeaveBalanceEntry[];
+}
+
+export interface AdjustBalancePayload {
+  userId: string;
+  leaveTypeCode: string;
+  year: number;
+  adjustmentDays: number;
+  reason: string;
 }
 
 // ── HRMS: Payroll ────────────────────────────────────────────────────────────
@@ -674,6 +847,216 @@ export interface LeadActivity {
   actor?: Pick<User, "id" | "fullName"> | null;
 }
 
+// ── HRMS: Attendance Calendar ────────────────────────────────────────────────
+
+export interface CalendarDayAttendance {
+  id: string;
+  status: AttendanceStatus;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
+  workingHours?: number | null;
+  isLate: boolean;
+  isHalfDay: boolean;
+  isManualOverride: boolean;
+  notes?: string | null;
+}
+
+export interface CalendarDay {
+  date: string;
+  dayOfWeek: number;
+  isWeekend: boolean;
+  isHoliday: boolean;
+  holidayName?: string | null;
+  hasPendingRegularization: boolean;
+  attendance: CalendarDayAttendance | null;
+}
+
+export interface CalendarSummary {
+  present: number;
+  late: number;
+  half_day: number;
+  absent: number;
+  leave: number;
+  holiday: number;
+  weekend: number;
+  totalWorkingHours: number;
+}
+
+export interface CalendarResponse {
+  userId: string;
+  month: number;
+  year: number;
+  days: CalendarDay[];
+  summary: CalendarSummary;
+}
+
+// ── HRMS: Attendance Dashboard ────────────────────────────────────────────────
+
+export interface AttendanceDashboardData {
+  totalStaff: number;
+  checkedIn: number;
+  currentlyWorking: number;
+  checkedOut: number;
+  present: number;
+  late: number;
+  half_day: number;
+  absent: number;
+  onLeave: number;
+  noRecord: number;
+  targetHours: number;
+  totalWorkingHours: number;
+  dailyRows?: DailyReportRow[];
+}
+
+// ── HRMS: Attendance Reports ─────────────────────────────────────────────────
+
+export interface DailyReportRow {
+  userId: string;
+  fullName: string;
+  department?: string | null;
+  designation?: string | null;
+  status: AttendanceStatus | null;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
+  totalWorkingHours?: number | null;
+  isManualOverride?: boolean;
+}
+
+export interface DailyReport {
+  date: string;
+  rows: DailyReportRow[];
+  summary: {
+    total: number;
+    present: number;
+    late: number;
+    half_day: number;
+    absent: number;
+    onLeave: number;
+    noRecord: number;
+  };
+}
+
+export interface DepartmentReportRow {
+  department: string;
+  present: number;
+  late: number;
+  half_day: number;
+  absent: number;
+  leave: number;
+  weekend: number;
+  holiday: number;
+  total: number;
+}
+
+export interface DepartmentReport {
+  month: number;
+  year: number;
+  rows: DepartmentReportRow[];
+}
+
+export interface LateReportRow {
+  userId: string;
+  fullName: string;
+  department?: string | null;
+  date: string;
+  status: "late" | "half_day";
+  checkInTime?: string | null;
+  totalWorkingHours?: number | null;
+  isManualOverride?: boolean;
+}
+
+export interface AbsentReportRow {
+  userId: string;
+  fullName: string;
+  department?: string | null;
+  date: string;
+  status: "absent";
+  isManualOverride?: boolean;
+}
+
+// ── HRMS: Attendance Regularization ──────────────────────────────────────────
+
+export type RegularizationStatus = "pending" | "approved" | "rejected";
+
+export type RequestType =
+  | "missed_check_in"
+  | "missed_check_out"
+  | "wrong_check_in_time"
+  | "wrong_check_out_time"
+  | "wrong_working_hours"
+  | "wrong_attendance_status"
+  | "other";
+
+export interface AttendanceRegularization {
+  id: string;
+  userId: string;
+  attendanceId?: string | null;
+  date: string;
+  requestType: RequestType;
+  currentStatus: AttendanceStatus | null;
+  requestedStatus: AttendanceStatus | null;
+  requestedCheckIn?: string | null;
+  requestedCheckOut?: string | null;
+  reason: string;
+  attachmentUrl?: string | null;
+  attachmentSignedUrl?: string | null;
+  status: RegularizationStatus;
+  reviewedBy?: string | null;
+  reviewNote?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: Pick<User, "id" | "fullName" | "department" | "designation" | "employeeId"> | null;
+  reviewer?: Pick<User, "id" | "fullName"> | null;
+  attendance?: {
+    id: string;
+    date: string;
+    status: AttendanceStatus;
+    checkInTime?: string | null;
+    checkOutTime?: string | null;
+    totalWorkingHours?: number | null;
+    isManualOverride?: boolean;
+  } | null;
+}
+
+export interface RegularizationApplyPayload {
+  attendanceId?: string;
+  date: string;
+  requestType: RequestType;
+  currentStatus?: string | null;
+  requestedCheckIn?: string;
+  requestedCheckOut?: string;
+  reason: string;
+  attachmentUrl?: string;
+}
+
+export interface RegularizationReviewPayload {
+  status: "approved" | "rejected";
+  reviewNote?: string;
+}
+
+// ── HRMS: Attendance Audit Log ────────────────────────────────────────────────
+
+export type AttendanceAuditAction =
+  | "check_in"
+  | "check_out"
+  | "manual_create"
+  | "manual_override"
+  | "manual_update"
+  | "regularized";
+
+export interface AttendanceAuditEntry {
+  id: string;
+  attendanceId: string;
+  action: AttendanceAuditAction;
+  performedBy: string;
+  oldData?: Record<string, unknown> | null;
+  newData?: Record<string, unknown> | null;
+  reason?: string | null;
+  createdAt: string;
+  performer?: Pick<User, "id" | "fullName"> | null;
+}
+
 // ── App Notifications ────────────────────────────────────────────────────────
 
 export interface AppNotification {
@@ -682,6 +1065,7 @@ export interface AppNotification {
   title: string;
   body: string;
   leadId?: string | null;
+  leaveRequestId?: string | null;
   isRead: boolean;
   createdAt: string;
 }

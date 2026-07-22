@@ -6,6 +6,13 @@ import type {
   AttendanceReport,
   AttendanceSummary,
   AttendanceConfig,
+  CalendarResponse,
+  AttendanceDashboardData,
+  DailyReport,
+  DepartmentReport,
+  LateReportRow,
+  AbsentReportRow,
+  AttendanceAuditEntry,
   Paginated,
 } from "@/types";
 
@@ -15,6 +22,19 @@ export interface AttendanceQuery {
   userId?: string;
   dateFrom?: string;
   dateTo?: string;
+  month?: number;
+  year?: number;
+  status?: string;
+  department?: string;
+}
+
+export interface ReportQuery {
+  month?: number;
+  year?: number;
+  date?: string;
+  department?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface ManualAttendanceInput {
@@ -87,5 +107,32 @@ export const attendanceService = {
   },
   updateConfig(body: Partial<AttendanceConfig>): Promise<AttendanceConfig> {
     return putData<AttendanceConfig>("/attendance/config", body);
+  },
+  calendar(params: { month: number; year: number; userId?: string }): Promise<CalendarResponse> {
+    return getData<CalendarResponse>(`/attendance/calendar${buildQuery(params)}`);
+  },
+  dashboard(): Promise<AttendanceDashboardData> {
+    return getData<AttendanceDashboardData>("/attendance/dashboard");
+  },
+  dailyReport(params: ReportQuery): Promise<DailyReport> {
+    return getData<DailyReport>(`/attendance/reports/daily${buildQuery(params)}`);
+  },
+  departmentReport(params: ReportQuery): Promise<DepartmentReport> {
+    return getData<DepartmentReport>(`/attendance/reports/department${buildQuery(params)}`);
+  },
+  async lateReport(params: ReportQuery): Promise<Paginated<LateReportRow>> {
+    const res = await api.get<Paginated<LateReportRow>>(
+      `/attendance/reports/late${buildQuery(params)}`,
+    );
+    return res.data;
+  },
+  async absentReport(params: ReportQuery): Promise<Paginated<AbsentReportRow>> {
+    const res = await api.get<Paginated<AbsentReportRow>>(
+      `/attendance/reports/absent${buildQuery(params)}`,
+    );
+    return res.data;
+  },
+  auditLog(id: string): Promise<AttendanceAuditEntry[]> {
+    return getData<AttendanceAuditEntry[]>(`/attendance/${id}/audit`);
   },
 };

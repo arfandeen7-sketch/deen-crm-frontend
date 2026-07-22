@@ -7,6 +7,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { AccessGuard } from "@/components/shared/Guards";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import type { Payslip } from "@/types";
@@ -68,19 +69,21 @@ export default function MyPayslipsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="My Payslips" subtitle="View and download your salary slips" />
+    <AccessGuard module="my_hr">
+      <div className="space-y-6">
+        <PageHeader title="My Payslips" subtitle="View and download your salary slips" />
 
-      <DataTable<Payslip>
-        columns={columns}
-        rows={data?.data ?? []}
-        rowKey={(r) => r.id}
-        loading={isLoading}
-      />
+        <DataTable<Payslip>
+          columns={columns}
+          rows={data?.data ?? []}
+          rowKey={(r) => r.id}
+          loading={isLoading}
+        />
 
-      {data && (
-        <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
-      )}
-    </div>
+        {data && (
+          <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+        )}
+      </div>
+    </AccessGuard>
   );
 }

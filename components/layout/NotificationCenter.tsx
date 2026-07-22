@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 import { useUnreadCount, useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { timeAgo } from "@/lib/utils";
 import type { AppNotification } from "@/types";
 
@@ -13,11 +14,11 @@ function NotificationRow({
   onRead,
 }: {
   n: AppNotification;
-  onRead: (id: string, leadId?: string | null) => void;
+  onRead: (n: AppNotification) => void;
 }) {
   return (
     <button
-      onClick={() => onRead(n.id, n.leadId)}
+      onClick={() => onRead(n)}
       className={`w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors ${!n.isRead ? "bg-amber-50/50" : ""}`}
     >
       <div className="flex items-start gap-2.5">
@@ -38,6 +39,7 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { isMaster, canPage } = useAuth();
   const badgeCount = useUnreadCount();
   const { data: notifications, isLoading, error } = useNotifications();
   const { markRead, markAllRead } = useNotificationMutations();
@@ -53,7 +55,23 @@ export function NotificationCenter() {
   async function handleRead(id: string, leadId?: string | null) {
     await markRead.mutateAsync(id);
     setOpen(false);
-    if (leadId) router.push(`/leads/${leadId}`);
+    if (leadId) {
+      router.push(`/leads/${leadId}`);
+    }
+  }
+
+  async function handleReadTyped(n: AppNotification) {
+    await markRead.mutateAsync(n.id);
+    setOpen(false);
+    if (n.type === "regularization") {
+      const isHr = isMaster || canPage("hrms", "attendance_regularization");
+      router.push(isHr ? "/hrms/attendance/regularization" : "/my-hr/attendance-correction");
+    } else if (n.type === "leave_request" || n.type === "leave_review" || n.type === "leave_cancelled") {
+      const isHr = isMaster || canPage("hrms", "leave");
+      router.push(isHr ? "/hrms/leave/requests" : "/my-hr/leave");
+    } else if (n.leadId) {
+      router.push(`/leads/${n.leadId}`);
+    }
   }
 
   return (
@@ -108,7 +126,7 @@ export function NotificationCenter() {
               </p>
             )}
             {notifications?.map((n) => (
-              <NotificationRow key={n.id} n={n} onRead={handleRead} />
+              <NotificationRow key={n.id} n={n} onRead={handleReadTyped} />
             ))}
           </div>
 

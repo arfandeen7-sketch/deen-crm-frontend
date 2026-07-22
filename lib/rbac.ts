@@ -53,8 +53,8 @@ export function can(role: UserRole | undefined, permission: Permission): boolean
  * Groups without a moduleKey are always visible.
  */
 export const ROLE_DEFAULT_MODULES: Record<UserRole, string[]> = {
-  master: ["leads", "followup", "users", "hrms", "brokers", "dynamic-fields"],
-  hr_manager: ["hrms"],
-  sales_manager: ["leads", "followup", "brokers"],
-  sales_executive: ["leads", "followup"],
+  master: ["leads", "followup", "users", "hrms", "my_hr", "brokers", "dynamic-fields"],
+  hr_manager: ["hrms", "my_hr"],
+  sales_manager: ["leads", "followup", "brokers", "my_hr"],
+  sales_executive: ["leads", "followup", "my_hr"],
 };

@@ -1,9 +1,10 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useTodayAttendance, useLeaveBalance, useAttendanceUserSummary } from "@/hooks/useHrms";
+import { useTodayAttendance, useLeaveBalance, useAttendanceCalendar } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { AccessGuard } from "@/components/shared/Guards";
 import { ROLE_LABELS, ROLE_BADGE_CLASSES, EMPLOYMENT_STATUS_COLORS } from "@/constants";
 import { formatDate } from "@/lib/utils";
 
@@ -12,13 +13,15 @@ export default function MyProfilePage() {
   const now = new Date();
   const { data: todayRecord } = useTodayAttendance();
   const { data: balanceData } = useLeaveBalance();
-  const { data: monthSummary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
+  const { data: calendarData } = useAttendanceCalendar({ month: now.getMonth() + 1, year: now.getFullYear() });
+  const monthSummary = calendarData?.summary;
 
   if (!user) return null;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="My Profile" subtitle="Your employee information" />
+    <AccessGuard module="my_hr">
+      <div className="space-y-6">
+        <PageHeader title="My Profile" subtitle="Your employee information" />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Profile Card */}
@@ -55,27 +58,28 @@ export default function MyProfilePage() {
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-base font-semibold text-slate-900">Current Month Attendance</h3>
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                <MiniStat label="Present" value={monthSummary.presentDays} color="emerald" />
-                <MiniStat label="Absent" value={monthSummary.absentDays} color="rose" />
-                <MiniStat label="Late" value={monthSummary.lateDays} color="orange" />
-                <MiniStat label="Half Day" value={monthSummary.halfDays} color="amber" />
-                <MiniStat label="Leave" value={monthSummary.leaveDays} color="sky" />
+                <MiniStat label="Present" value={monthSummary.present ?? 0} color="emerald" />
+                <MiniStat label="Absent" value={monthSummary.absent ?? 0} color="rose" />
+                <MiniStat label="Late" value={monthSummary.late ?? 0} color="orange" />
+                <MiniStat label="Half Day" value={monthSummary.half_day ?? 0} color="amber" />
+                <MiniStat label="Leave" value={monthSummary.leave ?? 0} color="sky" />
               </div>
             </div>
           )}
-          {balanceData && (
+          {balanceData && balanceData.length > 0 && (
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-base font-semibold text-slate-900">Leave Balance</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <MiniStat label="Annual" value={balanceData.leaveBalance.annual} color="indigo" />
-                <MiniStat label="Sick" value={balanceData.leaveBalance.sick} color="rose" />
-                <MiniStat label="Emergency" value={balanceData.leaveBalance.emergency} color="amber" />
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {balanceData.map((bal) => (
+                  <MiniStat key={bal.leaveTypeCode} label={bal.leaveTypeName} value={bal.available} color="indigo" />
+                ))}
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AccessGuard>
   );
 }
 

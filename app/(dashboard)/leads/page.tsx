@@ -17,7 +17,7 @@ import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
-import { CanAccess } from "@/components/shared/Guards";
+import { CanAccess, AccessGuard } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,14 @@ import { downloadBlob, formatDate, formatDateTime } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 export default function LeadsPage() {
+  return (
+    <AccessGuard module="leads" page="all_leads">
+      <LeadsContent />
+    </AccessGuard>
+  );
+}
+
+function LeadsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canAction } = useAuth();
