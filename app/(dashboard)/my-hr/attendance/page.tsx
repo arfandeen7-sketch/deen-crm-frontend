@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMyAttendance, useAttendanceUserSummary } from "@/hooks/useHrms";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/contexts/PermissionContext";
 import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
@@ -18,8 +19,9 @@ export default function MyAttendancePage() {
   const now = new Date();
 
   const { user } = useAuth();
+  const { canModule } = usePermissions();
   const { data, isLoading } = useMyAttendance({ page, pageSize });
-  const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
+  const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() }, canModule("hrms"));
 
   const formatHours = (value: AttendanceRecord["totalWorkingHours"]) => {
     if (value === null || value === undefined) return "—";

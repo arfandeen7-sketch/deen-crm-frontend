@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { LogIn, LogOut, Clock, CheckCircle2 } from "lucide-react";
 import { CameraCaptureWithLocation } from "./CameraCaptureWithLocation";
-import { useAttendanceCheckIn, useAttendanceCheckOut, useTodayAttendance, useAttendanceConfig } from "@/hooks/useHrms";
+import { useAttendanceCheckIn, useAttendanceCheckOut, useTodayAttendance } from "@/hooks/useHrms";
 import { SHIFT_CONFIG } from "@/constants";
 import { toast } from "sonner";
 
 export function AttendanceCheckInOut() {
   const [showCamera, setShowCamera] = useState<"checkin" | "checkout" | null>(null);
   const { data: today, isLoading } = useTodayAttendance();
-  const { data: config } = useAttendanceConfig();
   const checkIn = useAttendanceCheckIn();
   const checkOut = useAttendanceCheckOut();
 
@@ -126,16 +125,7 @@ export function AttendanceCheckInOut() {
           title={showCamera === "checkin" ? "Check In — Capture Photo" : "Check Out — Capture Photo"}
           onCapture={handleCapture}
           onClose={() => setShowCamera(null)}
-          officeLocation={
-            config
-              ? {
-                  latitude: config.officeLatitude,
-                  longitude: config.officeLongitude,
-                  name: config.officeName,
-                  radius: config.geofenceRadius,
-                }
-              : undefined
-          }
+          officeLocation={undefined}
         />
       )}
     </>

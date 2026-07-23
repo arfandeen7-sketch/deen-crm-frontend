@@ -40,7 +40,7 @@ export const attendanceService = {
     return res.data;
   },
   today(): Promise<AttendanceRecord | null> {
-    return getData<AttendanceRecord | null>("/attendance/today");
+    return getData<AttendanceRecord | null>("/me/attendance/today");
   },
   get(id: string): Promise<AttendanceRecord> {
     return getData<AttendanceRecord>(`/attendance/${id}`);
@@ -50,7 +50,7 @@ export const attendanceService = {
     formData.append("photo", payload.photo);
     formData.append("latitude", String(payload.latitude));
     formData.append("longitude", String(payload.longitude));
-    const res = await api.post<{ data: AttendanceRecord }>("/attendance/check-in", formData);
+    const res = await api.post<{ data: AttendanceRecord }>("/me/attendance/check-in", formData);
     return res.data.data;
   },
   async checkOut(payload: AttendanceCheckPayload): Promise<AttendanceRecord> {
@@ -58,7 +58,7 @@ export const attendanceService = {
     formData.append("photo", payload.photo);
     formData.append("latitude", String(payload.latitude));
     formData.append("longitude", String(payload.longitude));
-    const res = await api.post<{ data: AttendanceRecord }>("/attendance/check-out", formData);
+    const res = await api.post<{ data: AttendanceRecord }>("/me/attendance/check-out", formData);
     return res.data.data;
   },
   manualCreate(body: ManualAttendanceInput): Promise<AttendanceRecord> {

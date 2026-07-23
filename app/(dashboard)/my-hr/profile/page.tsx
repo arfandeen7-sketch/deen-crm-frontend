@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/contexts/PermissionContext";
 import { useTodayAttendance, useLeaveBalance, useAttendanceUserSummary } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -9,10 +10,11 @@ import { formatDate } from "@/lib/utils";
 
 export default function MyProfilePage() {
   const { user } = useAuth();
+  const { canModule } = usePermissions();
   const now = new Date();
   const { data: todayRecord } = useTodayAttendance();
   const { data: balanceData } = useLeaveBalance();
-  const { data: monthSummary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() });
+  const { data: monthSummary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() }, canModule("hrms"));
 
   if (!user) return null;
 

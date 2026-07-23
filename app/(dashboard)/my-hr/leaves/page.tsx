@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
-import { useMyLeaves, useLeaveBalance, useApplyLeave } from "@/hooks/useHrms";
+import { Plus, X } from "lucide-react";
+import { useMyLeaves, useLeaveBalance, useApplyLeave, useCancelLeave } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -23,6 +23,7 @@ export default function MyLeavesPage() {
   const { data, isLoading } = useMyLeaves({ page, pageSize });
   const { data: balance } = useLeaveBalance();
   const apply = useApplyLeave();
+  const cancelLeave = useCancelLeave();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveApplyFormValues>({
     resolver: zodResolver(leaveApplySchema) as never,
@@ -46,6 +47,29 @@ export default function MyLeavesPage() {
     { key: "totalDays", header: "Days", render: (r) => String(r.totalDays) },
     { key: "reason", header: "Reason", render: (r) => <span className="max-w-[200px] truncate block">{r.reason}</span> },
     { key: "status", header: "Status", render: (r) => <Badge className={LEAVE_STATUS_COLORS[r.status]}>{r.status}</Badge> },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (r) =>
+        r.status === "pending" ? (
+          <button
+            onClick={() => {
+              if (confirm("Cancel this leave request?")) {
+                cancelLeave.mutate(r.id, {
+                  onSuccess: () => toast.success("Leave request cancelled"),
+                  onError: () => toast.error("Failed to cancel leave"),
+                });
+              }
+            }}
+            disabled={cancelLeave.isPending}
+            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+          >
+            <X className="h-3 w-3" /> Cancel
+          </button>
+        ) : (
+          "—"
+        ),
+    },
   ];
 
   return (

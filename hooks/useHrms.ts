@@ -79,11 +79,11 @@ export function useTodayAttendance() {
   });
 }
 
-export function useAttendanceUserSummary(userId: string, params: { month: number; year: number }) {
+export function useAttendanceUserSummary(userId: string, params: { month: number; year: number }, enabled = true) {
   return useQuery({
     queryKey: ["attendance", "user-summary", userId, params],
     queryFn: () => attendanceService.userSummary(userId, params),
-    enabled: !!userId,
+    enabled: !!userId && enabled,
     refetchInterval: POLL_SLOW,
   });
 }

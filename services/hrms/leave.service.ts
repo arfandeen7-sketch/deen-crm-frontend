@@ -24,16 +24,18 @@ export const leaveService = {
     return res.data;
   },
   apply(body: LeaveApplyPayload): Promise<LeaveRequest> {
-    return postData<LeaveRequest>("/leave", body);
+    return postData<LeaveRequest>("/me/leaves/apply", body);
   },
   review(id: string, status: Extract<LeaveStatus, "approved" | "rejected">, reviewNote?: string): Promise<LeaveRequest> {
     return putData<LeaveRequest>(`/leave/${id}/review`, { status, reviewNote });
   },
   cancel(id: string): Promise<{ success: true }> {
-    return deleteData<{ success: true }>(`/leave/${id}`);
+    return deleteData<{ success: true }>(`/me/leaves/${id}`);
   },
   balance(userId?: string): Promise<{ userId: string; fullName: string; leaveBalance: LeaveBalance }> {
-    const q = userId ? `?userId=${userId}` : "";
-    return getData<{ userId: string; fullName: string; leaveBalance: LeaveBalance }>(`/leave/balance${q}`);
+    if (userId) {
+      return getData<{ userId: string; fullName: string; leaveBalance: LeaveBalance }>(`/leave/balance?userId=${userId}`);
+    }
+    return getData<{ userId: string; fullName: string; leaveBalance: LeaveBalance }>("/me/leaves/balance");
   },
 };
