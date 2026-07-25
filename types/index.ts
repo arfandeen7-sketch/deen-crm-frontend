@@ -48,6 +48,14 @@ export interface PermissionGrants {
   registry: RegistryModule[];
 }
 
+export interface RolePresetGrant {
+  moduleKey: string;
+  pageKey: string;
+  actionKey: string;
+}
+
+export type RolePresets = Record<Exclude<UserRole, "master">, RolePresetGrant[]>;
+
 export type EmploymentStatus = "active" | "on_leave" | "suspended" | "resigned" | "terminated";
 
 export type BrokerStatus = "active" | "inactive" | "suspended";

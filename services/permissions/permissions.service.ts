@@ -1,5 +1,5 @@
 import { api, getData, putData } from "@/services/api/client";
-import type { AccessMap, RegistryModule, GrantEntry, PermissionGrants } from "@/types";
+import type { AccessMap, RegistryModule, GrantEntry, PermissionGrants, RolePresets } from "@/types";
 
 export const permissionsService = {
   async getMyAccess(): Promise<AccessMap> {
@@ -10,6 +10,12 @@ export const permissionsService = {
   getRegistry(): Promise<RegistryModule[]> {
     return getData<{ registry: RegistryModule[] }>("/permissions/registry").then(
       (r) => r.registry,
+    );
+  },
+
+  getRolePresets(): Promise<RolePresets> {
+    return getData<{ presets: RolePresets }>("/permissions/role-presets").then(
+      (r) => r.presets,
     );
   },
 

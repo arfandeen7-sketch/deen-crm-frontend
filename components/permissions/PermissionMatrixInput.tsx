@@ -71,14 +71,17 @@ function getPageState(moduleKey: string, page: RegistryPage, sel: PermissionSele
 interface PermissionMatrixInputProps {
   userId?: string;
   onChange: (grants: GrantEntry[]) => void;
+  /** When set, resets the checkbox selection to match these grants. Used for role presets. */
+  presetGrants?: GrantEntry[] | null;
 }
 
-export function PermissionMatrixInput({ userId, onChange }: PermissionMatrixInputProps) {
+export function PermissionMatrixInput({ userId, onChange, presetGrants }: PermissionMatrixInputProps) {
   const [registry, setRegistry] = useState<RegistryModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [selection, setSelection] = useState<PermissionSelection>({});
   const [openModules, setOpenModules] = useState<Set<string>>(new Set());
   const [openPages, setOpenPages] = useState<Set<string>>(new Set());
+  const presetGrantsRef = useRef<typeof presetGrants>(null);
 
   // Notify parent whenever selection changes
   const notifyParent = useCallback(
@@ -114,6 +117,21 @@ export function PermissionMatrixInput({ userId, onChange }: PermissionMatrixInpu
     load();
     return () => { cancelled = true; };
   }, [userId, notifyParent]);
+
+  // Apply preset grants when the parent passes new ones.
+  // Uses a ref to track the last applied preset array so the same
+  // reference is not applied twice.
+  useEffect(() => {
+    if (!presetGrants || presetGrants.length === 0) return;
+    if (presetGrants === presetGrantsRef.current) return;
+    presetGrantsRef.current = presetGrants;
+    const presetSel = initSelectionFromGrants(presetGrants);
+    setSelection(presetSel);
+    const expanded = new Set(Object.keys(presetSel));
+    setOpenModules(expanded);
+    setOpenPages(new Set());
+    notifyParent(presetSel);
+  }, [presetGrants, notifyParent]);
 
   // ── Toggle logic ─────────────────────────────────────────────────────────
 

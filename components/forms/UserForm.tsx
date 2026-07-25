@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, RotateCcw } from "lucide-react";
 import {
   createUserSchema,
   updateUserSchema,
@@ -11,10 +11,12 @@ import {
 } from "@/schemas/user.schema";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Input";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { ROLE_LABELS } from "@/constants";
 import { PermissionMatrixInput } from "@/components/permissions/PermissionMatrixInput";
+import { permissionsService } from "@/services/permissions/permissions.service";
 import { useUsers } from "@/hooks/useUsers";
-import type { User, GrantEntry } from "@/types";
+import type { User, GrantEntry, RolePresets, UserRole } from "@/types";
 
 export type UserFormSubmitValues = CreateUserValues & {
   grants: GrantEntry[];
@@ -34,10 +36,46 @@ export function UserForm({
   const isEdit = !!initial;
   const { data: usersData } = useUsers();
   const [grants, setGrants] = useState<GrantEntry[]>([]);
+  const [rolePresets, setRolePresets] = useState<RolePresets | null>(null);
+  const [presetGrants, setPresetGrants] = useState<GrantEntry[] | null>(null);
+  const [showRoleChangeModal, setShowRoleChangeModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const pendingRoleRef = useRef<UserRole | null>(null);
+  const previousRoleRef = useRef<UserRole>((initial?.role ?? "sales_executive") as UserRole);
+  const presetAppliedOnLoadRef = useRef(false);
 
   const handleGrantsChange = useCallback((newGrants: GrantEntry[]) => {
     setGrants(newGrants);
   }, []);
+
+  // Fetch role presets on mount
+  useEffect(() => {
+    let cancelled = false;
+    permissionsService.getRolePresets().then((presets) => {
+      if (cancelled) return;
+      setRolePresets(presets);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  // Convert RolePresetGrant[] to GrantEntry[] (all granted: true)
+  function presetToGrants(role: Exclude<UserRole, "master">): GrantEntry[] {
+    if (!rolePresets) return [];
+    return rolePresets[role].map((g) => ({
+      moduleKey: g.moduleKey,
+      pageKey: g.pageKey,
+      actionKey: g.actionKey,
+      granted: true,
+    }));
+  }
+
+  // Create mode: auto-apply default role preset once presets are loaded
+  useEffect(() => {
+    if (isEdit || !rolePresets || presetAppliedOnLoadRef.current) return;
+    presetAppliedOnLoadRef.current = true;
+    const defaultGrants = presetToGrants("sales_executive");
+    setPresetGrants(defaultGrants);
+  }, [isEdit, rolePresets]);
 
   const {
     register,
@@ -78,6 +116,49 @@ export function UserForm({
   const managers =
     usersData?.users.filter((u) => u.role === "sales_manager" && u.isActive) ?? [];
 
+  function handleRoleChange(newRole: UserRole) {
+    if (newRole === "master" || newRole === previousRoleRef.current) {
+      previousRoleRef.current = newRole;
+      return;
+    }
+    if (isEdit) {
+      pendingRoleRef.current = newRole;
+      setShowRoleChangeModal(true);
+    } else {
+      previousRoleRef.current = newRole;
+      const grants = presetToGrants(newRole as Exclude<UserRole, "master">);
+      setPresetGrants(grants);
+    }
+  }
+
+  function confirmRoleChange() {
+    const newRole = pendingRoleRef.current;
+    if (!newRole) return;
+    previousRoleRef.current = newRole;
+    const grants = presetToGrants(newRole as Exclude<UserRole, "master">);
+    setPresetGrants(grants);
+    setShowRoleChangeModal(false);
+    pendingRoleRef.current = null;
+  }
+
+  function cancelRoleChange() {
+    setShowRoleChangeModal(false);
+    pendingRoleRef.current = null;
+    // Revert role select to previous value
+    reset({ ...watch(), role: previousRoleRef.current } as CreateUserValues);
+  }
+
+  function handleResetToDefaults() {
+    setShowResetModal(true);
+  }
+
+  function confirmResetToDefaults() {
+    const currentRole = selectedRole as Exclude<UserRole, "master">;
+    const grants = presetToGrants(currentRole);
+    setPresetGrants(grants);
+    setShowResetModal(false);
+  }
+
   function handleFormSubmit(values: CreateUserValues) {
     onSubmit({ ...values, grants });
   }
@@ -115,7 +196,10 @@ export function UserForm({
             render={({ field }) => (
               <Select
                 value={field.value}
-                onChange={(e) => field.onChange(e.target.value)}
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  handleRoleChange(e.target.value as UserRole);
+                }}
                 onBlur={field.onBlur}
                 name={field.name}
               >
@@ -168,12 +252,51 @@ export function UserForm({
             </span>
           </div>
         ) : (
-          <PermissionMatrixInput
-            userId={initial?.id}
-            onChange={handleGrantsChange}
-          />
+          <>
+            {isEdit && (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetToDefaults}
+                  className="text-xs"
+                >
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                  Reset to Role Defaults
+                </Button>
+              </div>
+            )}
+            <PermissionMatrixInput
+              userId={initial?.id}
+              onChange={handleGrantsChange}
+              presetGrants={presetGrants}
+            />
+          </>
         )}
       </div>
+
+      {/* ── Role Change Confirm Dialog (Edit Mode) ──────────────────────────── */}
+      <ConfirmModal
+        open={showRoleChangeModal}
+        onClose={cancelRoleChange}
+        onConfirm={confirmRoleChange}
+        title="Change role?"
+        message="Changing role will replace current permission selections with the new role's defaults. Continue?"
+        confirmLabel="Apply New Role"
+        danger={false}
+      />
+
+      {/* ── Reset to Defaults Confirm Dialog ────────────────────────────────── */}
+      <ConfirmModal
+        open={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onConfirm={confirmResetToDefaults}
+        title="Reset to role defaults?"
+        message="This will replace all current permission selections with the defaults for this user's role. Continue?"
+        confirmLabel="Reset to Defaults"
+        danger={false}
+      />
 
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
         {onCancel && (
