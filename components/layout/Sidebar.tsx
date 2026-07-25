@@ -26,8 +26,6 @@ const PARENT_EXCLUSIONS: Record<string, string[]> = {
     "/leads/assigned",
     "/leads/unassigned",
     "/leads/reports",
-    "/leads/create",
-    "/leads/import",
   ],
   "/brokers": ["/brokers/create"],
   "/users": ["/users/create"],

@@ -76,7 +76,13 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
 
     const promise = (async () => {
       try {
-        setPermissionStatus("loading");
+        // Only block the UI with a loading state on the very first fetch
+        // (no cached access yet). Background refreshes — window focus,
+        // periodic interval, route changes — must be silent so open modals
+        // and other UI state are never discarded mid-interaction.
+        if (!useAuthStore.getState().access) {
+          setPermissionStatus("loading");
+        }
         const accessMap = await permissionsService.getMyAccess();
         const prev = useAuthStore.getState().access;
         setAccess(accessMap);
