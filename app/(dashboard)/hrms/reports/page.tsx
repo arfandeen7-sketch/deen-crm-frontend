@@ -49,7 +49,7 @@ export default function HrReportsPage() {
   };
 
   return (
-    <AccessGuard module="hrms" page="login_activity">
+    <AccessGuard module="hrms" page="login_activity" action="view">
     <div className="space-y-6">
       <PageHeader
         title="HR Reports"

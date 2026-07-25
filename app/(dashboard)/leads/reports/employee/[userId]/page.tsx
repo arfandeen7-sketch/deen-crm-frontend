@@ -16,11 +16,20 @@ import { BarChart } from "@/components/charts/BarChart";
 import { FunnelChart } from "@/components/charts/FunnelChart";
 import { useEmployeePerformanceList, useEmployeeActivity, previousPeriodRange } from "@/hooks/useLeadReports";
 import { useUser } from "@/hooks/useUsers";
+import { AccessGuard } from "@/components/shared/Guards";
 import { cn, timeAgo } from "@/lib/utils";
 import { LEAD_FUNNEL_STAGES } from "@/constants";
 import type { LeadReportParams } from "@/types";
 
 export default function EmployeeReportPage() {
+  return (
+    <AccessGuard module="lead_reports" action="view">
+      <EmployeeReportPageContent />
+    </AccessGuard>
+  );
+}
+
+function EmployeeReportPageContent() {
   const params = useParams();
   const router = useRouter();
   const userId = params.userId as string;

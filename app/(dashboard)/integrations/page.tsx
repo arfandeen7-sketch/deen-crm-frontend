@@ -255,7 +255,7 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <AccessGuard module="integrations" page="all_integrations">
+    <AccessGuard module="integrations" page="all_integrations" action="view">
       <div className="space-y-5">
         <PageHeader
           title="Integrations"

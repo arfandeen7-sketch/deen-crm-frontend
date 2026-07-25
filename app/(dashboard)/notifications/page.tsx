@@ -2,10 +2,46 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck, Filter, Trash2 } from "lucide-react";
+import { Bell, CheckCheck, Filter, Trash2, Phone, Building2 } from "lucide-react";
 import { useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
 import { timeAgo } from "@/lib/utils";
-import type { AppNotification } from "@/types";
+import type { AppNotification, AssignmentNotificationLead } from "@/types";
+
+function LeadCard({
+  lead,
+  onClick,
+}: {
+  lead: AssignmentNotificationLead;
+  onClick: (leadId: string) => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(lead.id);
+      }}
+      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-sm font-semibold text-zinc-900">{lead.leadName}</p>
+        <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+          {lead.serviceType}
+        </span>
+      </div>
+      <div className="mt-1.5 flex items-center gap-4 text-xs text-zinc-400">
+        <span className="flex items-center gap-1">
+          <Phone className="h-3 w-3" /> {lead.mobileNumber}
+        </span>
+        <span className="truncate">{lead.source}</span>
+        {lead.projectName && (
+          <span className="flex items-center gap-1 truncate">
+            <Building2 className="h-3 w-3" /> {lead.projectName}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
 
 function NotificationCard({
   notification,
@@ -14,6 +50,11 @@ function NotificationCard({
   notification: AppNotification;
   onRead: (id: string, leadId?: string | null) => void;
 }) {
+  const showLeads =
+    notification.type === "assignment" &&
+    notification.leads &&
+    notification.leads.length > 0;
+
   return (
     <div
       onClick={() => onRead(notification.id, notification.leadId)}
@@ -31,9 +72,24 @@ function NotificationCard({
               <h3 className="text-sm font-semibold text-zinc-900 mb-1">
                 {notification.title}
               </h3>
-              <p className="text-sm text-zinc-600 leading-relaxed">
-                {notification.body}
-              </p>
+              {notification.body && (
+                <p className="text-sm text-zinc-600 leading-relaxed">
+                  {notification.body}
+                </p>
+              )}
+
+              {showLeads && (
+                <div className="mt-3 space-y-2">
+                  {notification.leads!.map((lead) => (
+                    <LeadCard
+                      key={lead.id}
+                      lead={lead}
+                      onClick={(leadId) => onRead(notification.id, leadId)}
+                    />
+                  ))}
+                </div>
+              )}
+
               <p className="mt-2 text-xs font-medium text-zinc-400">
                 {timeAgo(notification.createdAt)}
               </p>

@@ -8,6 +8,8 @@ import { ConfirmModal } from "@/components/ui/Modal";
 import { permissionsService } from "@/services/permissions/permissions.service";
 import { getErrorMessage } from "@/services/api/client";
 import { PermissionMatrixInput } from "./PermissionMatrixInput";
+import { useAuthStore } from "@/store/auth.store";
+import { usePermissions } from "@/contexts/PermissionContext";
 import type { GrantEntry } from "@/types";
 
 interface PermissionMatrixProps {
@@ -19,6 +21,8 @@ export function PermissionMatrix({ userId, isMasterUser }: PermissionMatrixProps
   const [grants, setGrants] = useState<GrantEntry[]>([]);
   const [saving, setSaving] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const currentUserId = useAuthStore((s) => s.user?.id);
+  const { refetch: refetchPermissions } = usePermissions();
 
   const handleChange = useCallback((newGrants: GrantEntry[]) => {
     setGrants(newGrants);
@@ -29,6 +33,9 @@ export function PermissionMatrix({ userId, isMasterUser }: PermissionMatrixProps
       setSaving(true);
       await permissionsService.saveUserGrants(userId, grants);
       toast.success("Permissions saved");
+      if (userId === currentUserId) {
+        await refetchPermissions();
+      }
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -42,6 +49,9 @@ export function PermissionMatrix({ userId, isMasterUser }: PermissionMatrixProps
       await permissionsService.revokeAllGrants(userId);
       setShowRevokeModal(false);
       toast.success("All permissions revoked");
+      if (userId === currentUserId) {
+        await refetchPermissions();
+      }
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {

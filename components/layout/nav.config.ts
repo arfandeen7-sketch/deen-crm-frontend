@@ -30,7 +30,6 @@ import {
   Plug,
   Activity,
 } from "lucide-react";
-import type { UserRole } from "@/types";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
 export interface NavAccess {
@@ -57,8 +56,6 @@ export interface NavGroup {
   isSingular?: boolean;
   href?: string;
   section?: "MENU" | "GENERAL";
-  /** If set, group is only visible to these roles. */
-  roles?: UserRole[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -151,7 +148,6 @@ export const NAV_GROUPS: NavGroup[] = [
     href: "/my-team",
     isSingular: true,
     section: "GENERAL",
-    roles: ["sales_manager"],
     items: [
       { label: "My Team", href: "/my-team", icon: Users2 },
     ],

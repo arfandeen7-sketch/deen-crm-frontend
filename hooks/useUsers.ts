@@ -11,15 +11,18 @@ import {
 import { teamsService } from "@/services/teams/teams.service";
 import { useAuth } from "@/hooks/useAuth";
 import { POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 /** Full users list with role counts. */
 export function useUsers() {
-  const { hasModule } = useAuth();
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["users:list"]);
   return useQuery({
     queryKey: ["users"],
     queryFn: () => usersService.list(),
-    enabled: hasModule("users"),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -90,11 +93,13 @@ export function useAssignableUsers() {
 }
 
 export function useUser(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["users:detail"]);
   return useQuery({
     queryKey: ["users", "detail", id],
     queryFn: () => usersService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled: !!id && hasPermission,
+    refetchInterval: hasPermission ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 

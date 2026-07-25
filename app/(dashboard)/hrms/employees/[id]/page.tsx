@@ -20,7 +20,7 @@ export default function EmployeeDetailPage() {
   if (!employee) return <p className="py-12 text-center text-slate-500">Employee not found</p>;
 
   return (
-    <AccessGuard module="hrms" page="employees">
+    <AccessGuard module="hrms" page="employees" action="view">
     <div className="space-y-6">
       <PageHeader
         title={employee.fullName}

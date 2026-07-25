@@ -233,7 +233,7 @@ export default function LeadReportsPage() {
   }, [employees.data, prevUserPerf.data]);
 
   return (
-    <AccessGuard module="lead_reports">
+    <AccessGuard module="lead_reports" action="view">
     <div className="space-y-6">
       <LeadTabs />
 

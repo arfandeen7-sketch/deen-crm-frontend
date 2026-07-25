@@ -31,7 +31,7 @@ import { ConfirmModal } from "@/components/ui/Modal";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { StatusBadge, PriorityBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { CanAccess } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useLeadActivity } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
@@ -59,6 +59,14 @@ function InfoRow({
 }
 
 export default function LeadDetailPage() {
+  return (
+    <AccessGuard module="leads" page="all_leads" action="view">
+      <LeadDetailPageContent />
+    </AccessGuard>
+  );
+}
+
+function LeadDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);

@@ -74,7 +74,7 @@ export default function DynamicFieldsPage() {
   }
 
   return (
-    <AccessGuard module="dynamic_fields" page="manage_fields">
+    <AccessGuard module="dynamic_fields" page="manage_fields" action="view">
     <div className="space-y-5">
       <PageHeader
         title="Dynamic Fields"

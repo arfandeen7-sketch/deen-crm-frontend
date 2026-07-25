@@ -7,6 +7,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { LeadForm } from "@/components/forms/LeadForm";
+import { AccessGuard } from "@/components/shared/Guards";
 import { useLeadMutations } from "@/hooks/useLeads";
 import { getErrorMessage } from "@/services/api/client";
 import type { LeadFormValues } from "@/schemas/lead.schema";
@@ -28,6 +29,7 @@ export default function CreateLeadPage() {
   }
 
   return (
+    <AccessGuard module="leads" page="all_leads" action="create">
     <div className="space-y-5">
       <Link href="/leads" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to leads
@@ -43,5 +45,6 @@ export default function CreateLeadPage() {
         </CardBody>
       </Card>
     </div>
+    </AccessGuard>
   );
 }

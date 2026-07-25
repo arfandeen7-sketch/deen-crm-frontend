@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Users2, TrendingUp, Target, Award } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,19 +10,13 @@ import { Skeleton, LoadingState } from "@/components/ui/States";
 
 export default function MyTeamPage() {
   const router = useRouter();
-  const { role, hydrated } = useAuth();
+  const { hydrated } = useAuth();
   const { data, isLoading, isError } = useMyTeam();
 
-  useEffect(() => {
-    if (hydrated && role !== "sales_manager") {
-      router.replace("/dashboard/overview");
-    }
-  }, [hydrated, role, router]);
-
-  if (!hydrated || role !== "sales_manager") {
+  if (!hydrated) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <LoadingState label="Checking access…" />
+        <LoadingState label="Loading…" />
       </div>
     );
   }

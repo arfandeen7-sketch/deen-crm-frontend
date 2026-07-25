@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
@@ -16,6 +16,15 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         },
       }),
   );
+
+  // Listen for 403-driven cancel-all events from the API client.
+  useEffect(() => {
+    const handler = () => {
+      client.cancelQueries();
+    };
+    window.addEventListener("query:cancel-all", handler);
+    return () => window.removeEventListener("query:cancel-all", handler);
+  }, [client]);
 
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }

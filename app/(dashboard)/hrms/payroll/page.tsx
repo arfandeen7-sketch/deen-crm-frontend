@@ -85,7 +85,7 @@ export default function PayrollManagementPage() {
   ];
 
   return (
-    <AccessGuard module="hrms" page="payroll">
+    <AccessGuard module="hrms" page="payroll" action="view">
     <div className="space-y-6">
       <PageHeader
         title="Payroll Management"

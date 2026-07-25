@@ -48,7 +48,7 @@ export default function EmailConfigPage() {
   if (isLoading) return <div className="animate-pulse h-96 rounded-xl bg-slate-100" />;
 
   return (
-    <AccessGuard module="hrms" page="employees">
+    <AccessGuard module="hrms" page="employees" action="edit">
     <div className="space-y-6">
       <PageHeader title="Email Configuration" subtitle="Manage SMTP settings for sending payslips and notifications" />
 

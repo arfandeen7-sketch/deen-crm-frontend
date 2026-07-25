@@ -20,7 +20,7 @@ const MASTER_ACCESS: AccessMap = {
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, token, access, hydrated, setAuth, setAccess, clear } =
+  const { user, token, access, permissionStatus, hydrated, setAuth, setAccess, setPermissionStatus, clear } =
     useAuthStore();
 
   async function login(email: string, password: string) {
@@ -28,13 +28,15 @@ export function useAuth() {
     setAuth(res.token, res.user);
     if (isDemoToken(res.token)) {
       setAccess(MASTER_ACCESS);
+      setPermissionStatus("ready");
     } else {
       loginActivityService.recordLogin().catch(() => {});
       try {
         const accessMap = await permissionsService.getMyAccess();
         setAccess(accessMap);
+        setPermissionStatus("ready");
       } catch {
-        // ignore — PermissionProvider will retry on mount
+        setPermissionStatus("error");
       }
     }
     return res.user;
@@ -70,6 +72,7 @@ export function useAuth() {
     user,
     token,
     access,
+    permissionStatus,
     hydrated,
     isAuthenticated: Boolean(token),
     role: user?.role,

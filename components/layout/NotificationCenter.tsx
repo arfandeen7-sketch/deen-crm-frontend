@@ -3,10 +3,46 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Phone, Building2 } from "lucide-react";
 import { useUnreadCount, useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
 import { timeAgo } from "@/lib/utils";
-import type { AppNotification } from "@/types";
+import type { AppNotification, AssignmentNotificationLead } from "@/types";
+
+function LeadChip({
+  lead,
+  onClick,
+}: {
+  lead: AssignmentNotificationLead;
+  onClick: (leadId: string) => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(lead.id);
+      }}
+      className="w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-2 text-left hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs font-semibold text-zinc-900">{lead.leadName}</p>
+        <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">
+          {lead.serviceType}
+        </span>
+      </div>
+      <div className="mt-1 flex items-center gap-3 text-[10px] text-zinc-400">
+        <span className="flex items-center gap-0.5">
+          <Phone className="h-2.5 w-2.5" /> {lead.mobileNumber}
+        </span>
+        <span className="truncate">{lead.source}</span>
+        {lead.projectName && (
+          <span className="flex items-center gap-0.5 truncate">
+            <Building2 className="h-2.5 w-2.5" /> {lead.projectName}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
 
 function NotificationRow({
   n,
@@ -15,22 +51,39 @@ function NotificationRow({
   n: AppNotification;
   onRead: (id: string, leadId?: string | null) => void;
 }) {
+  const showLeads = n.type === "assignment" && n.leads && n.leads.length > 0;
+
   return (
-    <button
+    <div
       onClick={() => onRead(n.id, n.leadId)}
-      className={`w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors ${!n.isRead ? "bg-amber-50/50" : ""}`}
+      className={`w-full cursor-pointer px-4 py-3 text-left hover:bg-zinc-50 transition-colors ${!n.isRead ? "bg-amber-50/50" : ""}`}
     >
       <div className="flex items-start gap-2.5">
         {!n.isRead && (
           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
         )}
-        <div className={`min-w-0 ${n.isRead ? "pl-4" : ""}`}>
+        <div className={`min-w-0 flex-1 ${n.isRead ? "pl-4" : ""}`}>
           <p className="truncate text-sm font-semibold text-zinc-900">{n.title}</p>
-          <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">{n.body}</p>
+          {n.body && (
+            <p className="mt-0.5 text-xs text-zinc-500 line-clamp-2">{n.body}</p>
+          )}
+
+          {showLeads && (
+            <div className="mt-2 space-y-1.5">
+              {n.leads!.map((lead) => (
+                <LeadChip
+                  key={lead.id}
+                  lead={lead}
+                  onClick={(leadId) => onRead(n.id, leadId)}
+                />
+              ))}
+            </div>
+          )}
+
           <p className="mt-1 text-[11px] font-medium text-zinc-400">{timeAgo(n.createdAt)}</p>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

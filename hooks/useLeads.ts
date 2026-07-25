@@ -9,23 +9,31 @@ import {
 import { leadsService, type LeadInput } from "@/services/leads/leads.service";
 import type { LeadQueryParams } from "@/types";
 import { POLL_FAST } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 const KEY = "leads";
 
 export function useLeadsList(params: LeadQueryParams) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => leadsService.list(params),
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useLead(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["leads:detail"]);
+  const enabled = !!id && hasPermission;
   const query = useQuery({
     queryKey: [KEY, "detail", id],
     queryFn: () => leadsService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 
   // Viewing a lead's detail page marks it as touched server-side (see backend

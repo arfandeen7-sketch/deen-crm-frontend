@@ -15,7 +15,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { BrokerStatusBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { CanAccess } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useBrokersList, useBrokerMutations } from "@/hooks/useBrokers";
 import { brokersService } from "@/services/brokers/brokers.service";
 import { getErrorMessage } from "@/services/api/client";
@@ -24,6 +24,14 @@ import { DEFAULT_PAGE_SIZE } from "@/constants";
 import type { Broker } from "@/types";
 
 export default function BrokersPage() {
+  return (
+    <AccessGuard module="brokers" page="all_brokers" action="view">
+      <BrokersPageContent />
+    </AccessGuard>
+  );
+}
+
+function BrokersPageContent() {
   const router = useRouter();
   const [params, setParams] = useState({ page: 1, pageSize: DEFAULT_PAGE_SIZE, search: "", status: "" });
   const { data, isLoading, isError, refetch } = useBrokersList(params);

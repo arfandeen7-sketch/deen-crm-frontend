@@ -74,7 +74,7 @@ export default function TeamsPage() {
 
   if (isLoading) {
     return (
-      <AccessGuard module="users" page="teams">
+      <AccessGuard module="users" page="teams" action="view">
         <div className="space-y-5">
           <PageHeader title="Teams" subtitle="Manage sales teams and assignments" />
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -88,7 +88,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <AccessGuard module="users" page="teams">
+    <AccessGuard module="users" page="teams" action="view">
       <div className="space-y-5">
         <PageHeader
           title="Teams"

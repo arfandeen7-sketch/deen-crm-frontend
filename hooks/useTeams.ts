@@ -2,8 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { teamsService } from "@/services/teams/teams.service";
-import { useAuth } from "@/hooks/useAuth";
 import { POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 import type {
   AssignTeamPayload,
   ReassignExecutivePayload,
@@ -11,31 +12,36 @@ import type {
 } from "@/types";
 
 export function useAllTeams() {
-  const { role } = useAuth();
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["teams:all"]);
   return useQuery({
     queryKey: ["teams", "all"],
     queryFn: () => teamsService.getAllTeams(),
-    enabled: role === "master",
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useMyTeam() {
-  const { role } = useAuth();
+  const enabled = useQueryEnabled("teams:my-team");
   return useQuery({
     queryKey: ["teams", "my-team"],
     queryFn: () => teamsService.getMyTeam(),
-    enabled: role === "sales_manager",
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useTeamMembers(managerId: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["teams:all"]);
+  const enabled = !!managerId && hasPermission;
   return useQuery({
     queryKey: ["teams", "members", managerId],
     queryFn: () => teamsService.getTeamMembers(managerId as string),
-    enabled: !!managerId,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 

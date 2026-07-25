@@ -6,6 +6,8 @@ import { reportsService } from "@/services/leads/reports.service";
 import { activityService } from "@/services/leads/activity.service";
 import { usersService } from "@/services/users/users.service";
 import { CONVERTED_LEAD_STATUSES, POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 import type {
   LeadReportParams,
   LeadReportKpis,
@@ -24,26 +26,35 @@ const NOT_YET_IMPLEMENTED = {
 } as const;
 
 export function useSourceReport(params: LeadReportParams, options?: { refetchInterval?: number | false }) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:source"]);
   return useQuery({
     queryKey: [KEY, "source", params],
     queryFn: () => reportsService.sourceReport(params),
-    refetchInterval: options?.refetchInterval,
+    enabled,
+    refetchInterval: enabled ? options?.refetchInterval ?? false : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useStatusReport(params: LeadReportParams, options?: { refetchInterval?: number | false }) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:status"]);
   return useQuery({
     queryKey: [KEY, "status", params],
     queryFn: () => reportsService.statusReport(params),
-    refetchInterval: options?.refetchInterval,
+    enabled,
+    refetchInterval: enabled ? options?.refetchInterval ?? false : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useUserPerformance(params: LeadReportParams, options?: { refetchInterval?: number | false }) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:user-performance"]);
   return useQuery({
     queryKey: [KEY, "user-performance", params],
     queryFn: () => reportsService.userPerformance(params),
-    refetchInterval: options?.refetchInterval,
+    enabled,
+    refetchInterval: enabled ? options?.refetchInterval ?? false : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -84,12 +95,15 @@ export function useReportSummary(params: LeadReportParams) {
 
 /** Global lead-activity feed for a specific actor (uses existing /leads/activity?actorId=). */
 export function useEmployeeActivity(userId: string | undefined, params: { dateFrom?: string; dateTo?: string; pageSize?: number } = {}) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:employee-activity"]);
+  const enabled = !!userId && hasPermission;
   return useQuery({
     queryKey: [KEY, "employee-activity", userId, params],
     queryFn: () =>
       activityService.global({ actorId: userId, pageSize: params.pageSize ?? 100, dateFrom: params.dateFrom, dateTo: params.dateTo }),
-    enabled: !!userId,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -210,12 +224,15 @@ export function useDailyEmployeePerformanceList(date?: string) {
   const today = useMemo(() => new Date(), []);
   const targetDate = date ?? today.toISOString().slice(0, 10);
   const range = useMemo(() => ({ dateFrom: targetDate, dateTo: targetDate }), [targetDate]);
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:user-performance"]);
+  const enabled = Boolean(range.dateFrom && range.dateTo) && hasPermission;
   const performance = useQuery({
     queryKey: [KEY, "daily-user-performance", range],
     queryFn: () => reportsService.dailyUserPerformance(range),
-    enabled: Boolean(range.dateFrom && range.dateTo),
+    enabled,
     staleTime: 60_000,
-    refetchInterval: POLL_SLOW,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
   const enhanced = useEnhancedEmployeePerformance(performance.data, { includeAllUsers: true });
 
@@ -226,11 +243,14 @@ export function useDailyEmployeePerformanceList(date?: string) {
 }
 
 export function useEmployeeReport(userId: string | undefined, params: LeadReportParams) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:employee-activity"]);
+  const enabled = !!userId && hasPermission;
   return useQuery({
     queryKey: [KEY, "employee-report", userId, params],
     queryFn: () => reportsService.employeeReport({ ...params, userId: userId! }),
-    enabled: !!userId,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 

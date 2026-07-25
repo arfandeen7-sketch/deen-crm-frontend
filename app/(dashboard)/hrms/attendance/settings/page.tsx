@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Save, MapPin, Clock, Calendar } from "lucide-react";
 import { useAttendanceConfig, useUpdateAttendanceConfig } from "@/hooks/useHrms";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { AccessGuard } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/lib/utils";
 import type { AttendanceConfig } from "@/types";
 
@@ -21,7 +21,6 @@ const DAYS_OF_WEEK = [
 ];
 
 export default function AttendanceSettingsPage() {
-  const { isMaster } = useAuth();
   const { data: config, isLoading } = useAttendanceConfig();
   const updateConfig = useUpdateAttendanceConfig();
 
@@ -37,11 +36,6 @@ export default function AttendanceSettingsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!isMaster) {
-      toast.error("Only master admin can update attendance settings");
-      return;
-    }
 
     const payload = {
       ...formData,
@@ -64,31 +58,8 @@ export default function AttendanceSettingsPage() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Attendance Settings" subtitle="Configure attendance rules and office location" />
-        <div className="animate-pulse rounded-xl border border-border bg-background p-6">
-          <div className="h-96 rounded-lg bg-panel" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!isMaster) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Attendance Settings" subtitle="Configure attendance rules and office location" />
-        <div className="rounded-xl border border-border bg-background p-6">
-          <div className="text-center py-12">
-            <p className="text-foreground-secondary">Only master admin can access this page</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
+    <AccessGuard module="hrms" page="attendance" action="edit">
     <div className="space-y-6">
       <PageHeader
         title="Attendance Settings"
@@ -308,5 +279,6 @@ export default function AttendanceSettingsPage() {
         </div>
       </form>
     </div>
+    </AccessGuard>
   );
 }

@@ -62,7 +62,7 @@ function checkNavAccess(
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { role, user, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { canModule, canPage, canAction } = usePermissions();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set<string>());
@@ -182,7 +182,6 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           // Filter by visibility/permissions
           const visibleGroups = sectionGroups.filter((group) => {
-            if (group.roles && role && !group.roles.includes(role)) return false;
             if (group.moduleKey && !canModule(group.moduleKey)) return false;
             const visibleItems = group.items.filter(
               (item) => checkNavAccess(canModule, canPage, canAction, item.navAccess)

@@ -22,7 +22,7 @@ export default function UserDetailPage() {
   if (isError || !user) return <ErrorState onRetry={refetch} />;
 
   return (
-    <AccessGuard module="users" page="all_users">
+    <AccessGuard module="users" page="all_users" action="view">
     <div className="space-y-5">
       <Link href="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to users

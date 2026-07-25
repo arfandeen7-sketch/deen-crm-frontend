@@ -9,11 +9,19 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { BrokerStatusBadge, StatusBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { CanAccess } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useBroker, useBrokerLeads } from "@/hooks/useBrokers";
 import { formatDate } from "@/lib/utils";
 
 export default function BrokerDetailPage() {
+  return (
+    <AccessGuard module="brokers" page="all_brokers" action="view">
+      <BrokerDetailPageContent />
+    </AccessGuard>
+  );
+}
+
+function BrokerDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: broker, isLoading, isError, refetch } = useBroker(params.id);

@@ -110,7 +110,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <AccessGuard module="users" page="all_users">
+    <AccessGuard module="users" page="all_users" action="view">
     <div className="space-y-5">
       <PageHeader
         title="Users"

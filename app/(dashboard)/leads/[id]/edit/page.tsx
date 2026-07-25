@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { LeadForm } from "@/components/forms/LeadForm";
+import { AccessGuard } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { getErrorMessage } from "@/services/api/client";
 import { leadSchema, type LeadFormValues } from "@/schemas/lead.schema";
@@ -30,6 +31,7 @@ export default function EditLeadPage() {
   }
 
   return (
+    <AccessGuard module="leads" page="all_leads" action="edit">
     <div className="space-y-5">
       <Link href={`/leads/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to lead
@@ -52,5 +54,6 @@ export default function EditLeadPage() {
         </CardBody>
       </Card>
     </div>
+    </AccessGuard>
   );
 }

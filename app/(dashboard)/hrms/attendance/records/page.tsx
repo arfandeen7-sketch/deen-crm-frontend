@@ -101,7 +101,7 @@ export default function AttendanceRecordsPage() {
   ];
 
   return (
-    <AccessGuard module="hrms" page="attendance">
+    <AccessGuard module="hrms" page="attendance" action="view">
       <div className="space-y-6">
         <PageHeader
           title="Attendance Records"

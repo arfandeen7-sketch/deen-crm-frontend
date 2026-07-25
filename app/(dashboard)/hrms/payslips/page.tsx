@@ -97,7 +97,7 @@ export default function PayslipsPage() {
   ];
 
   return (
-    <AccessGuard module="hrms" page="payslips">
+    <AccessGuard module="hrms" page="payslips" action="view">
     <div className="space-y-6">
       <PageHeader
         title="Payslips"

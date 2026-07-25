@@ -55,7 +55,7 @@ export default function EmployeesPage() {
   ];
 
   return (
-    <AccessGuard module="hrms" page="employees">
+    <AccessGuard module="hrms" page="employees" action="view">
     <div className="space-y-6">
       <PageHeader
         title="Employees"

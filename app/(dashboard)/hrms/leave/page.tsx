@@ -69,7 +69,7 @@ export default function LeaveManagementPage() {
   ];
 
   return (
-    <AccessGuard module="hrms" page="leave">
+    <AccessGuard module="hrms" page="leave" action="view">
     <div className="space-y-6">
       <PageHeader
         title="Leave Management"

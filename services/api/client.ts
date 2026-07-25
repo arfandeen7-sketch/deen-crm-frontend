@@ -24,51 +24,54 @@ api.interceptors.request.use((config) => {
 });
 
 // On 401, clear session and bounce to login (client-side only).
-// On 403, refetch permissions and show toast.
+// On 403, silently refetch permissions, cancel queries, and redirect if needed.
+let isRefreshingPermissions = false;
+
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError<ApiError>) => {
     const status = error.response?.status;
-    
+
     if (status === 401 && typeof window !== "undefined" && !isDemoToken(getStoredToken())) {
       useAuthStore.getState().clear();
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
     }
-    
+
     if (status === 403 && typeof window !== "undefined") {
-      const { toast } = await import("sonner");
-      window.dispatchEvent(new CustomEvent("permissions:refetch"));
-      const data = error.response?.data as ApiError | undefined;
-      toast.error(buildPermissionMessage(data?.required));
+      // Cancel all in-flight React Query requests so stale 403s don't cascade.
+      window.dispatchEvent(new CustomEvent("query:cancel-all"));
+
+      // Dedup: only one permission refetch at a time.
+      if (!isRefreshingPermissions) {
+        isRefreshingPermissions = true;
+        window.dispatchEvent(new CustomEvent("permissions:refetch"));
+        // Reset the flag after a short cooldown to allow future refreshes.
+        setTimeout(() => { isRefreshingPermissions = false; }, 3000);
+      }
+
+      // Silent redirect: if the user is on a protected page they can no longer
+      // access, send them to the dashboard overview instead of showing an error.
+      const pathname = window.location.pathname;
+      const isProtectedRoute =
+        pathname.startsWith("/leads") ||
+        pathname.startsWith("/brokers") ||
+        pathname.startsWith("/users") ||
+        pathname.startsWith("/hrms") ||
+        pathname.startsWith("/teams") ||
+        pathname.startsWith("/integrations") ||
+        pathname.startsWith("/dynamic-fields") ||
+        pathname.startsWith("/followup");
+
+      if (isProtectedRoute) {
+        window.location.href = "/dashboard/overview";
+      }
     }
-    
+
     return Promise.reject(error);
   },
 );
-
-/** Normalise a permission key (snake_case) into a readable label. */
-function humanizeKey(key: string): string {
-  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-/** Generate a user-friendly 403 message from the backend's required field. */
-function buildPermissionMessage(
-  required: ApiError["required"],
-): string {
-  if (!required?.module) return "You do not have permission to perform this action";
-  if (required.action && required.page) {
-    return `You don't have permission to ${humanizeKey(required.action)} ${humanizeKey(required.page)}`;
-  }
-  if (required.action) {
-    return `You don't have permission to ${humanizeKey(required.action)} in ${humanizeKey(required.module)}`;
-  }
-  if (required.page) {
-    return `You don't have permission to access ${humanizeKey(required.page)}`;
-  }
-  return `You don't have permission to access ${humanizeKey(required.module)}`;
-}
 
 /** Normalise an axios error into a human-readable message. */
 export function getErrorMessage(error: unknown): string {

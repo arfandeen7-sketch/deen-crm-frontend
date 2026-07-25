@@ -132,7 +132,7 @@ export default function IntegrationDetailPage() {
   }
 
   return (
-    <AccessGuard module="integrations" page="all_integrations">
+    <AccessGuard module="integrations" page="all_integrations" action="view">
       <div className="space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">

@@ -7,57 +7,77 @@ import {
 } from "@tanstack/react-query";
 import { integrationsService } from "@/services/integrations/integrations.service";
 import { POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 const KEY = "integrations";
 
 export function useProviders() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["integrations:list"]);
   return useQuery({
     queryKey: [KEY, "providers"],
     queryFn: () => integrationsService.getProviders(),
+    enabled,
     staleTime: 10 * 60_000,
+    retry: retrySkipAuth,
   });
 }
 
 export function useIntegrationsList() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["integrations:list"]);
   return useQuery({
     queryKey: [KEY, "list"],
     queryFn: () => integrationsService.list(),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useIntegration(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["integrations:detail"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: [KEY, "detail", id],
     queryFn: () => integrationsService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useHealthReport(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["integrations:detail"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: [KEY, "health-report", id],
     queryFn: () => integrationsService.healthReport(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useSyncJobs(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["integrations:detail"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: [KEY, "sync-jobs", id],
     queryFn: () => integrationsService.syncJobs(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useIntegrationsDashboard() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["integrations:dashboard"]);
   return useQuery({
     queryKey: [KEY, "dashboard"],
     queryFn: () => integrationsService.dashboard(),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 

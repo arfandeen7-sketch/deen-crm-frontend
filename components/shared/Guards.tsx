@@ -7,8 +7,9 @@ import { usePermissions } from "@/contexts/PermissionContext";
 import { LoadingState } from "@/components/ui/States";
 
 /**
- * Page-level guard using the new 3-level permission system.
- * Redirects to /dashboard/overview when the user lacks module/page/action access.
+ * Page-level guard using the 3-level permission system.
+ * Waits for both auth hydration AND permission readiness before evaluating access.
+ * Redirects silently to /dashboard/overview when the user lacks module/page/action access.
  */
 export function AccessGuard({
   module,
@@ -22,8 +23,10 @@ export function AccessGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { hydrated } = useAuth();
+  const { hydrated, permissionStatus } = useAuth();
   const { canModule, canPage, canAction } = usePermissions();
+
+  const permissionsReady = permissionStatus === "ready";
 
   function hasAccess(): boolean {
     if (action && page) return canAction(module, page, action);
@@ -32,13 +35,14 @@ export function AccessGuard({
   }
 
   useEffect(() => {
-    if (hydrated && !hasAccess()) {
+    if (hydrated && permissionsReady && !hasAccess()) {
       router.replace("/dashboard/overview");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, module, page, action]);
+  }, [hydrated, permissionsReady, module, page, action]);
 
-  if (!hydrated) {
+  // Wait for auth hydration and permission readiness before rendering anything.
+  if (!hydrated || !permissionsReady) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <LoadingState label="Checking access…" />
@@ -54,6 +58,7 @@ export function AccessGuard({
 /**
  * Inline conditional: renders children only when the user has the given access.
  * Does not redirect; use AccessGuard for page-level protection.
+ * Returns fallback when permissions are not yet ready (loading state).
  */
 export function CanAccess({
   module,
@@ -68,7 +73,11 @@ export function CanAccess({
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const { permissionStatus } = useAuth();
   const { canModule, canPage, canAction } = usePermissions();
+
+  // While permissions are loading, don't render protected content.
+  if (permissionStatus !== "ready") return <>{fallback}</>;
 
   function hasAccess(): boolean {
     if (action && page) return canAction(module, page, action);

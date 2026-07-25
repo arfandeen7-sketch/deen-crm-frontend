@@ -11,23 +11,31 @@ import { loginActivityService, type LoginActivityQuery } from "@/services/hrms/l
 import { hrReportsService, type HrReportQuery, type HrReportType } from "@/services/hrms/hr-reports.service";
 import type { AttendanceCheckPayload, EmploymentStatus, LeaveApplyPayload, LeaveStatus } from "@/types";
 import { POLL_FAST, POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 // ── Employee Hooks ───────────────────────────────────────────────────────────
 
 export function useEmployeeList(params: EmployeeQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:employees"]);
   return useQuery({
     queryKey: ["employees", "list", params],
     queryFn: () => employeeService.list(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useEmployee(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["hrms:employees"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: ["employees", "detail", id],
     queryFn: () => employeeService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -56,35 +64,46 @@ export function useEmployeeMutations() {
 // ── Attendance Hooks ─────────────────────────────────────────────────────────
 
 export function useAttendanceList(params: AttendanceQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:attendance"]);
   return useQuery({
     queryKey: ["attendance", "list", params],
     queryFn: () => attendanceService.list(params),
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useMyAttendance(params: Omit<AttendanceQuery, "userId"> = {}) {
+  const enabled = useQueryEnabled("hrms:my-attendance");
   return useQuery({
     queryKey: ["attendance", "my-list", params],
     queryFn: () => attendanceService.myList(params),
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useTodayAttendance() {
+  const enabled = useQueryEnabled("hrms:my-attendance");
   return useQuery({
     queryKey: ["attendance", "today"],
     queryFn: () => attendanceService.today(),
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useAttendanceUserSummary(userId: string, params: { month: number; year: number }, enabled = true) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["hrms:attendance"]);
   return useQuery({
     queryKey: ["attendance", "user-summary", userId, params],
     queryFn: () => attendanceService.userSummary(userId, params),
-    enabled: !!userId && enabled,
-    refetchInterval: POLL_SLOW,
+    enabled: !!userId && enabled && hasPermission,
+    refetchInterval: hasPermission ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -105,10 +124,13 @@ export function useAttendanceCheckOut() {
 }
 
 export function useAttendanceConfig() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:attendance"]);
   return useQuery({
     queryKey: ["attendance", "config"],
     queryFn: () => attendanceService.getConfig(),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -123,26 +145,35 @@ export function useUpdateAttendanceConfig() {
 // ── Leave Hooks ──────────────────────────────────────────────────────────────
 
 export function useLeaveList(params: LeaveQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:leave"]);
   return useQuery({
     queryKey: ["leave", "list", params],
     queryFn: () => leaveService.list(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useMyLeaves(params: Omit<LeaveQuery, "userId"> = {}) {
+  const enabled = useQueryEnabled("hrms:my-leaves");
   return useQuery({
     queryKey: ["leave", "my-list", params],
     queryFn: () => leaveService.myList(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useLeaveBalance(userId?: string) {
+  const enabled = useQueryEnabled("hrms:my-leaves");
   return useQuery({
     queryKey: ["leave", "balance", userId],
     queryFn: () => leaveService.balance(userId),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -192,27 +223,36 @@ export function useCalculatePayroll() {
 // ── Payslip Hooks ────────────────────────────────────────────────────────────
 
 export function usePayslipList(params: PayslipQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:payslips"]);
   return useQuery({
     queryKey: ["payslips", "list", params],
     queryFn: () => payslipService.list(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useMyPayslips(params: Omit<PayslipQuery, "userId"> = {}) {
+  const enabled = useQueryEnabled("hrms:my-payslips");
   return useQuery({
     queryKey: ["payslips", "my-list", params],
     queryFn: () => payslipService.myList(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function usePayslip(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["hrms:payslips"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: ["payslips", "detail", id],
     queryFn: () => payslipService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
@@ -295,20 +335,26 @@ export function useEmailTemplateMutations() {
 // ── Login Activity Hooks ─────────────────────────────────────────────────────
 
 export function useLoginActivityList(params: LoginActivityQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:login-activity"]);
   return useQuery({
     queryKey: ["login-activity", "list", params],
     queryFn: () => loginActivityService.list(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 // ── HR Reports Hooks ─────────────────────────────────────────────────────────
 
 export function useHrReport(type: HrReportType, params: HrReportQuery = {}) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["hrms:reports"]);
+  const enabled = !!type && hasPermission;
   return useQuery({
     queryKey: ["hr-reports", type, params],
     queryFn: () => hrReportsService.getReport(type, params),
-    enabled: !!type,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }

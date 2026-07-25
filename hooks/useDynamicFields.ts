@@ -5,13 +5,18 @@ import {
   dynamicFieldsService,
   type DynamicFieldInput,
 } from "@/services/dynamic-fields/dynamicFields.service";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 /** Fetch dynamic field values for a category (e.g. lead_status, source). */
 export function useDynamicFields(category?: string) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["dynamic-fields:list"]);
   return useQuery({
     queryKey: ["dynamic-fields", category ?? "all"],
     queryFn: () => dynamicFieldsService.list(category),
+    enabled,
     staleTime: 5 * 60_000,
+    retry: retrySkipAuth,
   });
 }
 

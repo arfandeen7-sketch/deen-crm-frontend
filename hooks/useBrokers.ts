@@ -12,41 +12,55 @@ import {
 } from "@/services/brokers/brokers.service";
 import type { Broker } from "@/types";
 import { POLL_FAST, POLL_SLOW } from "@/constants";
+import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
+import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 const KEY = "brokers";
 
 export function useBrokersList(params: BrokerQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["brokers:list"]);
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => brokersService.list(params),
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useBroker(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["brokers:detail"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: [KEY, "detail", id],
     queryFn: () => brokersService.get(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_SLOW,
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
   });
 }
 
 export function useBrokerLeads(id: string | undefined) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["brokers:detail"]);
+  const enabled = !!id && hasPermission;
   return useQuery({
     queryKey: [KEY, "leads", id],
     queryFn: () => brokersService.leads(id as string),
-    enabled: !!id,
-    refetchInterval: POLL_FAST,
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
   });
 }
 
 /** All brokers as lightweight options for dropdowns. */
 export function useBrokerOptions(): Broker[] {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["brokers:list"]);
   const { data } = useQuery({
     queryKey: [KEY, "options"],
     queryFn: () => brokersService.list({ page: 1, pageSize: 100 }),
+    enabled,
     staleTime: 5 * 60_000,
+    retry: retrySkipAuth,
   });
   return data?.data ?? [];
 }

@@ -7,7 +7,7 @@ import { AccessGuard } from "@/components/shared/Guards";
 
 export default function UntouchedLeadsPage() {
   return (
-    <AccessGuard module="leads" page="untouched_leads">
+    <AccessGuard module="leads" page="untouched_leads" action="view">
       <div className="space-y-5">
         <LeadTabs />
         <PageHeader

@@ -74,7 +74,7 @@ export default function AttendanceCheckInOutPage() {
 
   if (isLoading) {
     return (
-      <AccessGuard module="hrms" page="attendance">
+      <AccessGuard module="hrms" page="attendance" action="view">
         <div className="space-y-6">
           <PageHeader title="Attendance" subtitle="Check in and check out" />
           <div className="animate-pulse rounded-xl border border-border bg-background p-6">
@@ -86,7 +86,7 @@ export default function AttendanceCheckInOutPage() {
   }
 
   return (
-    <AccessGuard module="hrms" page="attendance">
+    <AccessGuard module="hrms" page="attendance" action="view">
       <div className="space-y-6">
         <PageHeader title="Attendance" subtitle="Check in and check out for today" />
 

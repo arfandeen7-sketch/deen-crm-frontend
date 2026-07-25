@@ -676,12 +676,22 @@ export interface LeadActivity {
 
 // ── App Notifications ────────────────────────────────────────────────────────
 
+export interface AssignmentNotificationLead {
+  id: string;
+  leadName: string;
+  mobileNumber: string;
+  source: string;
+  serviceType: string;
+  projectName: string | null;
+}
+
 export interface AppNotification {
   id: string;
-  type: string;
+  type: "assignment" | "followup" | "system" | "leave" | "regularization";
   title: string;
-  body: string;
-  leadId?: string | null;
+  body: string | null;
+  leadId: string | null;
+  leads: AssignmentNotificationLead[] | null;
   isRead: boolean;
   createdAt: string;
 }

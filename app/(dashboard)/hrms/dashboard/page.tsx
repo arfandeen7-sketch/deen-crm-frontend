@@ -13,7 +13,7 @@ export default function HrDashboardPage() {
   const { data: todayAttendance, isLoading: attLoading } = useAttendanceList({ dateFrom: today, dateTo: today, pageSize: 1 });
 
   return (
-    <AccessGuard module="hrms" page="employees">
+    <AccessGuard module="hrms" page="employees" action="view">
     <div className="space-y-6">
       <PageHeader title="HR Dashboard" subtitle="Overview of workforce analytics" />
 
