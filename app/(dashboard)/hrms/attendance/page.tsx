@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { LogIn, LogOut, Clock, CheckCircle2, MapPin, Calendar } from "lucide-react";
 import { CameraCaptureWithLocation } from "@/components/hrms/CameraCaptureWithLocation";
+import { AttendanceSettingsForm } from "@/components/hrms/AttendanceSettingsForm";
 import { useAttendanceCheckIn, useAttendanceCheckOut, useTodayAttendance, useAttendanceConfig } from "@/hooks/useHrms";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { AccessGuard } from "@/components/shared/Guards";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -12,6 +14,7 @@ import { ATTENDANCE_STATUS_COLORS } from "@/constants";
 import { getErrorMessage } from "@/lib/utils";
 
 export default function AttendanceCheckInOutPage() {
+  const { isMaster } = useAuth();
   const [showCamera, setShowCamera] = useState<"checkin" | "checkout" | null>(null);
   const { data: today, isLoading: todayLoading } = useTodayAttendance();
   const { data: config, isLoading: configLoading } = useAttendanceConfig();
@@ -76,10 +79,24 @@ export default function AttendanceCheckInOutPage() {
     return (
       <AccessGuard module="hrms" page="attendance" action="view">
         <div className="space-y-6">
-          <PageHeader title="Attendance" subtitle="Check in and check out" />
+          <PageHeader title="Attendance" subtitle={isMaster ? "Configure attendance rules and office location" : "Check in and check out"} />
           <div className="animate-pulse rounded-xl border border-border bg-background p-6">
             <div className="h-32 rounded-lg bg-panel" />
           </div>
+        </div>
+      </AccessGuard>
+    );
+  }
+
+  if (isMaster) {
+    return (
+      <AccessGuard module="hrms" page="attendance" action="edit">
+        <div className="space-y-6">
+          <PageHeader
+            title="Attendance Settings"
+            subtitle="Configure attendance rules and office location"
+          />
+          <AttendanceSettingsForm />
         </div>
       </AccessGuard>
     );

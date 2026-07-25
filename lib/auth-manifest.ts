@@ -72,7 +72,6 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/hrms/employees/[id]/edit": { type: "permission", requirement: { module: "hrms", page: "employees", action: "edit" } },
   "/hrms/attendance": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "view" } },
   "/hrms/attendance/records": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "view" } },
-  "/hrms/attendance/settings": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "edit" } },
   "/hrms/leave": { type: "permission", requirement: { module: "hrms", page: "leave", action: "view" } },
   "/hrms/leave-types": { type: "permission", requirement: { module: "hrms", page: "leave_types", action: "view" } },
   "/hrms/holidays": { type: "permission", requirement: { module: "hrms", page: "leave_holidays", action: "view" } },
