@@ -123,6 +123,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Employees", href: "/hrms/employees", icon: Users2, navAccess: { module: "hrms", page: "employees" } },
       { label: "Attendance", href: "/hrms/attendance", icon: ClipboardCheck, navAccess: { module: "hrms", page: "attendance" } },
       { label: "Leave Management", href: "/hrms/leave", icon: CalendarDays, navAccess: { module: "hrms", page: "leave" } },
+      { label: "Leave Types", href: "/hrms/leave-types", icon: SlidersHorizontal, navAccess: { module: "hrms", page: "leave_types" } },
+      { label: "Public Holidays", href: "/hrms/holidays", icon: CalendarX, navAccess: { module: "hrms", page: "leave_holidays" } },
       { label: "Payroll Management", href: "/hrms/payroll", icon: Wallet, navAccess: { module: "hrms", page: "payroll" } },
       { label: "Payslips", href: "/hrms/payslips", icon: FileText, navAccess: { module: "hrms", page: "payslips" } },
       { label: "Email Configuration", href: "/hrms/email-config", icon: Mail, navAccess: { module: "hrms", page: "employees" } },

@@ -311,28 +311,136 @@ export interface AttendanceSummary {
 
 // ── HRMS: Leave Management ───────────────────────────────────────────────────
 
+export interface LeaveTypeConfig {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  isPaid: boolean;
+  applicableRoles?: string | null;
+  genderRestriction?: string | null;
+  probationAllowed: boolean;
+  requiresMedicalCertificate: boolean;
+  requiresAttachment: boolean;
+  annualAllocation: number;
+  maxDaysPerRequest?: number | null;
+  maximumConsecutiveDays?: number | null;
+  maximumRequestsPerMonth?: number | null;
+  minimumNoticeDays?: number | null;
+  halfDayAllowed: boolean;
+  futureDateAllowed: boolean;
+  backDateAllowed: boolean;
+  backDateLimitDays?: number | null;
+  weekendCounted: boolean;
+  holidayCounted: boolean;
+  canCombineWith?: string | null;
+  negativeBalanceAllowed: boolean;
+  resetEveryYear: boolean;
+  monthlyAccrual: boolean;
+  carryForwardEnabled: boolean;
+  carryForwardPercentage: number;
+  carryForwardExpiryMonths?: number | null;
+  maxCarryForward?: number | null;
+  encashmentEnabled: boolean;
+  encashmentPercentage: number;
+  manualAllocationAllowed: boolean;
+  approvalRequired: boolean;
+  approvalLevels: number;
+  autoApprove: boolean;
+  notifyHR: boolean;
+  notifyMaster: boolean;
+  notifyManager: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveTypeConfigWithBalance extends LeaveTypeConfig {
+  balance: LeaveBalanceEntry;
+}
+
+export interface LeaveBalanceEntry {
+  leaveTypeCode: string;
+  leaveTypeName: string;
+  allocated: number;
+  carryForward: number;
+  adjustment: number;
+  used: number;
+  remaining: number;
+}
+
+export interface LeaveBalancesResponse {
+  userId: string;
+  fullName: string;
+  balances: LeaveBalanceEntry[];
+}
+
+export interface Holiday {
+  id: string;
+  name: string;
+  date: string;
+  year: number;
+  isRecurring: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveAudit {
+  id: string;
+  leaveRequestId: string;
+  action: string;
+  changedBy: string;
+  oldStatus?: string | null;
+  newStatus?: string | null;
+  reason?: string | null;
+  meta?: unknown;
+  createdAt: string;
+  changer?: Pick<User, "id" | "fullName"> | null;
+}
+
 export interface LeaveRequest {
   id: string;
   userId: string;
   leaveType: LeaveType;
+  leaveTypeCode?: string | null;
   dateFrom: string;
   dateTo: string;
   totalDays: number;
   reason?: string | null;
+  attachmentUrl?: string | null;
+  cancellationReason?: string | null;
+  cancelledAt?: string | null;
+  halfDayPeriod?: string | null;
+  isHalfDay: boolean;
   status: LeaveStatus;
   reviewedBy?: string | null;
   reviewedAt?: string | null;
   reviewNote?: string | null;
   createdAt: string;
   updatedAt: string;
-  user?: Pick<User, "id" | "fullName" | "department"> | null;
+  user?: Pick<User, "id" | "fullName"> | null;
   reviewer?: Pick<User, "id" | "fullName"> | null;
+  leaveTypeConfig?: Pick<LeaveTypeConfig, "id" | "name" | "code"> | null;
+  leaveAudits?: LeaveAudit[];
+  attachmentSignedUrl?: string | null;
 }
 
 export interface LeaveApplyPayload {
-  leaveType: LeaveType;
+  leaveTypeCode: string;
   dateFrom: string;
   dateTo: string;
+  reason?: string;
+  isHalfDay?: boolean;
+  halfDayPeriod?: "first_half" | "second_half";
+}
+
+export interface LeaveAllocatePayload {
+  userId: string;
+  leaveTypeCode: string;
+  year: number;
+  days: number;
   reason?: string;
 }
 

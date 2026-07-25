@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { employeeService, type EmployeeInput, type EmployeeQuery } from "@/services/hr/hr.service";
 import { attendanceService, type AttendanceQuery } from "@/services/attendance/attendance.service";
 import { leaveService, type LeaveQuery } from "@/services/hrms/leave.service";
+import { leaveTypeService } from "@/services/hrms/leaveType.service";
+import { holidayService } from "@/services/hrms/holiday.service";
 import { payrollService, type PayrollPreviewParams } from "@/services/hrms/payroll.service";
 import { payslipService, type PayslipQuery } from "@/services/hrms/payslip.service";
 import { emailService, type SmtpConfigInput, type EmailTemplateInput } from "@/services/hrms/email.service";
@@ -180,7 +182,7 @@ export function useLeaveBalance(userId?: string) {
 export function useApplyLeave() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: LeaveApplyPayload) => leaveService.apply(body),
+    mutationFn: ({ body, file }: { body: LeaveApplyPayload; file?: File }) => leaveService.apply(body, file),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
   });
 }
@@ -197,7 +199,133 @@ export function useReviewLeave() {
 export function useCancelLeave() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => leaveService.cancel(id),
+    mutationFn: ({ id, cancellationReason }: { id: string; cancellationReason?: string }) =>
+      leaveService.cancel(id, cancellationReason),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
+  });
+}
+
+// ── Leave Type Config Hooks ──────────────────────────────────────────────────
+
+export function useLeaveTypeList() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:leave_types"] ?? "hrms:leave");
+  return useQuery({
+    queryKey: ["leave-types", "list"],
+    queryFn: () => leaveTypeService.list(),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useMyLeaveTypes() {
+  const enabled = useQueryEnabled("hrms:my-leaves");
+  return useQuery({
+    queryKey: ["leave-types", "my"],
+    queryFn: () => leaveTypeService.listForEmployee(),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useLeaveTypeMutations() {
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["leave-types"] });
+
+  const create = useMutation({
+    mutationFn: (body: Partial<import("@/types").LeaveTypeConfig>) => leaveTypeService.create(body),
+    onSuccess: invalidate,
+  });
+  const update = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Partial<import("@/types").LeaveTypeConfig> }) =>
+      leaveTypeService.update(id, body),
+    onSuccess: invalidate,
+  });
+  const deactivate = useMutation({
+    mutationFn: (id: string) => leaveTypeService.deactivate(id),
+    onSuccess: invalidate,
+  });
+  const activate = useMutation({
+    mutationFn: (id: string) => leaveTypeService.activate(id),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, deactivate, activate };
+}
+
+// ── Holiday Hooks ────────────────────────────────────────────────────────────
+
+export function useHolidayList(year?: number) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:leave_holidays"] ?? "hrms:leave");
+  return useQuery({
+    queryKey: ["holidays", "list", year],
+    queryFn: () => holidayService.listAll(year),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useMyHolidays(year?: number) {
+  const enabled = useQueryEnabled("hrms:my-leaves");
+  return useQuery({
+    queryKey: ["holidays", "my", year],
+    queryFn: () => holidayService.list(year),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useHolidayMutations() {
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["holidays"] });
+
+  const create = useMutation({
+    mutationFn: (body: { name: string; date: string; isRecurring?: boolean }) => holidayService.create(body),
+    onSuccess: invalidate,
+  });
+  const bulkCreate = useMutation({
+    mutationFn: (holidays: Array<{ name: string; date: string; isRecurring?: boolean }>) => holidayService.bulkCreate(holidays),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => holidayService.remove(id),
+    onSuccess: invalidate,
+  });
+
+  return { create, bulkCreate, remove };
+}
+
+// ── Leave Balance / Allocation Hooks ─────────────────────────────────────────
+
+export function useAllBalances(year?: number) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:leave"]);
+  return useQuery({
+    queryKey: ["leave", "all-balances", year],
+    queryFn: () => leaveService.getAllBalances(year),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useUserBalances(userId: string | undefined, year?: number) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:leave"]) && !!userId;
+  return useQuery({
+    queryKey: ["leave", "user-balances", userId, year],
+    queryFn: () => leaveService.getUserBalances(userId as string, year),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useAllocateLeave() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: import("@/types").LeaveAllocatePayload) => leaveService.allocate(body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
   });
 }
