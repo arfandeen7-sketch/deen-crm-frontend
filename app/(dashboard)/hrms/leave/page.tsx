@@ -13,6 +13,7 @@ import { Field, Textarea } from "@/components/ui/Input";
 import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useAuth } from "@/hooks/useAuth";
 import { Select } from "@/components/ui/Input";
@@ -39,8 +40,7 @@ export default function LeaveManagementPage() {
     review.mutate({ id, status: "approved" }, {
       onSuccess: () => toast.success("Leave approved"),
       onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "Failed to approve";
-        toast.error(msg);
+        toast.error(getErrorMessage(err));
       },
     });
   };
@@ -54,8 +54,7 @@ export default function LeaveManagementPage() {
         setRejectNote("");
       },
       onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "Failed to reject";
-        toast.error(msg);
+        toast.error(getErrorMessage(err));
       },
     });
   };
@@ -68,8 +67,7 @@ export default function LeaveManagementPage() {
         setCancelTarget(null);
       },
       onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "Failed to cancel";
-        toast.error(msg);
+        toast.error(getErrorMessage(err));
       },
     });
   }

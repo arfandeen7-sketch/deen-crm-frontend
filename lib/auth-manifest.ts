@@ -101,6 +101,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
   "/my-hr/leaves": { type: "authenticated" },
+  "/my-hr/calendar": { type: "authenticated" },
   "/my-hr/payslips": { type: "authenticated" },
   "/my-hr/profile": { type: "authenticated" },
 
@@ -267,6 +268,7 @@ export const SELF_SERVICE_QUERIES = new Set([
   "hrms:my-attendance",
   "hrms:my-leaves",
   "hrms:my-payslips",
+  "hrms:team-calendar",
   "teams:my-team",
 ]);
 

@@ -387,6 +387,26 @@ export interface Holiday {
   updatedAt: string;
 }
 
+export interface CalendarLeaveEntry {
+  id: string;
+  userId: string;
+  userFullName: string;
+  dateFrom: string; // YYYY-MM-DD
+  dateTo: string; // YYYY-MM-DD
+  totalDays: number;
+  isHalfDay: boolean;
+  halfDayPeriod?: string | null;
+  leaveType: string;
+  leaveTypeCode?: string | null;
+  leaveTypeName?: string | null;
+  status: 'approved' | 'pending';
+}
+
+export interface TeamCalendarResponse {
+  holidays: Holiday[];
+  leaves: CalendarLeaveEntry[];
+}
+
 export interface LeaveAudit {
   id: string;
   leaveRequestId: string;

@@ -183,7 +183,10 @@ export function useApplyLeave() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ body, file }: { body: LeaveApplyPayload; file?: File }) => leaveService.apply(body, file),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+      qc.invalidateQueries({ queryKey: ["team-calendar"] });
+    },
   });
 }
 
@@ -192,7 +195,10 @@ export function useReviewLeave() {
   return useMutation({
     mutationFn: ({ id, status, reviewNote }: { id: string; status: Extract<LeaveStatus, "approved" | "rejected">; reviewNote?: string }) =>
       leaveService.review(id, status, reviewNote),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+      qc.invalidateQueries({ queryKey: ["team-calendar"] });
+    },
   });
 }
 
@@ -201,7 +207,10 @@ export function useCancelLeave() {
   return useMutation({
     mutationFn: ({ id, cancellationReason }: { id: string; cancellationReason?: string }) =>
       leaveService.cancel(id, cancellationReason),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["leave"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leave"] });
+      qc.invalidateQueries({ queryKey: ["team-calendar"] });
+    },
   });
 }
 
@@ -280,7 +289,10 @@ export function useMyHolidays(year?: number) {
 
 export function useHolidayMutations() {
   const qc = useQueryClient();
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["holidays"] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["holidays"] });
+    qc.invalidateQueries({ queryKey: ["team-calendar"] });
+  };
 
   const create = useMutation({
     mutationFn: (body: { name: string; date: string; isRecurring?: boolean }) => holidayService.create(body),
@@ -296,6 +308,17 @@ export function useHolidayMutations() {
   });
 
   return { create, bulkCreate, remove };
+}
+
+export function useTeamCalendar(year: number, month: number) {
+  const enabled = useQueryEnabled("hrms:team-calendar");
+  return useQuery({
+    queryKey: ["team-calendar", year, month],
+    queryFn: () => holidayService.teamCalendar(year, month),
+    enabled,
+    refetchInterval: enabled ? POLL_SLOW : false,
+    retry: retrySkipAuth,
+  });
 }
 
 // ── Leave Balance / Allocation Hooks ─────────────────────────────────────────

@@ -159,6 +159,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "My Attendance", href: "/my-hr/attendance", icon: ClipboardCheck },
       { label: "My Leaves", href: "/my-hr/leaves", icon: CalendarDays },
+      { label: "Leave Calendar", href: "/my-hr/calendar", icon: CalendarDays },
       { label: "My Payslips", href: "/my-hr/payslips", icon: FileText },
       { label: "My Profile", href: "/my-hr/profile", icon: User },
     ],

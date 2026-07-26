@@ -16,6 +16,7 @@ import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { leaveApplySchema, type LeaveApplyFormValues } from "@/schemas/leave.schema";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import type { LeaveRequest } from "@/types";
 
 export default function MyLeavesPage() {
@@ -51,8 +52,7 @@ export default function MyLeavesPage() {
           setModalOpen(false);
         },
         onError: (err: unknown) => {
-          const msg = err instanceof Error ? err.message : "Failed to submit leave";
-          toast.error(msg);
+          toast.error(getErrorMessage(err));
         },
       },
     );
@@ -74,8 +74,7 @@ export default function MyLeavesPage() {
           setCancelTarget(null);
         },
         onError: (err: unknown) => {
-          const msg = err instanceof Error ? err.message : "Failed to cancel leave";
-          toast.error(msg);
+          toast.error(getErrorMessage(err));
         },
       },
     );

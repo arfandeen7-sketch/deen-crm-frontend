@@ -240,7 +240,7 @@ function LeadDetailPageContent() {
                   </p>
                 )
               ) : (
-                activityData && activityData.data.length > 0 ? (
+                activityData && activityData.data?.length > 0 ? (
                   <ol className="relative space-y-4 border-l border-slate-200 pl-5">
                     {activityData.data.map((a) => (
                       <li key={a.id} className="relative">

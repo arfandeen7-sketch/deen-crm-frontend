@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Plus, Trash2, Calendar as CalendarIcon, Repeat } from "lucide-react";
-import { useHolidayList, useHolidayMutations } from "@/hooks/useHrms";
+import { useHolidayList, useHolidayMutations, useTeamCalendar } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Field, Input, Select } from "@/components/ui/Input";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
+import { LeaveCalendar } from "@/components/calendar/LeaveCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { formatDate } from "@/lib/utils";
 import type { Holiday } from "@/types";
 import { holidaySchema } from "@/schemas/leave.schema";
@@ -23,8 +25,11 @@ const MONTHS = [
 
 export default function PublicHolidaysPage() {
   const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
   const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
   const { data, isLoading } = useHolidayList(year);
+  const { data: calendarData, isLoading: calendarLoading } = useTeamCalendar(year, month);
   const { create, remove } = useHolidayMutations();
   const { canAction } = useAuth();
 
@@ -32,6 +37,10 @@ export default function PublicHolidaysPage() {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", date: "", isRecurring: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const canManageHolidays =
+    canAction("hrms", "leave_holidays", "create") ||
+    canAction("hrms", "leave_holidays", "delete");
 
   const yearOptions = useMemo(() => {
     const years: number[] = [];
@@ -43,8 +52,8 @@ export default function PublicHolidaysPage() {
     const grouped: Record<number, Holiday[]> = {};
     for (let m = 0; m < 12; m++) grouped[m] = [];
     for (const h of data ?? []) {
-      const month = new Date(h.date).getUTCMonth();
-      if (grouped[month]) grouped[month].push(h);
+      const monthIdx = new Date(h.date).getUTCMonth();
+      if (grouped[monthIdx]) grouped[monthIdx].push(h);
     }
     for (const m of Object.keys(grouped)) {
       grouped[Number(m)].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -52,8 +61,8 @@ export default function PublicHolidaysPage() {
     return grouped;
   }, [data]);
 
-  function openCreate() {
-    setForm({ name: "", date: "", isRecurring: false });
+  function openCreate(prefilledDate?: string) {
+    setForm({ name: "", date: prefilledDate ?? "", isRecurring: false });
     setErrors({});
     setModalOpen(true);
   }
@@ -78,8 +87,7 @@ export default function PublicHolidaysPage() {
           setModalOpen(false);
         },
         onError: (err: unknown) => {
-          const msg = err instanceof Error ? err.message : "Failed to add holiday";
-          toast.error(msg);
+          toast.error(getErrorMessage(err));
         },
       },
     );
@@ -87,6 +95,11 @@ export default function PublicHolidaysPage() {
 
   function handleDelete(id: string) {
     setConfirmId(id);
+  }
+
+  function handleCalendarMonthChange(y: number, m: number) {
+    setYear(y);
+    setMonth(m);
   }
 
   function confirmDelete() {
@@ -97,8 +110,7 @@ export default function PublicHolidaysPage() {
         setConfirmId(null);
       },
       onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "Failed to remove holiday";
-        toast.error(msg);
+        toast.error(getErrorMessage(err));
       },
     });
   }
@@ -137,13 +149,26 @@ export default function PublicHolidaysPage() {
                 {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
               </Select>
               <CanAccess module="hrms" page="leave_holidays" action="create">
-                <Button onClick={openCreate} size="sm">
+                <Button onClick={() => openCreate()} size="sm">
                   <Plus className="h-4 w-4" />
                   Add Holiday
                 </Button>
               </CanAccess>
             </div>
           }
+        />
+
+        {/* Interactive Calendar */}
+        <LeaveCalendar
+          year={year}
+          month={month}
+          holidays={calendarData?.holidays ?? data?.filter((h) => new Date(h.date).getUTCMonth() + 1 === month) ?? []}
+          leaves={calendarData?.leaves ?? []}
+          canManageHolidays={canManageHolidays}
+          onMonthChange={handleCalendarMonthChange}
+          onAddHoliday={(date) => openCreate(date)}
+          onRemoveHoliday={(holiday) => handleDelete(holiday.id)}
+          isLoading={calendarLoading}
         />
 
         {/* Calendar Grid View */}

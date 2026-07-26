@@ -1,5 +1,5 @@
 import { getData, postData, deleteData } from "@/services/api/client";
-import type { Holiday } from "@/types";
+import type { Holiday, TeamCalendarResponse } from "@/types";
 
 export const holidayService = {
   list(year?: number): Promise<Holiday[]> {
@@ -21,5 +21,8 @@ export const holidayService = {
   },
   remove(id: string): Promise<{ success: true }> {
     return deleteData<{ success: true }>(`/holidays/${id}`);
+  },
+  teamCalendar(year: number, month: number): Promise<TeamCalendarResponse> {
+    return getData<TeamCalendarResponse>(`/me/team-calendar?year=${year}&month=${month}`);
   },
 };
