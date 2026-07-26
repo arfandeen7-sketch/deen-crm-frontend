@@ -64,120 +64,131 @@ export function LeadForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Lead Name" required error={errors.leadName?.message}>
-          <Input placeholder="Full name" invalid={!!errors.leadName} {...register("leadName")} />
-        </Field>
-        <Field label="Mobile Number" required error={errors.mobileNumber?.message}>
-          <Input placeholder="+9715XXXXXXXX" invalid={!!errors.mobileNumber} {...register("mobileNumber")} />
-        </Field>
-        <Field label="Alternate Mobile" error={errors.alternateMobile?.message}>
-          <Input placeholder="Optional" {...register("alternateMobile")} />
-        </Field>
-        <Field label="Email" error={errors.email?.message}>
-          <Input type="email" placeholder="name@example.com" {...register("email")} />
-        </Field>
-      </section>
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Client Information</h3>
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Lead Name" required error={errors.leadName?.message}>
+              <Input placeholder="Full name" invalid={!!errors.leadName} {...register("leadName")} />
+            </Field>
+            <Field label="Mobile Number" required error={errors.mobileNumber?.message}>
+              <Input placeholder="+9715XXXXXXXX" invalid={!!errors.mobileNumber} {...register("mobileNumber")} />
+            </Field>
+            <Field label="Alternate Mobile" error={errors.alternateMobile?.message}>
+              <Input placeholder="Optional" {...register("alternateMobile")} />
+            </Field>
+            <Field label="Email" error={errors.email?.message}>
+              <Input type="email" placeholder="name@example.com" {...register("email")} />
+            </Field>
+          </section>
+        </div>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Source" required error={errors.source?.message}>
-          <Select invalid={!!errors.source} {...register("source")}>
-            <option value="">Select source</option>
-            {sources.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Project" error={errors.projectName?.message}>
-          <Select {...register("projectName")}>
-            <option value="">Select project</option>
-            {projects.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Service Type" required error={errors.serviceType?.message}>
-          <Select invalid={!!errors.serviceType} {...register("serviceType")}>
-            {SERVICE_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Lead Status" required error={errors.leadStatus?.message}>
-          <Select invalid={!!errors.leadStatus} {...register("leadStatus")}>
-            {statuses.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Lead Priority" error={errors.leadPriority?.message}>
-          <Select {...register("leadPriority")}>
-            <option value="">Select priority</option>
-            {priorities.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Follow Up Date &amp; Time" error={errors.followUpDate?.message}>
-          <Input type="datetime-local" {...register("followUpDate")} />
-        </Field>
-        <Field label="Assigned User" error={errors.assignedTo?.message}>
-          <Select {...register("assignedTo")}>
-            <option value="">Unassigned</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>{u.fullName}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Broker" error={errors.brokerId?.message}>
-          <Select {...register("brokerId")}>
-            <option value="">No broker</option>
-            {brokers.map((b) => (
-              <option key={b.id} value={b.id}>{b.brokerName}</option>
-            ))}
-          </Select>
-        </Field>
-      </section>
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Lead Attributes & Assignment</h3>
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Source" required error={errors.source?.message}>
+              <Select invalid={!!errors.source} {...register("source")}>
+                <option value="">Select source</option>
+                {sources.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Project" error={errors.projectName?.message}>
+              <Select {...register("projectName")}>
+                <option value="">Select project</option>
+                {projects.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Service Type" required error={errors.serviceType?.message}>
+              <Select invalid={!!errors.serviceType} {...register("serviceType")}>
+                {SERVICE_TYPES.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Lead Status" required error={errors.leadStatus?.message}>
+              <Select invalid={!!errors.leadStatus} {...register("leadStatus")}>
+                {statuses.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Lead Priority" error={errors.leadPriority?.message}>
+              <Select {...register("leadPriority")}>
+                <option value="">Select priority</option>
+                {priorities.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Follow Up Date &amp; Time" error={errors.followUpDate?.message}>
+              <Input type="datetime-local" {...register("followUpDate")} />
+            </Field>
+            <Field label="Assigned User" error={errors.assignedTo?.message}>
+              <Select {...register("assignedTo")}>
+                <option value="">Unassigned</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>{u.fullName}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Broker" error={errors.brokerId?.message}>
+              <Select {...register("brokerId")}>
+                <option value="">No broker</option>
+                {brokers.map((b) => (
+                  <option key={b.id} value={b.id}>{b.brokerName}</option>
+                ))}
+              </Select>
+            </Field>
+          </section>
+        </div>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="City" error={errors.city?.message}>
-          <Input placeholder="e.g. Dubai" {...register("city")} />
-        </Field>
-        <Field label="Locality" error={errors.locality?.message}>
-          <Input placeholder="e.g. Business Bay" {...register("locality")} />
-        </Field>
-        <Field label="Unit Number" error={errors.unitNumber?.message}>
-          <Input placeholder="e.g. 1204" {...register("unitNumber")} />
-        </Field>
-        <Field label="Price (AED)" error={errors.price?.message}>
-          <Input type="text" placeholder="e.g. 1500000" {...register("price")} />
-        </Field>
-        <Field label="Property Size (sqft)" error={errors.propertySize?.message}>
-          <Input type="text" placeholder="e.g. 850" {...register("propertySize")} />
-        </Field>
-        <Field label="Project Type" error={errors.projectType?.message}>
-          <Select {...register("projectType")}>
-            <option value="">Select type</option>
-            {projectTypes.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Configuration" error={errors.configuration?.message}>
-          <Select {...register("configuration")}>
-            <option value="">Select config</option>
-            {configurations.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </Select>
-        </Field>
-      </section>
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Property Details</h3>
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="City" error={errors.city?.message}>
+              <Input placeholder="e.g. Dubai" {...register("city")} />
+            </Field>
+            <Field label="Locality" error={errors.locality?.message}>
+              <Input placeholder="e.g. Business Bay" {...register("locality")} />
+            </Field>
+            <Field label="Unit Number" error={errors.unitNumber?.message}>
+              <Input placeholder="e.g. 1204" {...register("unitNumber")} />
+            </Field>
+            <Field label="Price (AED)" error={errors.price?.message}>
+              <Input type="text" placeholder="e.g. 1500000" {...register("price")} />
+            </Field>
+            <Field label="Property Size (sqft)" error={errors.propertySize?.message}>
+              <Input type="text" placeholder="e.g. 850" {...register("propertySize")} />
+            </Field>
+            <Field label="Project Type" error={errors.projectType?.message}>
+              <Select {...register("projectType")}>
+                <option value="">Select type</option>
+                {projectTypes.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Configuration" error={errors.configuration?.message}>
+              <Select {...register("configuration")}>
+                <option value="">Select config</option>
+                {configurations.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </Select>
+            </Field>
+          </section>
+        </div>
 
-      <Field label="Comments" error={errors.comments?.message}>
-        <Textarea placeholder="Notes about this lead…" {...register("comments")} />
-      </Field>
+        <Field label="Comments" error={errors.comments?.message}>
+          <Textarea placeholder="Notes about this lead…" {...register("comments")} />
+        </Field>
+      </div>
 
-      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+      <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-4">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

@@ -159,22 +159,22 @@ export function LeadFilters({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="flex items-center gap-1.5 text-slate-400">
-          <SlidersHorizontal className="h-4 w-4" /> Lead date
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="flex items-center gap-1.5 font-medium text-neutral-500">
+          <SlidersHorizontal className="h-3.5 w-3.5" /> Lead date
         </span>
         <input
           type="date"
           value={filters.dateFrom ?? ""}
           onChange={(e) => onChange("dateFrom", e.target.value || undefined)}
-          className="h-9 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
+          className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-800 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
-        <span className="text-slate-400">to</span>
+        <span className="text-neutral-400">to</span>
         <input
           type="date"
           value={filters.dateTo ?? ""}
           onChange={(e) => onChange("dateTo", e.target.value || undefined)}
-          className="h-9 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
+          className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-800 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </div>
     </div>

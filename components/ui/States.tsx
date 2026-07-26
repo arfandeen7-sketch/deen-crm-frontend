@@ -2,14 +2,14 @@ import { AlertTriangle, Inbox, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Spinner({ className }: { className?: string }) {
-  return <Loader2 className={cn("h-5 w-5 animate-spin text-gray-900", className)} />;
+  return <Loader2 className={cn("h-5 w-5 animate-spin text-neutral-900", className)} />;
 }
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500">
-      <Spinner className="h-6 w-6" />
-      <p className="text-sm">{label}</p>
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-neutral-500">
+      <Spinner className="h-6 w-6 text-neutral-900" />
+      <p className="text-xs font-medium text-neutral-500">{label}</p>
     </div>
   );
 }
@@ -26,15 +26,15 @@ export function EmptyState({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <div className="rounded-full bg-slate-100 p-3 text-slate-400">
-        {icon ?? <Inbox className="h-6 w-6" />}
+    <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 text-center rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50">
+      <div className="rounded-full border border-neutral-200 bg-white p-3 text-neutral-400 shadow-2xs">
+        {icon ?? <Inbox className="h-5 w-5 text-neutral-500" />}
       </div>
       <div>
-        <p className="text-sm font-medium text-slate-700">{title}</p>
-        {message && <p className="mt-1 text-sm text-slate-500">{message}</p>}
+        <p className="text-xs font-semibold text-neutral-800 uppercase tracking-wider">{title}</p>
+        {message && <p className="mt-1 text-xs text-neutral-500 max-w-sm">{message}</p>}
       </div>
-      {action}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }
@@ -47,15 +47,15 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <div className="rounded-full bg-rose-100 p-3 text-rose-500">
-        <AlertTriangle className="h-6 w-6" />
+    <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 text-center rounded-xl border border-red-100 bg-red-50/30">
+      <div className="rounded-full bg-red-100 p-3 text-red-600">
+        <AlertTriangle className="h-5 w-5" />
       </div>
-      <p className="max-w-sm text-sm text-slate-600">{message}</p>
+      <p className="max-w-sm text-xs font-medium text-neutral-700">{message}</p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="text-sm font-medium text-gray-900 hover:text-indigo-700"
+          className="mt-1 text-xs font-semibold text-black underline underline-offset-4 hover:text-neutral-700 cursor-pointer"
         >
           Try again
         </button>
@@ -65,38 +65,35 @@ export function ErrorState({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-slate-200", className)} />;
+  return <div className={cn("animate-pulse rounded-md bg-neutral-200/80", className)} />;
 }
 
 export function TableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="overflow-hidden rounded-lg bg-background">
+    <div className="overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-2xs">
       <div className="overflow-x-auto">
-        <table className="w-full border-separate border-spacing-0">
+        <table className="w-full border-separate border-spacing-0 text-xs">
           <thead>
-            <tr>
+            <tr className="bg-neutral-50/90 border-b border-neutral-200/80">
               {Array.from({ length: cols }).map((_, c) => (
                 <th
                   key={`h-${c}`}
-                  className="border-b border-border bg-section px-5 py-3.5 text-left"
+                  className="border-b border-neutral-200/80 px-4 py-3 text-left"
                 >
                   <Skeleton className="h-3 w-16" />
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-neutral-100">
             {Array.from({ length: rows }).map((_, r) => (
               <tr key={r}>
                 {Array.from({ length: cols }).map((_, c) => (
                   <td
                     key={c}
-                    className={cn(
-                      "border-b border-border bg-background px-5 py-3.5",
-                      r === rows - 1 && "border-b-0",
-                    )}
+                    className="px-4 py-3"
                   >
-                    <Skeleton className="h-4 w-full max-w-32" />
+                    <Skeleton className="h-3.5 w-full max-w-28" />
                   </td>
                 ))}
               </tr>

@@ -113,24 +113,24 @@ export function NotificationCenter() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-2xl border border-zinc-200 bg-white p-3.5 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors shadow-sm cursor-pointer"
+        className="relative rounded-xl border border-neutral-200 bg-white p-2.5 text-neutral-700 hover:bg-neutral-50 hover:text-black transition-colors shadow-2xs cursor-pointer"
         aria-label="Notifications"
       >
-        <Bell className="h-5.5 w-5.5" />
+        <Bell className="h-5 w-5" />
         {badgeCount > 0 && (
-          <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+          <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-xs">
             {badgeCount > 99 ? "99+" : badgeCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-200/50">
-          <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 bg-neutral-50/50">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900">Notifications</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800">Notifications</h3>
               {badgeCount > 0 && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
                   {badgeCount} unread
                 </span>
               )}
@@ -138,7 +138,7 @@ export function NotificationCenter() {
             {badgeCount > 0 && (
               <button
                 onClick={() => markAllRead.mutate()}
-                className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-900 transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-black transition-colors cursor-pointer"
                 title="Mark all as read"
               >
                 <CheckCheck className="h-3.5 w-3.5" /> All read
@@ -146,18 +146,18 @@ export function NotificationCenter() {
             )}
           </div>
 
-          <div className="max-h-[420px] divide-y divide-zinc-100 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-200">
+          <div className="max-h-[380px] divide-y divide-neutral-100 overflow-y-auto">
             {isLoading && (
-              <p className="px-4 py-6 text-center text-sm text-zinc-500">Loading…</p>
+              <p className="px-4 py-6 text-center text-xs text-neutral-500">Loading…</p>
             )}
             {error && (
-              <p className="px-4 py-6 text-center text-sm font-medium text-rose-500">
+              <p className="px-4 py-6 text-center text-xs font-medium text-red-600">
                 Failed to load notifications
               </p>
             )}
             {!isLoading && !error && (!notifications || notifications.length === 0) && (
-              <p className="px-4 py-6 text-center text-sm text-zinc-500">
-                No notifications yet 🎉
+              <p className="px-4 py-6 text-center text-xs text-neutral-500">
+                No notifications yet
               </p>
             )}
             {notifications?.map((n) => (
@@ -165,11 +165,11 @@ export function NotificationCenter() {
             ))}
           </div>
 
-          <div className="border-t border-zinc-100 px-4 py-2.5">
+          <div className="border-t border-neutral-100 bg-neutral-50/50 px-4 py-2.5 text-center">
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors"
+              className="text-xs font-semibold text-neutral-700 hover:text-black transition-colors"
             >
               View all notifications →
             </Link>

@@ -66,45 +66,45 @@ export function HrManagerDashboard() {
   return (
     <div className="space-y-4 font-sans pb-12">
       {/* ── Top Stat Strip ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-zinc-200 pb-8 border-b border-zinc-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-neutral-200/80 pb-8 border-b border-neutral-200/80">
         <div className="flex flex-col justify-between pt-2 pb-4 pr-6 md:pl-0 md:pr-6 relative h-36">
           <div className="flex-1">
-            <span className="text-sm font-semibold text-zinc-400">Total Employees</span>
-            <div className="text-5xl font-bold text-zinc-900 mt-2 font-secondary tracking-tight">
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Employees</span>
+            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
               {employees.isLoading ? "..." : (employees.data?.total ?? 0)}
             </div>
           </div>
-          <div className="h-1.5 bg-zinc-950 absolute bottom-0 left-0 right-0 md:left-0 md:right-6" />
+          <div className="h-1 bg-black absolute bottom-0 left-0 right-0 md:left-0 md:right-6 rounded-full" />
         </div>
 
         <div className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36">
           <div className="flex-1">
-            <span className="text-sm font-semibold text-zinc-400 font-secondary">Present Today</span>
-            <div className="text-5xl font-bold text-zinc-900 mt-2 font-secondary tracking-tight">
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Present Today</span>
+            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
               {todayAttendance.isLoading ? "..." : (attendanceCounts.present + attendanceCounts.late + attendanceCounts.half_day).toString().padStart(2, "0")}
             </div>
           </div>
-          <div className="h-1.5 bg-emerald-600 absolute bottom-0 left-6 right-6" />
+          <div className="h-1 bg-emerald-600 absolute bottom-0 left-6 right-6 rounded-full" />
         </div>
 
-        <Link href="/hrms/leave" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-zinc-50/45 transition-colors">
+        <Link href="/hrms/leave" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
           <div className="flex-1">
-            <span className="text-sm font-semibold text-zinc-400 font-secondary">Pending Leaves</span>
-            <div className="text-5xl font-bold text-zinc-900 mt-2 font-secondary tracking-tight">
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pending Leaves</span>
+            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
               {pendingLeaves.isLoading ? "..." : (pendingLeaves.data?.total ?? 0).toString().padStart(2, "0")}
             </div>
           </div>
-          <div className="h-1.5 bg-amber-400 absolute bottom-0 left-6 right-6" />
+          <div className="h-1 bg-amber-500 absolute bottom-0 left-6 right-6 rounded-full" />
         </Link>
 
-        <Link href="/hrms/payroll" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-zinc-50/45 transition-colors">
+        <Link href="/hrms/payroll" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
           <div className="flex-1">
-            <span className="text-sm font-semibold text-zinc-400 font-secondary">Pending Payroll</span>
-            <div className="text-5xl font-bold text-zinc-900 mt-2 font-secondary tracking-tight">
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pending Payroll</span>
+            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
               {payslips.isLoading ? "..." : pendingPayslips.toString().padStart(2, "0")}
             </div>
           </div>
-          <div className="h-1.5 bg-red-600 absolute bottom-0 left-6 right-0" />
+          <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-0 rounded-full" />
         </Link>
       </div>
 

@@ -21,26 +21,26 @@ export function StatCard({
   href?: string;
 }) {
   const accents: Record<string, string> = {
-    indigo: "bg-indigo-50 text-gray-900",
-    emerald: "bg-emerald-50 text-emerald-600",
-    amber: "bg-amber-50 text-amber-600",
-    rose: "bg-rose-50 text-rose-600",
-    sky: "bg-sky-50 text-sky-600",
-    violet: "bg-violet-50 text-violet-600",
+    indigo: "bg-neutral-100 text-neutral-900",
+    emerald: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700",
+    rose: "bg-red-50 text-red-700",
+    sky: "bg-sky-50 text-sky-700",
+    violet: "bg-purple-50 text-purple-700",
   };
 
   const inner = (
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
         {loading ? (
-          <Skeleton className="mt-2 h-8 w-16" />
+          <Skeleton className="mt-2 h-7 w-16" />
         ) : (
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{value ?? 0}</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-neutral-900">{value ?? 0}</p>
         )}
       </div>
-      <span className={cn("flex h-10 w-10 items-center justify-center rounded-lg", accents[accent])}>
-        <Icon className="h-5 w-5" />
+      <span className={cn("flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200/60 shadow-2xs", accents[accent])}>
+        <Icon className="h-4.5 w-4.5 shrink-0" />
       </span>
     </div>
   );
@@ -49,7 +49,7 @@ export function StatCard({
     return (
       <Link
         href={href}
-        className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+        className="block rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs transition-all hover:border-neutral-300 hover:shadow-xs"
       >
         {inner}
       </Link>
@@ -57,7 +57,7 @@ export function StatCard({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs transition-all">
       {inner}
     </div>
   );

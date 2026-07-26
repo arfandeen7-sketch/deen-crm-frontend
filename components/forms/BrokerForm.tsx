@@ -53,7 +53,7 @@ export function BrokerForm({
         </Field>
       </div>
 
-      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+      <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-4">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

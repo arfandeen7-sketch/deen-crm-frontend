@@ -7,7 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const baseField =
-  "w-full rounded-[6px] border border-border bg-background px-4 py-2 text-sm text-foreground shadow-none placeholder:text-foreground-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:cursor-not-allowed disabled:bg-panel disabled:text-foreground-disabled";
+  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 transition-all duration-150";
 
 export interface FieldWrapProps {
   label?: string;
@@ -22,14 +22,14 @@ export function Field({ label, error, required, hint, className, children }: Fie
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {label && (
-        <label className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
           {label}
-          {required && <span className="ml-1 text-rose-500">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       {children}
-      {hint && !error && <p className="text-xs text-foreground-muted">{hint}</p>}
-      {error && <p className="text-xs text-rose-600">{error}</p>}
+      {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
     </div>
   );
 }
@@ -40,7 +40,7 @@ export const Input = forwardRef<
 >(({ className, invalid, ...props }, ref) => (
   <input
     ref={ref}
-    className={cn(baseField, invalid && "border-rose-400 focus:ring-rose-500/30", className)}
+    className={cn(baseField, invalid && "border-red-400 focus:border-red-600 focus:ring-red-600", className)}
     {...props}
   />
 ));
@@ -52,7 +52,7 @@ export const Textarea = forwardRef<
 >(({ className, invalid, ...props }, ref) => (
   <textarea
     ref={ref}
-    className={cn(baseField, "min-h-[88px] resize-y", invalid && "border-rose-400", className)}
+    className={cn(baseField, "min-h-[90px] resize-y", invalid && "border-red-400 focus:border-red-600 focus:ring-red-600", className)}
     {...props}
   />
 ));
@@ -228,8 +228,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           disabled={props.disabled}
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            "flex w-full items-center justify-between rounded-lg border-0 bg-slate-100/50 hover:bg-slate-100 px-4 py-2 text-sm text-foreground shadow-none focus:outline-none focus:ring-1 focus:ring-accent/30 disabled:cursor-not-allowed disabled:bg-panel disabled:text-foreground-disabled transition-all duration-150 cursor-pointer h-10 text-left",
-            invalid && "ring-1 ring-rose-400 focus:ring-rose-500/30"
+            "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 px-3.5 py-2 text-sm text-neutral-900 shadow-2xs focus:outline-none focus:border-black focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 transition-all duration-150 cursor-pointer h-10 text-left",
+            invalid && "border-red-400 ring-1 ring-red-500/30"
           )}
         >
           <span className="truncate pr-2">{displayLabel}</span>

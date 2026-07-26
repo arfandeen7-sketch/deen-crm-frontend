@@ -31,12 +31,12 @@ export function SearchInput({
 
   return (
     <div className={cn("relative", className)}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
       <input
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+        className="h-9 w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-8 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all duration-150"
       />
       {local && (
         <button
@@ -44,9 +44,9 @@ export function SearchInput({
             setLocal("");
             onChange("");
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 cursor-pointer"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       )}
     </div>

@@ -46,40 +46,40 @@ export function Modal({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150">
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-neutral-950/50 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-[8px] bg-background shadow-xl",
+          "relative z-10 w-full overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-xl animate-in zoom-in-95 duration-150",
           sizes[size],
         )}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+          <div className="flex items-start justify-between gap-4 border-b border-neutral-100 px-6 py-4.5">
             <div>
               {title && (
-                <h2 className="text-base font-semibold text-foreground">{title}</h2>
+                <h2 className="text-base font-bold text-neutral-900">{title}</h2>
               )}
               {description && (
-                <p className="mt-1 text-sm text-foreground-muted">{description}</p>
+                <p className="mt-0.5 text-xs text-neutral-500">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="rounded-[6px] p-1 text-foreground-muted hover:bg-panel hover:text-foreground"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-5">{children}</div>
+        <div className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-border bg-panel px-6 py-4">
+          <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 bg-neutral-50/60 px-6 py-3.5">
             {footer}
           </div>
         )}

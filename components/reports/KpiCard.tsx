@@ -9,12 +9,12 @@ import { SEMANTIC_COLORS } from "@/components/charts/palette";
 import type { KpiComparisonValue } from "@/types";
 
 const accents: Record<string, string> = {
-  indigo: "bg-indigo-50 text-gray-900",
-  emerald: "bg-emerald-50 text-emerald-600",
-  amber: "bg-amber-50 text-amber-600",
-  rose: "bg-rose-50 text-rose-600",
-  sky: "bg-sky-50 text-sky-600",
-  violet: "bg-violet-50 text-violet-600",
+  indigo: "bg-neutral-100 text-neutral-900",
+  emerald: "bg-emerald-50 text-emerald-700",
+  amber: "bg-amber-50 text-amber-700",
+  rose: "bg-red-50 text-red-700",
+  sky: "bg-sky-50 text-sky-700",
+  violet: "bg-purple-50 text-purple-700",
 };
 
 /**
@@ -51,42 +51,42 @@ export function KpiCard({
   const isBad = invertTrend ? isUp : isDown;
 
   // Determine value color based on thresholds
-  let valueColor = "text-slate-900";
+  let valueColor = "text-neutral-900";
   let statusText = "";
   if (typeof value === "number" || (typeof value === "string" && !isNaN(Number(value)))) {
     const numValue = Number(value);
     if (label === "Touch Rate") {
-      if (numValue >= 50) { valueColor = "text-emerald-600"; statusText = "On target"; }
-      else if (numValue >= 30) { valueColor = "text-amber-500"; statusText = "Borderline"; }
-      else { valueColor = "text-rose-600"; statusText = "Below target"; }
+      if (numValue >= 50) { valueColor = "text-emerald-700"; statusText = "On target"; }
+      else if (numValue >= 30) { valueColor = "text-amber-700"; statusText = "Borderline"; }
+      else { valueColor = "text-red-700"; statusText = "Below target"; }
     } else if (label === "Conversion Rate") {
-      if (numValue >= 20) { valueColor = "text-emerald-600"; statusText = "On target"; }
-      else if (numValue >= 10) { valueColor = "text-amber-500"; statusText = "Borderline"; }
-      else { valueColor = "text-rose-600"; statusText = "Below target"; }
+      if (numValue >= 20) { valueColor = "text-emerald-700"; statusText = "On target"; }
+      else if (numValue >= 10) { valueColor = "text-amber-700"; statusText = "Borderline"; }
+      else { valueColor = "text-red-700"; statusText = "Below target"; }
     } else if (label === "Follow-up Completion") {
-      if (numValue >= 80) { valueColor = "text-emerald-600"; statusText = "On target"; }
-      else if (numValue >= 50) { valueColor = "text-amber-500"; statusText = "Borderline"; }
-      else { valueColor = "text-rose-600"; statusText = "Below target"; }
+      if (numValue >= 80) { valueColor = "text-emerald-700"; statusText = "On target"; }
+      else if (numValue >= 50) { valueColor = "text-amber-700"; statusText = "Borderline"; }
+      else { valueColor = "text-red-700"; statusText = "Below target"; }
     } else if (label === "Avg. Response Time") {
-      if (numValue <= 30) { valueColor = "text-emerald-600"; statusText = "Excellent"; }
-      else if (numValue <= 120) { valueColor = "text-amber-500"; statusText = "Acceptable"; }
-      else { valueColor = "text-rose-600"; statusText = "Needs improvement"; }
+      if (numValue <= 30) { valueColor = "text-emerald-700"; statusText = "Excellent"; }
+      else if (numValue <= 120) { valueColor = "text-amber-700"; statusText = "Acceptable"; }
+      else { valueColor = "text-red-700"; statusText = "Needs improvement"; }
     }
   }
 
   const hasValue = value !== null && value !== undefined && value !== "—";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-between">
+    <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs flex flex-col justify-between transition-all">
       <div>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500">{label}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
             {loading ? (
-              <Skeleton className="mt-2 h-8 w-16" />
+              <Skeleton className="mt-2 h-7 w-16" />
             ) : hasValue ? (
               <div className="flex items-baseline gap-2">
-                <p className={cn("mt-1 text-2xl font-semibold", valueColor)}>
+                <p className={cn("mt-1 text-2xl font-bold tracking-tight", valueColor)}>
                   {value}
                   {suffix}
                 </p>
@@ -97,13 +97,13 @@ export function KpiCard({
                 )}
               </div>
             ) : (
-              <p className="mt-1 text-sm font-medium text-slate-400">
+              <p className="mt-1 text-xs font-medium text-neutral-400">
                 Not enough data yet
               </p>
             )}
           </div>
-          <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", accents[accent])}>
-            <Icon className="h-5 w-5" />
+          <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200/60 shadow-2xs", accents[accent])}>
+            <Icon className="h-4.5 w-4.5" />
           </span>
         </div>
         
@@ -111,9 +111,9 @@ export function KpiCard({
           <div
             className={cn(
               "mt-3 flex items-center gap-1 text-xs font-medium",
-              isGood && "text-emerald-600",
-              isBad && "text-rose-600",
-              !isGood && !isBad && "text-slate-400",
+              isGood && "text-emerald-700",
+              isBad && "text-red-700",
+              !isGood && !isBad && "text-neutral-400",
             )}
           >
             {isUp && <ArrowUp className="h-3.5 w-3.5" />}
@@ -125,14 +125,14 @@ export function KpiCard({
       </div>
 
       {!loading && history && history.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+        <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end">
           <Sparkline 
             data={history} 
             color={
               valueColor.includes("emerald") ? SEMANTIC_COLORS.success : 
-              valueColor.includes("rose") ? SEMANTIC_COLORS.danger : 
+              valueColor.includes("rose") || valueColor.includes("red") ? SEMANTIC_COLORS.danger : 
               valueColor.includes("amber") ? SEMANTIC_COLORS.warning : 
-              "#6366f1"
+              "#171717"
             } 
             className="w-full justify-between"
           />

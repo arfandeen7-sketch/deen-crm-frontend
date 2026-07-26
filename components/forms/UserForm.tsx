@@ -236,18 +236,18 @@ export function UserForm({
       </div>
 
       {/* ── Permission Section ───────────────────────────────────────────── */}
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+      <div className="space-y-3 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4">
         <div>
-          <p className="text-sm font-semibold text-slate-800">Permissions</p>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-wider text-neutral-800">Permissions</p>
+          <p className="mt-0.5 text-xs text-neutral-500">
             Grant specific module, page, and action access. Zero access by default.
           </p>
         </div>
 
         {selectedRole === "master" ? (
-          <div className="flex items-center gap-3 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3">
-            <ShieldCheck className="h-4 w-4 text-violet-500" />
-            <span className="text-sm font-medium text-violet-700">
+          <div className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3">
+            <ShieldCheck className="h-4 w-4 text-purple-600 shrink-0" />
+            <span className="text-xs font-semibold text-purple-800">
               Master — Full Access (permissions not required)
             </span>
           </div>
@@ -260,7 +260,6 @@ export function UserForm({
                   variant="outline"
                   size="sm"
                   onClick={handleResetToDefaults}
-                  className="text-xs"
                 >
                   <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                   Reset to Role Defaults
@@ -298,7 +297,7 @@ export function UserForm({
         danger={false}
       />
 
-      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+      <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-4">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
