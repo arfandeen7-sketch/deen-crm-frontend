@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Eye } from "lucide-react";
+import { Download } from "lucide-react";
 import { useMyPayslips } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import type { Payslip } from "@/types";
 
@@ -52,6 +52,11 @@ export default function MyPayslipsPage() {
       key: "net",
       header: "Net Salary",
       render: (r) => <span className="font-semibold text-emerald-700">AED {r.netSalary.toLocaleString()}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (r) => <Badge className={PAYROLL_STATUS_COLORS[r.status]}>{r.status}</Badge>,
     },
     {
       key: "actions",

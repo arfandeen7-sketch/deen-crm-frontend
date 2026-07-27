@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Mail, Send } from "lucide-react";
-import { usePayslipList, useCalculatePayroll, useSendPayslip, useSendBulkPayslips } from "@/hooks/useHrms";
+import { Download, Mail, Send, PlayCircle } from "lucide-react";
+import { usePayslipList, useCalculatePayroll, useSendPayslip, useSendBulkPayslips, useRunMonthlyPayroll } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -25,6 +25,7 @@ export default function PayrollManagementPage() {
   const calculate = useCalculatePayroll();
   const sendPayslip = useSendPayslip();
   const sendBulk = useSendBulkPayslips();
+  const runMonthly = useRunMonthlyPayroll();
 
   const handleCalculate = () => {
     const userId = prompt("Employee user ID to calculate payroll for:");
@@ -49,6 +50,17 @@ export default function PayrollManagementPage() {
     sendBulk.mutate({ month, year }, {
       onSuccess: (res) => toast.success(`Sent: ${res.sent} / ${res.total}`),
       onError: () => toast.error("Failed to send bulk payslips"),
+    });
+  };
+
+  const handleRunMonthly = () => {
+    if (!confirm(`Run monthly payroll for ${month}/${year}? This will calculate, generate PDFs, and email all eligible employees.`)) return;
+    runMonthly.mutate({ month, year }, {
+      onSuccess: (res) => {
+        toast.success(`Monthly payroll complete: ${res.sent}/${res.total} sent`);
+        if (res.errors.length > 0) toast.error(`${res.errors.length} error(s) occurred`);
+      },
+      onError: () => toast.error("Failed to run monthly payroll"),
     });
   };
 
@@ -92,6 +104,9 @@ export default function PayrollManagementPage() {
         subtitle="Calculate and manage monthly payslips"
         actions={
           <div className="flex gap-2">
+            <button onClick={handleRunMonthly} disabled={runMonthly.isPending} className="flex items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50">
+              <PlayCircle className="h-4 w-4" /> Run Monthly Payroll
+            </button>
             <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
               <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
             </button>

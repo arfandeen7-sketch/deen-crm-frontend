@@ -16,4 +16,7 @@ export const payrollService = {
   calculate(body: PayrollPreviewParams): Promise<Payslip> {
     return postData<Payslip>("/payroll/calculate", body);
   },
+  runMonthly(month?: number, year?: number): Promise<{ month: number; year: number; sent: number; total: number; errors: unknown[] }> {
+    return postData<{ month: number; year: number; sent: number; total: number; errors: unknown[] }>("/payroll/run-monthly", { month, year });
+  },
 };

@@ -371,6 +371,15 @@ export function useCalculatePayroll() {
   });
 }
 
+export function useRunMonthlyPayroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ month, year }: { month?: number; year?: number }) =>
+      payrollService.runMonthly(month, year),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["payslips"] }),
+  });
+}
+
 // ── Payslip Hooks ────────────────────────────────────────────────────────────
 
 export function usePayslipList(params: PayslipQuery) {
