@@ -1113,3 +1113,69 @@ export interface WebhookEvent {
   processedAt?: string | null;
   errorMessage?: string | null;
 }
+
+// ── Activity Stream ──────────────────────────────────────────────────────────
+
+export type ActivityActorType = "user" | "system" | "external" | "unknown";
+export type ActivityOutcome = "success" | "failure" | "partial";
+export type ActivitySource = "api" | "worker" | "cron" | "webhook";
+
+export interface ActivityEvent {
+  id: string;
+  occurredAt: string;
+  occurredDate: string;
+  eventName: string;
+  category: string;
+  actorType: ActivityActorType;
+  actorUserId?: string | null;
+  actorName?: string | null;
+  actorEmail?: string | null;
+  actorRole?: string | null;
+  subjectType?: string | null;
+  subjectId?: string | null;
+  subjectLabel?: string | null;
+  outcome: ActivityOutcome;
+  source: ActivitySource;
+  requestId?: string | null;
+  correlationId?: string | null;
+  route?: string | null;
+  httpMethod?: string | null;
+  httpStatus?: number | null;
+  summary: string;
+  metadata?: Record<string, unknown> | null;
+  ipAddress?: string | null;
+  deviceInfo?: string | null;
+  schemaVersion: number;
+}
+
+export interface ActivityListResponse {
+  data: ActivityEvent[];
+  meta: {
+    total: number;
+    date: string;
+    pageSize: number;
+    hasMore: boolean;
+    nextCursor?: string;
+  };
+}
+
+export interface ActivityFilterMeta {
+  categories: string[];
+  eventNames: string[];
+  actorTypes: string[];
+  outcomes: string[];
+  sources: string[];
+}
+
+export interface ActivityListParams {
+  date?: string;
+  cursor?: string;
+  pageSize?: number;
+  actorUserId?: string;
+  category?: string;
+  eventName?: string;
+  actorType?: ActivityActorType;
+  outcome?: ActivityOutcome;
+  source?: ActivitySource;
+  search?: string;
+}

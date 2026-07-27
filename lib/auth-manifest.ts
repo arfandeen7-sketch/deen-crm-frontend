@@ -24,6 +24,7 @@ export interface PermissionRequirement {
 export type RouteRequirement =
   | { type: "public" }
   | { type: "authenticated" }
+  | { type: "master" }
   | { type: "permission"; requirement: PermissionRequirement };
 
 // ── Route Requirements ───────────────────────────────────────────────────────
@@ -108,6 +109,9 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // Settings (self-service — authenticated only)
   "/settings/profile": { type: "authenticated" },
   "/settings/change-password": { type: "authenticated" },
+
+  // Activity Stream (Master-only)
+  "/activity": { type: "master" },
 };
 
 // ── Query / Read Requirements ────────────────────────────────────────────────

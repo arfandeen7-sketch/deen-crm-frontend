@@ -43,6 +43,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** If set, item is only visible when the user has this access. */
   navAccess?: NavAccess;
+  /** If true, item is only visible to Master users. */
+  masterOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -55,6 +57,8 @@ export interface NavGroup {
   isSingular?: boolean;
   href?: string;
   section?: "MENU" | "GENERAL";
+  /** If true, group is only visible to Master users. */
+  masterOnly?: boolean;
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -198,6 +202,18 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Integrations", href: "/integrations", icon: Plug, navAccess: { module: "integrations", page: "all_integrations" } },
       { label: "Dashboard", href: "/integrations/dashboard", icon: Activity, navAccess: { module: "integrations", page: "all_integrations", action: "health" } },
+    ],
+  },
+  {
+    id: "activity",
+    title: "Activity Stream",
+    icon: Activity,
+    href: "/activity",
+    isSingular: true,
+    masterOnly: true,
+    section: "GENERAL",
+    items: [
+      { label: "Activity Stream", href: "/activity", icon: Activity, masterOnly: true },
     ],
   },
 ];

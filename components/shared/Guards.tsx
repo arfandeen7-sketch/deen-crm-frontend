@@ -113,6 +113,35 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Page-level guard for Master-only routes.
+ * Redirects non-master users to /dashboard/overview.
+ */
+export function MasterGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { hydrated, isMaster, permissionStatus } = useAuth();
+
+  const ready = hydrated && permissionStatus === "ready";
+
+  useEffect(() => {
+    if (ready && !isMaster) {
+      router.replace("/dashboard/overview");
+    }
+  }, [ready, isMaster, router]);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <LoadingState label="Checking access…" />
+      </div>
+    );
+  }
+
+  if (!isMaster) return null;
+
+  return <>{children}</>;
+}
+
+/**
  * @deprecated Use AccessGuard instead.
  * Kept for compatibility; internally delegates to AccessGuard with module-level check.
  */

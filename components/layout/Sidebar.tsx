@@ -60,7 +60,7 @@ function checkNavAccess(
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isMaster } = useAuth();
   const { canModule, canPage, canAction } = usePermissions();
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set<string>());
@@ -90,7 +90,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
     const activeIds = NAV_GROUPS.filter((g) => {
       const visible = g.items.filter(
-        (i) => checkNavAccess(canModule, canPage, canAction, i.navAccess),
+        (i) =>
+          (!i.masterOnly || isMaster) &&
+          checkNavAccess(canModule, canPage, canAction, i.navAccess),
       );
       return visible.length > 0 && groupContainsActive(pathname, visible);
     }).map((g) => g.id);
@@ -106,7 +108,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       const next = new Set(prev);
       NAV_GROUPS.forEach((g) => {
         const visible = g.items.filter(
-          (i) => checkNavAccess(canModule, canPage, canAction, i.navAccess),
+          (i) =>
+            (!i.masterOnly || isMaster) &&
+            checkNavAccess(canModule, canPage, canAction, i.navAccess),
         );
         if (
           visible.length > 0 &&
@@ -180,9 +184,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           // Filter by visibility/permissions
           const visibleGroups = sectionGroups.filter((group) => {
+            if (group.masterOnly && !isMaster) return false;
             if (group.moduleKey && !canModule(group.moduleKey)) return false;
             const visibleItems = group.items.filter(
-              (item) => checkNavAccess(canModule, canPage, canAction, item.navAccess)
+              (item) =>
+                (!item.masterOnly || isMaster) &&
+                checkNavAccess(canModule, canPage, canAction, item.navAccess)
             );
             return visibleItems.length > 0 || group.isSingular;
           });
@@ -197,7 +204,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <div className="space-y-1">
                 {visibleGroups.map((group) => {
                   const visibleItems = group.items.filter(
-                    (item) => checkNavAccess(canModule, canPage, canAction, item.navAccess)
+                    (item) =>
+                      (!item.masterOnly || isMaster) &&
+                      checkNavAccess(canModule, canPage, canAction, item.navAccess)
                   );
 
                   const isOpen = openGroups.has(group.id);
