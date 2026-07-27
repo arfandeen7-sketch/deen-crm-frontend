@@ -141,6 +141,7 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "dashboard:followup-upcoming-count": { module: "followup", page: "upcoming_followup", action: "view" },
   "dashboard:status-count": { module: "leads", page: "all_leads", action: "view" },
   "dashboard:category-count": { module: "leads", page: "all_leads", action: "view" },
+  "dashboard:employee-activity": { module: "dashboard", page: "dashboard_home", action: "view" },
 
   "users:list": { module: "users", page: "all_users", action: "view" },
   "users:detail": { module: "users", page: "all_users", action: "view" },

@@ -119,3 +119,15 @@ export function useLeadCategoryCount(
     retry: retrySkipAuth,
   });
 }
+
+/** Aggregated per-employee activity for Master/HR dashboards. */
+export function useEmployeeActivity(date?: string) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["dashboard:employee-activity"]);
+  return useQuery({
+    queryKey: ["dashboard", "employee-activity", date],
+    queryFn: () => dashboardService.employeeActivity(date),
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}

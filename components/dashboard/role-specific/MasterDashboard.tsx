@@ -14,6 +14,7 @@ import {
 import { useFollowup } from "@/hooks/useFollowup";
 import { CHART_COLORS } from "@/components/charts/palette";
 import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
+import { EmployeeActivitySection } from "@/components/dashboard/EmployeeActivitySection";
 
 function formatFollowUpDate(dateStr?: string | null): { day: string; month: string } {
   if (!dateStr) return { day: "--", month: "---" };
@@ -186,6 +187,9 @@ export function MasterDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Employee Activity Section ── */}
+      <EmployeeActivitySection showLeadData={true} />
 
       {/* ── Split Section 2: Recent Leads & Quick Actions ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8">

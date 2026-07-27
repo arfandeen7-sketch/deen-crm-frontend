@@ -627,6 +627,64 @@ export interface StatusAnalytics {
   windowHours: number;
 }
 
+// ── Employee Activity (dashboard) ────────────────────────────────────────────
+
+export interface EmployeeActivitySummary {
+  totalEmployees: number;
+  present: number;
+  late: number;
+  halfDay: number;
+  notCheckedIn: number;
+  absent: number;
+  onLeave: number;
+  totalFollowupsToday: number;
+  totalMissedFollowups: number;
+  totalActivitiesToday: number;
+}
+
+export interface EmployeeActivityLead {
+  id: string;
+  leadName: string;
+  leadStatus: string;
+  followUpDate: string | null;
+  source: string;
+  mobileNumber: string;
+}
+
+export interface EmployeeActivityTimelineEntry {
+  id: string;
+  action: string;
+  leadName: string;
+  createdAt: string;
+  metadata: unknown;
+}
+
+export interface EmployeeActivityRow {
+  userId: string;
+  fullName: string;
+  role: UserRole;
+  department: string | null;
+  designation: string | null;
+  attendance: {
+    status: string;
+    checkInTime: string | null;
+    checkOutTime: string | null;
+    workingHours: string | null;
+  };
+  leadsAssigned?: number;
+  followupsToday?: number;
+  missedFollowups?: number;
+  activitiesToday?: Record<string, number>;
+  lastActivityAt?: string | null;
+  leads?: EmployeeActivityLead[];
+  activityTimeline?: EmployeeActivityTimelineEntry[];
+}
+
+export interface EmployeeActivityResponse {
+  summary: EmployeeActivitySummary;
+  employees: EmployeeActivityRow[];
+}
+
 export interface ImportResult {
   imported: number;
   skipped: number;

@@ -12,6 +12,7 @@ import {
 } from "@/hooks/useHrms";
 import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
 import { LEAVE_STATUS_COLORS } from "@/constants";
+import { EmployeeActivitySection } from "@/components/dashboard/EmployeeActivitySection";
 
 function todayISO(): string {
   return new Date().toISOString().split("T")[0];
@@ -191,6 +192,9 @@ export function HrManagerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Employee Activity Section ── */}
+      <EmployeeActivitySection showLeadData={false} />
 
       {/* ── Split Section 2: Payroll Summary & Quick Actions ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8">
