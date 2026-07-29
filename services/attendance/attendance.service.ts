@@ -33,6 +33,12 @@ export const attendanceService = {
     );
     return res.data;
   },
+  async checkInOutList(params: AttendanceQuery = {}): Promise<Paginated<AttendanceRecord>> {
+    const res = await api.get<Paginated<AttendanceRecord>>(
+      `/attendance/check-in-out${buildQuery(params)}`,
+    );
+    return res.data;
+  },
   async myList(params: Omit<AttendanceQuery, "userId"> = {}): Promise<Paginated<AttendanceRecord>> {
     const res = await api.get<Paginated<AttendanceRecord>>(
       `/me/attendance${buildQuery(params)}`,

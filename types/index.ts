@@ -72,7 +72,7 @@ export type AttendanceStatus = "present" | "absent" | "half_day" | "late" | "lea
 
 export type LeaveType = "annual" | "sick" | "emergency" | "unpaid";
 
-export type LeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
+export type LeaveStatus = "pending" | "hr_approved" | "approved" | "rejected" | "cancelled";
 
 export type PayrollStatus = "draft" | "generated" | "sent";
 
@@ -399,7 +399,7 @@ export interface CalendarLeaveEntry {
   leaveType: string;
   leaveTypeCode?: string | null;
   leaveTypeName?: string | null;
-  status: 'approved' | 'pending';
+  status: 'approved' | 'hr_approved' | 'pending';
 }
 
 export interface TeamCalendarResponse {
@@ -435,6 +435,9 @@ export interface LeaveRequest {
   halfDayPeriod?: string | null;
   isHalfDay: boolean;
   status: LeaveStatus;
+  hrReviewedBy?: string | null;
+  hrReviewedAt?: string | null;
+  hrReviewNote?: string | null;
   reviewedBy?: string | null;
   reviewedAt?: string | null;
   reviewNote?: string | null;

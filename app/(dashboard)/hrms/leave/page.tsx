@@ -24,7 +24,7 @@ export default function LeaveManagementPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [status, setStatus] = useState("");
   const [leaveTypeCode, setLeaveTypeCode] = useState("");
-  const { canAction } = useAuth();
+  const { canAction, role } = useAuth();
 
   const { data, isLoading } = useLeaveList({ page, pageSize, status: status || undefined, leaveTypeCode: leaveTypeCode || undefined });
   const { data: leaveTypes } = useLeaveTypeList();
@@ -106,17 +106,27 @@ export default function LeaveManagementPage() {
           <button onClick={() => setDetailTarget(r)} className="rounded p-1 text-foreground-secondary hover:bg-panel" title="View Details">
             <Eye className="h-4 w-4" />
           </button>
-          {r.status === "pending" && canAction("hrms", "leave", "approve") && (
+          {r.status === "pending" && role === "hr_manager" && canAction("hrms", "leave", "approve") && (
             <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Approve">
               <Check className="h-4 w-4" />
             </button>
           )}
-          {r.status === "pending" && canAction("hrms", "leave", "reject") && (
+          {r.status === "pending" && role === "hr_manager" && canAction("hrms", "leave", "reject") && (
             <button onClick={() => { setRejectTarget(r); setRejectNote(""); }} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
               <X className="h-4 w-4" />
             </button>
           )}
-          {(r.status === "pending" || r.status === "approved") && canAction("hrms", "leave", "cancel") && (
+          {r.status === "hr_approved" && role === "master" && canAction("hrms", "leave", "approve") && (
+            <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Final Approve">
+              <Check className="h-4 w-4" />
+            </button>
+          )}
+          {r.status === "hr_approved" && role === "master" && canAction("hrms", "leave", "reject") && (
+            <button onClick={() => { setRejectTarget(r); setRejectNote(""); }} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {(r.status === "pending" || r.status === "hr_approved" || r.status === "approved") && canAction("hrms", "leave", "cancel") && (
             <button onClick={() => setCancelTarget(r)} className="rounded p-1 text-amber-600 hover:bg-amber-50" title="Cancel Leave">
               <X className="h-4 w-4" />
             </button>
@@ -139,6 +149,7 @@ export default function LeaveManagementPage() {
         <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="h-10 py-0 w-auto">
           <option value="">All Status</option>
           <option value="pending">Pending</option>
+          <option value="hr_approved">HR Approved</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>
           <option value="cancelled">Cancelled</option>
@@ -245,8 +256,14 @@ export default function LeaveManagementPage() {
             )}
             {detailTarget.reviewNote && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Review Note</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Master Review Note</p>
                 <p className="text-foreground-secondary">{detailTarget.reviewNote}</p>
+              </div>
+            )}
+            {detailTarget.hrReviewNote && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">HR Review Note</p>
+                <p className="text-foreground-secondary">{detailTarget.hrReviewNote}</p>
               </div>
             )}
             {detailTarget.attachmentUrl && (

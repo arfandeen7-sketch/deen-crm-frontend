@@ -149,6 +149,10 @@ export function LeaveCalendar({
               Approved
             </span>
             <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-sky-400" />
+              HR Approved
+            </span>
+            <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
               Pending
             </span>
@@ -258,7 +262,9 @@ export function LeaveCalendar({
                           "truncate rounded px-1 py-0.5 text-[10px] font-medium leading-tight",
                           leave.status === "approved"
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-amber-100 text-amber-700",
+                            : leave.status === "hr_approved"
+                              ? "bg-sky-100 text-sky-700"
+                              : "bg-amber-100 text-amber-700",
                         )}
                         title={`${leave.userFullName} — ${leave.leaveTypeName ?? leave.leaveType}`}
                       >
@@ -384,10 +390,12 @@ export function LeaveCalendar({
                           "shrink-0 capitalize",
                           leave.status === "approved"
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-amber-100 text-amber-700",
+                            : leave.status === "hr_approved"
+                              ? "bg-sky-100 text-sky-700"
+                              : "bg-amber-100 text-amber-700",
                         )}
                       >
-                        {leave.status}
+                        {leave.status === "hr_approved" ? "HR Approved" : leave.status}
                       </Badge>
                     </li>
                   ))}

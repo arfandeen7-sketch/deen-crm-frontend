@@ -76,6 +76,17 @@ export function useAttendanceList(params: AttendanceQuery) {
   });
 }
 
+export function useCheckInOutList(params: AttendanceQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:check-in-out"]);
+  return useQuery({
+    queryKey: ["attendance", "check-in-out", params],
+    queryFn: () => attendanceService.checkInOutList(params),
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}
+
 export function useMyAttendance(params: Omit<AttendanceQuery, "userId"> = {}) {
   const enabled = useQueryEnabled("hrms:my-attendance");
   return useQuery({

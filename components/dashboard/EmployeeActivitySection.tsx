@@ -52,7 +52,8 @@ function formatTime(iso: string | null): string {
 }
 
 function todayISO(): string {
-  return new Date().toISOString().split("T")[0];
+  // Use UAE timezone (UTC+4) so the date matches the backend's getUAEDate()
+  return new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().split("T")[0];
 }
 
 interface EmployeeActivitySectionProps {

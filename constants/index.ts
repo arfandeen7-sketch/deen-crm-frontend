@@ -68,9 +68,18 @@ export const ATTENDANCE_STATUS_COLORS: Record<string, string> = {
 
 export const LEAVE_STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
+  hr_approved: "bg-sky-100 text-sky-700",
   approved: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
   cancelled: "bg-slate-100 text-slate-600",
+};
+
+export const LEAVE_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  hr_approved: "HR Approved",
+  approved: "Approved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 export const PAYROLL_STATUS_COLORS: Record<string, string> = {
