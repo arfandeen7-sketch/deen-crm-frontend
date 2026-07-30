@@ -176,8 +176,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const displayLabel = selectedOption
       ? selectedOption.label
       : internalValue
-        ? (placeholder ?? "")
-        : (options[0]?.label || placeholder || "");
+        ? internalValue
+        : (placeholder || "");
 
     const handleSelectOption = (optValue: string) => {
       setInternalValue(optValue);

@@ -718,6 +718,9 @@ export interface LeadQueryParams {
   projectType?: string;
   configuration?: string;
   ingestionSource?: string;
+  leadPriority?: string;
+  brokerId?: string;
+  community?: string;
 }
 
 // ── Lead Report types ────────────────────────────────────────────────────────

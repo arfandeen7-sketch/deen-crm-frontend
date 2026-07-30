@@ -69,6 +69,11 @@ export const leadsService = {
     const res = await api.get(`/leads/template`, { responseType: "blob" });
     return res.data as Blob;
   },
+
+  async options(): Promise<{ projectNames: string[]; communities: string[]; cities: string[]; localities: string[] }> {
+    const res = await api.get<{ data: { projectNames: string[]; communities: string[]; cities: string[]; localities: string[] } }>(`/leads/options`);
+    return res.data.data;
+  },
 };
 
 export const followupService = {

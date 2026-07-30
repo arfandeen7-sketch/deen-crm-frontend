@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAssignableUsers } from "@/hooks/useUsers";
 import { useAuth } from "@/hooks/useAuth";
+import { useLeadOptions } from "@/hooks/useLeads";
+import { useBrokerOptions } from "@/hooks/useBrokers";
 import type { LeadQueryParams } from "@/types";
 
 export function LeadFilters({
@@ -20,11 +22,34 @@ export function LeadFilters({
 }) {
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
-  const projects = useFieldOptions("project_name");
+  const priorities = useFieldOptions("lead_priority");
   const projectTypes = useFieldOptions("project_type");
   const configurations = useFieldOptions("configuration");
+  const dynProjectNames = useFieldOptions("project_name");
   const { users } = useAssignableUsers();
+  const brokers = useBrokerOptions();
   const { canPage } = useAuth();
+  const { data: leadOptions } = useLeadOptions();
+
+  // Merge dynamic_fields project names with actual lead data project names (deduped, sorted)
+  const allProjectNames = Array.from(
+    new Set([
+      ...(leadOptions?.projectNames ?? []),
+      ...dynProjectNames,
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const allCities = Array.from(
+    new Set(leadOptions?.cities ?? []),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const allLocalities = Array.from(
+    new Set(leadOptions?.localities ?? []),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const allCommunities = Array.from(
+    new Set(leadOptions?.communities ?? []),
+  ).sort((a, b) => a.localeCompare(b));
 
   const hasFilters = Boolean(
     filters.search ||
@@ -39,7 +64,11 @@ export function LeadFilters({
       filters.projectName ||
       filters.city ||
       filters.locality ||
-      filters.ingestionSource,
+      filters.ingestionSource ||
+      filters.leadPriority ||
+      filters.brokerId ||
+      filters.serviceType ||
+      filters.community,
   );
 
   return (
@@ -48,7 +77,7 @@ export function LeadFilters({
         <SearchInput
           value={filters.search ?? ""}
           onChange={(v) => onChange("search", v)}
-          placeholder="Search name or mobile…"
+          placeholder="Search name, mobile, project…"
           className="w-full sm:w-72"
         />
         <Select
@@ -72,6 +101,26 @@ export function LeadFilters({
           ))}
         </Select>
         <Select
+          value={filters.serviceType ?? ""}
+          onChange={(e) => onChange("serviceType", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All service types</option>
+          <option value="Sales">Sales</option>
+          <option value="Rent">Rent</option>
+          <option value="Lease">Lease</option>
+        </Select>
+        <Select
+          value={filters.leadPriority ?? ""}
+          onChange={(e) => onChange("leadPriority", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All priorities</option>
+          {priorities.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </Select>
+        <Select
           value={filters.category ?? ""}
           onChange={(e) =>
             onChange("category", (e.target.value || undefined) as LeadQueryParams["category"])
@@ -84,6 +133,26 @@ export function LeadFilters({
           <option value="imported">Imported</option>
           <option value="assigned">Assigned</option>
           <option value="unassigned">Unassigned</option>
+        </Select>
+        <Select
+          value={filters.projectName ?? ""}
+          onChange={(e) => onChange("projectName", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All projects</option>
+          {allProjectNames.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </Select>
+        <Select
+          value={filters.community ?? ""}
+          onChange={(e) => onChange("community", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All communities</option>
+          {allCommunities.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </Select>
         <Select
           value={filters.projectType ?? ""}
@@ -106,39 +175,47 @@ export function LeadFilters({
           ))}
         </Select>
         <Select
-          value={filters.projectName ?? ""}
-          onChange={(e) => onChange("projectName", e.target.value || undefined)}
+          value={filters.city ?? ""}
+          onChange={(e) => onChange("city", e.target.value || undefined)}
           className="h-10 w-auto"
         >
-          <option value="">All projects</option>
-          {projects.map((p) => (
-            <option key={p} value={p}>{p}</option>
+          <option value="">All cities</option>
+          {allCities.map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </Select>
-        <SearchInput
-          value={filters.city ?? ""}
-          onChange={(v) => onChange("city", v || undefined)}
-          placeholder="Filter by city…"
-          className="h-10 w-auto sm:w-44"
-        />
-        <SearchInput
+        <Select
           value={filters.locality ?? ""}
-          onChange={(v) => onChange("locality", v || undefined)}
-          placeholder="Filter by locality…"
-          className="h-10 w-auto sm:w-44"
-        />
+          onChange={(e) => onChange("locality", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All localities</option>
+          {allLocalities.map((l) => (
+            <option key={l} value={l}>{l}</option>
+          ))}
+        </Select>
         <Select
           value={filters.ingestionSource ?? ""}
           onChange={(e) => onChange("ingestionSource", e.target.value || undefined)}
           className="h-10 w-auto"
         >
-          <option value="">All sources</option>
+          <option value="">All ingestion sources</option>
           <option value="property_finder">Property Finder</option>
           <option value="facebook">Facebook</option>
           <option value="instagram">Instagram</option>
           <option value="google">Google</option>
           <option value="manual">Manual</option>
           <option value="import">Import</option>
+        </Select>
+        <Select
+          value={filters.brokerId ?? ""}
+          onChange={(e) => onChange("brokerId", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All brokers</option>
+          {brokers.map((b) => (
+            <option key={b.id} value={b.id}>{b.brokerName}</option>
+          ))}
         </Select>
         {canPage("leads", "all_leads") && (
           <Select

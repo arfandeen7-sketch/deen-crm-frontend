@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { leadSchema, type LeadFormValues } from "@/schemas/lead.schema";
 import { Button } from "@/components/ui/Button";
@@ -23,17 +23,19 @@ export function LeadForm({
   onSubmit: (values: LeadFormValues) => void;
   onCancel?: () => void;
 }) {
+  const isPFLead = initial?.ingestionSource === "property_finder";
+
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
   const priorities = useFieldOptions("lead_priority");
   const projects = useFieldOptions("project_name");
-  const projectTypes = useFieldOptions("project_type");
   const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LeadFormValues>({
@@ -56,7 +58,6 @@ export function LeadForm({
       unitNumber: initial?.unitNumber ?? "",
       price: initial?.price ?? "",
       propertySize: initial?.propertySize ?? "",
-      projectType: initial?.projectType ?? "",
       configuration: initial?.configuration ?? "",
       comments: initial?.comments ?? "",
     },
@@ -71,8 +72,19 @@ export function LeadForm({
             <Field label="Lead Name" required error={errors.leadName?.message}>
               <Input placeholder="Full name" invalid={!!errors.leadName} {...register("leadName")} />
             </Field>
-            <Field label="Mobile Number" required error={errors.mobileNumber?.message}>
-              <Input placeholder="+9715XXXXXXXX" invalid={!!errors.mobileNumber} {...register("mobileNumber")} />
+            <Field
+              label="Mobile Number"
+              required
+              error={errors.mobileNumber?.message}
+              hint={isPFLead ? "Locked — imported from Property Finder" : undefined}
+            >
+              <Input
+                placeholder="+9715XXXXXXXX"
+                invalid={!!errors.mobileNumber}
+                readOnly={isPFLead}
+                className={isPFLead ? "bg-neutral-50 text-neutral-500 cursor-not-allowed select-none" : undefined}
+                {...register("mobileNumber")}
+              />
             </Field>
             <Field label="Alternate Mobile" error={errors.alternateMobile?.message}>
               <Input placeholder="Optional" {...register("alternateMobile")} />
@@ -87,20 +99,32 @@ export function LeadForm({
           <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Lead Attributes & Assignment</h3>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Source" required error={errors.source?.message}>
-              <Select invalid={!!errors.source} {...register("source")}>
-                <option value="">Select source</option>
-                {sources.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="source"
+                render={({ field }) => (
+                  <Select invalid={!!errors.source} {...field}>
+                    <option value="">Select source</option>
+                    {sources.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Project" error={errors.projectName?.message}>
-              <Select {...register("projectName")}>
-                <option value="">Select project</option>
-                {projects.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="projectName"
+                render={({ field }) => (
+                  <Select {...field}>
+                    <option value="">Select project</option>
+                    {projects.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Service Type" required error={errors.serviceType?.message}>
               <Select invalid={!!errors.serviceType} {...register("serviceType")}>
@@ -110,38 +134,62 @@ export function LeadForm({
               </Select>
             </Field>
             <Field label="Lead Status" required error={errors.leadStatus?.message}>
-              <Select invalid={!!errors.leadStatus} {...register("leadStatus")}>
-                {statuses.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="leadStatus"
+                render={({ field }) => (
+                  <Select invalid={!!errors.leadStatus} {...field}>
+                    {statuses.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Lead Priority" error={errors.leadPriority?.message}>
-              <Select {...register("leadPriority")}>
-                <option value="">Select priority</option>
-                {priorities.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="leadPriority"
+                render={({ field }) => (
+                  <Select {...field}>
+                    <option value="">Select priority</option>
+                    {priorities.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Follow Up Date &amp; Time" error={errors.followUpDate?.message}>
               <Input type="datetime-local" {...register("followUpDate")} />
             </Field>
             <Field label="Assigned User" error={errors.assignedTo?.message}>
-              <Select {...register("assignedTo")}>
-                <option value="">Unassigned</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>{u.fullName}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <Select {...field}>
+                    <option value="">Unassigned</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>{u.fullName}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Broker" error={errors.brokerId?.message}>
-              <Select {...register("brokerId")}>
-                <option value="">No broker</option>
-                {brokers.map((b) => (
-                  <option key={b.id} value={b.id}>{b.brokerName}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="brokerId"
+                render={({ field }) => (
+                  <Select {...field}>
+                    <option value="">No broker</option>
+                    {brokers.map((b) => (
+                      <option key={b.id} value={b.id}>{b.brokerName}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
           </section>
         </div>
@@ -164,21 +212,19 @@ export function LeadForm({
             <Field label="Property Size (sqft)" error={errors.propertySize?.message}>
               <Input type="text" placeholder="e.g. 850" {...register("propertySize")} />
             </Field>
-            <Field label="Project Type" error={errors.projectType?.message}>
-              <Select {...register("projectType")}>
-                <option value="">Select type</option>
-                {projectTypes.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </Select>
-            </Field>
             <Field label="Configuration" error={errors.configuration?.message}>
-              <Select {...register("configuration")}>
-                <option value="">Select config</option>
-                {configurations.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </Select>
+              <Controller
+                control={control}
+                name="configuration"
+                render={({ field }) => (
+                  <Select {...field}>
+                    <option value="">Select config</option>
+                    {configurations.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </Select>
+                )}
+              />
             </Field>
           </section>
         </div>

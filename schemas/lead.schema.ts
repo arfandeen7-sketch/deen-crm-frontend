@@ -31,7 +31,6 @@ export const leadSchema = z.object({
   unitNumber: optionalString,
   price: optionalString,
   propertySize: optionalString,
-  projectType: optionalString,
   configuration: optionalString,
   comments: optionalString,
 });

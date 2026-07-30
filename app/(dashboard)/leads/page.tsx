@@ -150,6 +150,8 @@ function LeadsPageContent() {
       render: (l) =>
         l.pfBuildingName ? (
           <span className="text-sm text-slate-700">{l.pfBuildingName}</span>
+        ) : l.projectName ? (
+          <span className="text-sm text-slate-700">{l.projectName}</span>
         ) : (
           <Dash />
         ),
@@ -246,6 +248,18 @@ function LeadsPageContent() {
           <p className="text-xs text-slate-400">{formatDateTime(l.createdAt)}</p>
         </div>
       ),
+    },
+    {
+      key: "comments",
+      header: "Comments",
+      render: (l) =>
+        l.comments ? (
+          <span className="text-sm text-slate-600 line-clamp-2 max-w-[200px] truncate" title={l.comments}>
+            {l.comments}
+          </span>
+        ) : (
+          <Dash />
+        ),
     },
     {
       key: "actions",

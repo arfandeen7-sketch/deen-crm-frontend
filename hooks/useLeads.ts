@@ -54,6 +54,17 @@ export function useLead(id: string | undefined) {
   return query;
 }
 
+export function useLeadOptions() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
+  return useQuery({
+    queryKey: [KEY, "options"],
+    queryFn: () => leadsService.options(),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: retrySkipAuth,
+  });
+}
+
 export function useLeadMutations() {
   const qc = useQueryClient();
   const invalidate = () => {
