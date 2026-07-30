@@ -186,6 +186,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           // Filter by visibility/permissions
           const visibleGroups = sectionGroups.filter((group) => {
             if (group.masterOnly && !isMaster) return false;
+            if (group.hideForMaster && isMaster) return false;
             if (group.moduleKey && !canModule(group.moduleKey)) return false;
             const visibleItems = group.items.filter(
               (item) =>

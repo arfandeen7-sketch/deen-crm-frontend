@@ -58,6 +58,8 @@ export interface NavGroup {
   section?: "MENU" | "GENERAL";
   /** If true, group is only visible to Master users. */
   masterOnly?: boolean;
+  /** If true, group is hidden from Master users (e.g. self-service links). */
+  hideForMaster?: boolean;
 }
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -149,6 +151,7 @@ export const NAV_GROUPS: NavGroup[] = [
     href: "/my-team",
     isSingular: true,
     section: "GENERAL",
+    hideForMaster: true,
     items: [
       { label: "My Team", href: "/my-team", icon: Users2 },
     ],
@@ -158,6 +161,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "My HR",
     icon: User,
     section: "GENERAL",
+    hideForMaster: true,
     items: [
       { label: "My Attendance", href: "/my-hr/attendance", icon: ClipboardCheck },
       { label: "My Corrections", href: "/my-hr/attendance-corrections", icon: ClipboardCheck },

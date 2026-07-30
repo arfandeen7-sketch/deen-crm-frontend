@@ -340,7 +340,7 @@ function LeadsPageContent() {
         emptyTitle="No leads found"
         emptyMessage="Try adjusting your filters or create a new lead."
         onRowClick={(l) => router.push(`/leads/${l.id}`)}
-        selectable={canAction("leads", "all_leads", "bulk_assign")}
+        selectable={canAction("leads", "all_leads", "bulk_assign") || canAction("leads", "all_leads", "bulk_status")}
         selectedIds={selected}
         onToggleRow={toggleRow}
         onToggleAll={toggleAll}
