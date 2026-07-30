@@ -529,3 +529,78 @@ export function useHrReport(type: HrReportType, params: HrReportQuery = {}) {
     retry: retrySkipAuth,
   });
 }
+
+// ── Attendance Regularization Hooks ──────────────────────────────────────────
+
+import {
+  attendanceRegularizationService,
+  type RegularizationQuery,
+} from "@/services/hrms/attendanceRegularization.service";
+import type {
+  RegularizationApplyPayload,
+  RegularizationStatus,
+} from "@/types";
+
+/** HR/Master — all correction requests. */
+export function useRegularizationList(params: RegularizationQuery) {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["hrms:attendance-regularization"]);
+  return useQuery({
+    queryKey: ["regularization", "list", params],
+    queryFn: () => attendanceRegularizationService.list(params),
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}
+
+/** Employee — own correction requests. */
+export function useMyRegularizations(params: Omit<RegularizationQuery, "userId"> = {}) {
+  const enabled = useQueryEnabled("hrms:my-attendance");
+  return useQuery({
+    queryKey: ["regularization", "my-list", params],
+    queryFn: () => attendanceRegularizationService.myList(params),
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useApplyRegularization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: RegularizationApplyPayload) => attendanceRegularizationService.apply(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["regularization"] });
+      qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
+
+export function useReviewRegularization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      status,
+      reviewNote,
+    }: {
+      id: string;
+      status: Extract<RegularizationStatus, "approved" | "rejected">;
+      reviewNote?: string;
+    }) => attendanceRegularizationService.review(id, status, reviewNote),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["regularization"] });
+      qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
+
+export function useCancelRegularization() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => attendanceRegularizationService.cancel(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["regularization"] });
+    },
+  });
+}

@@ -164,6 +164,19 @@ export function AttendanceSettingsForm() {
 
           <div>
             <label className="block text-sm font-medium text-foreground-secondary mb-1.5">
+              Work End Time
+            </label>
+            <input
+              type="time"
+              value={formData.workEndTime || ""}
+              onChange={(e) => setFormData({ ...formData, workEndTime: e.target.value })}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground-secondary mb-1.5">
               Late Start Time
             </label>
             <input

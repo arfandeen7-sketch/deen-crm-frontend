@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 import { useMyAttendance, useAttendanceUserSummary } from "@/hooks/useHrms";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/contexts/PermissionContext";
@@ -9,6 +11,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ATTENDANCE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { formatDate } from "@/lib/utils";
 import type { AttendanceRecord } from "@/types";
@@ -36,11 +39,33 @@ export default function MyAttendancePage() {
     { key: "checkOut", header: "Check Out", render: (r) => r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
     { key: "hours", header: "Hours", render: (r) => formatHours(r.totalWorkingHours) },
     { key: "status", header: "Status", render: (r) => <Badge className={ATTENDANCE_STATUS_COLORS[r.status]}>{r.status.replace("_", " ")}</Badge> },
+    {
+      key: "actions",
+      header: "Actions",
+      stickyRight: true,
+      render: (r) => (
+        <Link
+          href={`/my-hr/attendance-corrections?date=${r.date.split("T")[0]}`}
+          className="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50"
+          title="Raise a correction request for this day"
+        >
+          <AlertCircle className="h-3 w-3" /> Raise Correction
+        </Link>
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <PageHeader title="My Attendance" subtitle="Check in/out and view attendance history" />
+      <PageHeader
+        title="My Attendance"
+        subtitle="Check in/out and view attendance history"
+        actions={
+          <Link href="/my-hr/attendance-corrections">
+            <Button variant="outline" size="sm">View Correction Requests</Button>
+          </Link>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AttendanceCheckInOut />

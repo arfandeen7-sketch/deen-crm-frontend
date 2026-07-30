@@ -43,7 +43,7 @@ export default function LeaveCalendarPage() {
   const { create: createHoliday, remove: removeHoliday } = useHolidayMutations();
   const { data: leaveTypes } = useMyLeaveTypes();
   const applyLeave = useApplyLeave();
-  const { canAction } = useAuth();
+  const { canAction, role } = useAuth();
 
   const canManageHolidays =
     canAction("hrms", "leave_holidays", "create") ||
@@ -137,7 +137,11 @@ export default function LeaveCalendarPage() {
     <div className="space-y-6">
       <PageHeader
         title="Leave Calendar"
-        subtitle="Team leaves and public holidays at a glance"
+        subtitle={
+          role === "sales_executive" || role === "sales_manager"
+            ? "Your leaves and public holidays at a glance"
+            : "Team leaves and public holidays at a glance"
+        }
       />
 
       <LeaveCalendar

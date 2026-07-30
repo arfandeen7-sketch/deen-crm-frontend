@@ -119,7 +119,7 @@ export default function AttendanceCheckInOutPage() {
                 <div className="flex items-center gap-2 rounded-lg bg-panel px-4 py-2.5 text-sm text-foreground-secondary">
                   <Clock className="h-4 w-4" />
                   <span>
-                    Work Hours: {config.workStartTime} – Late: {config.lateStartTime} – Half-Day: {config.halfDayStartTime}
+                    Work Hours: {config.workStartTime} – {config.workEndTime} – Late: {config.lateStartTime} – Half-Day: {config.halfDayStartTime}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg bg-panel px-4 py-2.5 text-sm text-foreground-secondary">

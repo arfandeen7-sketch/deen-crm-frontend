@@ -271,6 +271,50 @@ export interface AttendanceCheckPayload {
   longitude: number;
 }
 
+// ── HRMS: Attendance Regularization (Correction Requests) ───────────────────
+
+export type RegularizationStatus = "pending" | "approved" | "rejected";
+
+export type RegularizationRequestType =
+  | "missed_check_in"
+  | "missed_check_out"
+  | "wrong_check_in_time"
+  | "wrong_check_out_time"
+  | "wrong_working_hours"
+  | "wrong_attendance_status"
+  | "other";
+
+export interface AttendanceRegularization {
+  id: string;
+  attendanceId?: string | null;
+  userId: string;
+  date: string;
+  requestedStatus?: AttendanceStatus | null;
+  requestedCheckIn?: string | null;
+  requestedCheckOut?: string | null;
+  reason: string;
+  attachmentUrl?: string | null;
+  status: RegularizationStatus;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
+  requestType: RegularizationRequestType;
+  createdAt: string;
+  updatedAt: string;
+  user?: Pick<User, "id" | "fullName" | "employeeId"> | null;
+  reviewer?: Pick<User, "id" | "fullName"> | null;
+  attendance?: Pick<AttendanceRecord, "id" | "status"> | null;
+}
+
+export interface RegularizationApplyPayload {
+  date: string;
+  requestType: RegularizationRequestType;
+  reason: string;
+  requestedStatus?: AttendanceStatus;
+  requestedCheckIn?: string;
+  requestedCheckOut?: string;
+}
+
 export interface AttendanceConfig {
   id: number;
   officeName: string;
@@ -278,6 +322,7 @@ export interface AttendanceConfig {
   officeLongitude: number;
   geofenceRadius: number;
   workStartTime: string;
+  workEndTime: string;
   lateStartTime: string;
   halfDayStartTime: string;
   minFullDayHours: number;

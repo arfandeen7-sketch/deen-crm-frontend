@@ -30,6 +30,7 @@ const PARENT_EXCLUSIONS: Record<string, string[]> = {
   "/brokers": ["/brokers/create"],
   "/users": ["/users/create"],
   "/hrms/employees": ["/hrms/employees/create"],
+  "/hrms/attendance": ["/hrms/attendance/regularization"],
 };
 
 function isItemActive(pathname: string, href: string): boolean {

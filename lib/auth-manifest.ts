@@ -74,6 +74,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/hrms/attendance": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "view" } },
   "/hrms/attendance/records": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "view" } },
   "/hrms/check-in-out": { type: "permission", requirement: { module: "hrms", page: "attendance", action: "view" } },
+  "/hrms/attendance/regularization": { type: "permission", requirement: { module: "hrms", page: "attendance_regularization", action: "view" } },
   "/hrms/leave": { type: "permission", requirement: { module: "hrms", page: "leave", action: "view" } },
   "/hrms/leave-types": { type: "permission", requirement: { module: "hrms", page: "leave_types", action: "view" } },
   "/hrms/holidays": { type: "permission", requirement: { module: "hrms", page: "leave_holidays", action: "view" } },
@@ -102,6 +103,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
 
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
+  "/my-hr/attendance-corrections": { type: "authenticated" },
   "/my-hr/leaves": { type: "authenticated" },
   "/my-hr/calendar": { type: "authenticated" },
   "/my-hr/payslips": { type: "authenticated" },
@@ -162,6 +164,7 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "hrms:attendance-records": { module: "hrms", page: "attendance", action: "view" },
   "hrms:check-in-out": { module: "hrms", page: "attendance", action: "view" },
   "hrms:attendance-config": { module: "hrms", page: "attendance", action: "view" },
+  "hrms:attendance-regularization": { module: "hrms", page: "attendance_regularization", action: "view" },
   "hrms:leave": { module: "hrms", page: "leave", action: "view" },
   "hrms:leave_types": { module: "hrms", page: "leave_types", action: "view" },
   "hrms:leave_holidays": { module: "hrms", page: "leave_holidays", action: "view" },
@@ -215,6 +218,8 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "hrms:attendance:check-out": { module: "hrms", page: "attendance", action: "edit" },
   "hrms:attendance:override": { module: "hrms", page: "attendance", action: "edit" },
   "hrms:attendance:config": { module: "hrms", page: "attendance", action: "edit" },
+  "hrms:attendance-regularization:approve": { module: "hrms", page: "attendance_regularization", action: "approve" },
+  "hrms:attendance-regularization:reject": { module: "hrms", page: "attendance_regularization", action: "reject" },
   "hrms:leave:approve": { module: "hrms", page: "leave", action: "approve" },
   "hrms:leave:reject": { module: "hrms", page: "leave", action: "reject" },
   "hrms:leave:apply": { module: "hrms", page: "leave", action: "apply" },
@@ -266,6 +271,7 @@ export const WIDGET_REQUIREMENTS: Record<string, PermissionRequirement> = {
 export const SELF_SERVICE_QUERIES = new Set([
   "me:profile",
   "me:attendance",
+  "me:attendance-regularization",
   "me:leaves",
   "me:payslips",
   "me:leave-balance",

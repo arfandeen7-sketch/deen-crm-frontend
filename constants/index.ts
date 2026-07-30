@@ -82,6 +82,28 @@ export const LEAVE_STATUS_LABELS: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+export const REGULARIZATION_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-rose-100 text-rose-700",
+};
+
+export const REGULARIZATION_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+};
+
+export const REGULARIZATION_REQUEST_TYPE_LABELS: Record<string, string> = {
+  missed_check_in: "Missed Check-In",
+  missed_check_out: "Missed Check-Out",
+  wrong_check_in_time: "Wrong Check-In Time",
+  wrong_check_out_time: "Wrong Check-Out Time",
+  wrong_working_hours: "Wrong Working Hours",
+  wrong_attendance_status: "Wrong Attendance Status",
+  other: "Other",
+};
+
 export const PAYROLL_STATUS_COLORS: Record<string, string> = {
   draft: "bg-slate-100 text-slate-600",
   generated: "bg-sky-100 text-sky-700",

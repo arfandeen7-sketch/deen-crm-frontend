@@ -31,11 +31,11 @@ export function useStatusAnalytics() {
 }
 
 /** Recent leads for the dashboard table. */
-export function useRecentLeads() {
+export function useRecentLeads(assignedTo?: string) {
   const enabled = useQueryEnabled(QUERY_REQUIREMENTS["dashboard:recent-leads"]);
   return useQuery({
-    queryKey: ["dashboard", "recent-leads"],
-    queryFn: () => leadsService.list({ page: 1, pageSize: 8 }),
+    queryKey: ["dashboard", "recent-leads", assignedTo ?? "all"],
+    queryFn: () => leadsService.list({ page: 1, pageSize: 10, assignedTo }),
     enabled,
     refetchInterval: enabled ? POLL_FAST : false,
     retry: retrySkipAuth,
