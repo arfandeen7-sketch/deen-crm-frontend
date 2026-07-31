@@ -143,7 +143,6 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-600 font-mono mt-8">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 border border-slate-800 text-white font-serif italic text-sm">N</div>
             <span className="tracking-widest text-[10px] uppercase">DEEN PROPERTIES CRM <span className="text-slate-800 mx-2">|</span> Internal Use Only</span>
           </div>
         </div>
@@ -228,7 +227,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 loading={isSubmitting}
-                className="mt-4 w-full bg-black hover:bg-zinc-800 text-white text-[11px] font-bold tracking-[0.2em] uppercase py-4 h-auto"
+                className="mt-4 w-full bg-amber-400 hover:bg-amber-500 text-black text-[12px] font-bold tracking-[0.2em] uppercase py-4 h-auto"
               >
                 Login
               </Button>
