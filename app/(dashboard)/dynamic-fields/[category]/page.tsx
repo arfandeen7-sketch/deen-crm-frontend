@@ -48,6 +48,7 @@ export default function DynamicFieldsPage() {
 
   async function handleSave() {
     if (!value.trim()) return toast.error("Enter a value");
+    if (create.isPending || update.isPending) return;
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, body: { value: value.trim() } });

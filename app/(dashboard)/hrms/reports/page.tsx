@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 import { useHrReport } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { hrReportsService, type HrReportType } from "@/services/hrms/hr-reports.service";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 
@@ -25,6 +27,7 @@ export default function HrReportsPage() {
   const [dateTo, setDateTo] = useState("");
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
+  const [exportingFormat, setExportingFormat] = useState<"excel" | "csv" | "pdf" | null>(null);
 
   const { data: report, isLoading } = useHrReport(reportType, {
     dateFrom: dateFrom || undefined,
@@ -34,6 +37,7 @@ export default function HrReportsPage() {
   });
 
   const handleExport = async (format: "excel" | "csv" | "pdf") => {
+    setExportingFormat(format);
     try {
       const blob = await hrReportsService.exportReport(reportType, format, { dateFrom, dateTo, month, year });
       const url = URL.createObjectURL(blob);
@@ -43,8 +47,10 @@ export default function HrReportsPage() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`Report exported as ${format.toUpperCase()}`);
-    } catch {
-      toast.error("Export failed");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setExportingFormat(null);
     }
   };
 
@@ -56,15 +62,15 @@ export default function HrReportsPage() {
         subtitle="Generate and export HR reports"
         actions={
           <div className="flex gap-2">
-            <button onClick={() => handleExport("excel")} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <Button variant="outline" size="sm" onClick={() => handleExport("excel")} loading={exportingFormat === "excel"}>
               <Download className="h-4 w-4" /> Excel
-            </button>
-            <button onClick={() => handleExport("csv")} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport("csv")} loading={exportingFormat === "csv"}>
               <Download className="h-4 w-4" /> CSV
-            </button>
-            <button onClick={() => handleExport("pdf")} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} loading={exportingFormat === "pdf"}>
               <Download className="h-4 w-4" /> PDF
-            </button>
+            </Button>
           </div>
         }
       />

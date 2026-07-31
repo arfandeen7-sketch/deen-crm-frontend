@@ -46,6 +46,7 @@ function BrokersPageContent() {
     try {
       const blob = await brokersService.export(params);
       downloadBlob(blob, `brokers_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast.success("Brokers exported");
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {

@@ -27,6 +27,7 @@ export default function EditUserPage() {
   const currentUserId = useAuthStore((s) => s.user?.id);
   const { refetch: refetchPermissions } = usePermissions();
   const [grantFailure, setGrantFailure] = useState<GrantEntry[] | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   async function onSubmit(values: UserFormSubmitValues) {
     try {
@@ -51,6 +52,7 @@ export default function EditUserPage() {
 
   async function retrySaveGrants() {
     if (!grantFailure) return;
+    setRetrying(true);
     try {
       await permissionsService.saveUserGrants(params.id, grantFailure);
       toast.success("Permissions saved successfully");
@@ -61,6 +63,8 @@ export default function EditUserPage() {
       router.push("/users");
     } catch (e) {
       toast.error(getErrorMessage(e));
+    } finally {
+      setRetrying(false);
     }
   }
 
@@ -84,7 +88,7 @@ export default function EditUserPage() {
                 The user profile was updated successfully, but saving the permission grants failed.
                 You can retry saving the intended permissions.
               </p>
-              <Button type="button" size="sm" className="mt-3" onClick={retrySaveGrants}>
+              <Button type="button" size="sm" className="mt-3" onClick={retrySaveGrants} loading={retrying}>
                 Retry Save Permissions
               </Button>
             </div>

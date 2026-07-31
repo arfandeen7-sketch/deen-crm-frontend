@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { ATTENDANCE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { attendanceService } from "@/services/attendance/attendance.service";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard } from "@/components/shared/Guards";
 import type { AttendanceRecord } from "@/types";
 
@@ -21,6 +23,7 @@ export default function AttendanceRecordsPage() {
   const [dateTo, setDateTo] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [viewingRecord, setViewingRecord] = useState<AttendanceRecord | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const { data, isLoading } = useAttendanceList({
     page,
@@ -45,17 +48,25 @@ export default function AttendanceRecordsPage() {
   );
 
   const handleExport = async () => {
-    const blob = await attendanceService.export({
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-      userId: selectedUserId || undefined,
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance_export_${new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Dubai" })}.xlsx`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setExporting(true);
+    try {
+      const blob = await attendanceService.export({
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        userId: selectedUserId || undefined,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance_export_${new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Dubai" })}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Attendance exported");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const formatTime = (isoString: string | null | undefined) => {
@@ -112,7 +123,7 @@ export default function AttendanceRecordsPage() {
           title="Attendance Records"
           subtitle="View and manage employee attendance records"
           actions={
-            <Button onClick={handleExport} variant="secondary" size="sm">
+            <Button onClick={handleExport} variant="secondary" size="sm" loading={exporting}>
               <Download className="h-4 w-4" />
               Export
             </Button>

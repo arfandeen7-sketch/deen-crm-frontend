@@ -7,24 +7,36 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { IconButton } from "@/components/ui/IconButton";
 import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import type { Payslip } from "@/types";
 
 export default function MyPayslipsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { data, isLoading } = useMyPayslips({ page, pageSize });
 
   const handleDownload = async (id: string, month: number, year: number) => {
-    const blob = await payslipService.download(id, true);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payslip-${year}-${month}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setDownloadingId(id);
+    try {
+      const blob = await payslipService.download(id, true);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payslip-${year}-${month}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Payslip downloaded");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const columns: Column<Payslip>[] = [
@@ -64,9 +76,12 @@ export default function MyPayslipsPage() {
       stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
-          <button onClick={() => handleDownload(r.id, r.month, r.year)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download PDF">
-            <Download className="h-4 w-4" />
-          </button>
+          <IconButton
+            icon={Download}
+            title="Download PDF"
+            loading={downloadingId === r.id}
+            onClick={() => handleDownload(r.id, r.month, r.year)}
+          />
         </div>
       ),
     },

@@ -112,6 +112,7 @@ export default function IntegrationDetailPage() {
     try {
       const res = await mutations.discoverForms.mutateAsync({ id, connectedAccountId: accId });
       setDiscoveredForms(prev => ({ ...prev, [accId]: res.forms }));
+      toast.success(`Found ${res.forms.length} form(s)`);
     } catch (e) { toast.error(getErrorMessage(e)); }
     setFormsLoadingFor(null);
   }

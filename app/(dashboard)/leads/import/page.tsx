@@ -44,6 +44,7 @@ export default function ImportLeadsPage() {
     try {
       const blob = await leadsService.template();
       downloadBlob(blob, "leads_import_template.xlsx");
+      toast.success("Template downloaded");
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {

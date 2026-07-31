@@ -13,6 +13,7 @@ import {
 import { loginSchema, type LoginValues } from "@/schemas/auth.schema";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
+import { Button } from "@/components/ui/Button";
 import { APP_NAME } from "@/constants";
 import { DEMO_AUTH_ENABLED, DEMO_CREDENTIALS } from "@/services/auth/demo";
 
@@ -224,13 +225,13 @@ export default function LoginPage() {
                 {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="mt-4 w-full bg-black hover:bg-zinc-800 text-white text-[11px] font-bold tracking-[0.2em] uppercase py-4 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                loading={isSubmitting}
+                className="mt-4 w-full bg-black hover:bg-zinc-800 text-white text-[11px] font-bold tracking-[0.2em] uppercase py-4 h-auto"
               >
-                {isSubmitting ? 'Logging in...' : 'Login'}
-              </button>
+                Login
+              </Button>
             </form>
 
             {DEMO_AUTH_ENABLED && (

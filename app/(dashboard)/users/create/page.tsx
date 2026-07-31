@@ -19,6 +19,7 @@ export default function CreateUserPage() {
   const router = useRouter();
   const { create } = useUserMutations();
   const [partialFailure, setPartialFailure] = useState<{ userId: string; grants: import("@/types").GrantEntry[] } | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   async function onSubmit(values: UserFormSubmitValues) {
     try {
@@ -42,6 +43,7 @@ export default function CreateUserPage() {
 
   async function retrySaveGrants() {
     if (!partialFailure) return;
+    setRetrying(true);
     try {
       await permissionsService.saveUserGrants(partialFailure.userId, partialFailure.grants);
       toast.success("Permissions saved successfully");
@@ -49,6 +51,8 @@ export default function CreateUserPage() {
       router.push("/users");
     } catch (e) {
       toast.error(getErrorMessage(e));
+    } finally {
+      setRetrying(false);
     }
   }
 
@@ -73,7 +77,7 @@ export default function CreateUserPage() {
                 You can retry saving the intended permissions now.
               </p>
               <div className="flex gap-2 mt-3">
-                <Button type="button" size="sm" onClick={retrySaveGrants}>
+                <Button type="button" size="sm" onClick={retrySaveGrants} loading={retrying}>
                   Retry Save Permissions
                 </Button>
                 <Button

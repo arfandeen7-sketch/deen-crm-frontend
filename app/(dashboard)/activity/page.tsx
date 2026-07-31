@@ -15,9 +15,12 @@ import { MasterGuard } from "@/components/shared/Guards";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { LoadingState, EmptyState, ErrorState } from "@/components/ui/States";
 import { useActivityFeed, useActivityFiltersMeta } from "@/hooks/useActivity";
 import { getStoredToken } from "@/store/auth.store";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { formatDateTime, timeAgo, humanize } from "@/lib/utils";
 import type {
   ActivityEvent,
@@ -245,6 +248,7 @@ function FilterBar({
 function ActivityPageContent() {
   const [date, setDate] = useState(getUAETodayStr());
   const [filters, setFilters] = useState<Omit<ActivityListParams, "cursor" | "date">>({});
+  const [exporting, setExporting] = useState(false);
 
   const params = useMemo<Omit<ActivityListParams, "cursor">>(() => ({
     date,
@@ -265,29 +269,37 @@ function ActivityPageContent() {
   );
 
   const handleExport = useCallback(async () => {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-    const qs = new URLSearchParams();
-    qs.set("date", date);
-    if (filters.category) qs.set("category", filters.category);
-    if (filters.eventName) qs.set("eventName", filters.eventName);
-    if (filters.actorType) qs.set("actorType", filters.actorType);
-    if (filters.outcome) qs.set("outcome", filters.outcome);
-    if (filters.search) qs.set("search", filters.search);
+    setExporting(true);
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const qs = new URLSearchParams();
+      qs.set("date", date);
+      if (filters.category) qs.set("category", filters.category);
+      if (filters.eventName) qs.set("eventName", filters.eventName);
+      if (filters.actorType) qs.set("actorType", filters.actorType);
+      if (filters.outcome) qs.set("outcome", filters.outcome);
+      if (filters.search) qs.set("search", filters.search);
 
-    const token = getStoredToken();
-    const res = await fetch(`${BASE_URL}/api/activity/export?${qs.toString()}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `activity_${date}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+      const token = getStoredToken();
+      const res = await fetch(`${BASE_URL}/api/activity/export?${qs.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `activity_${date}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Activity exported");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setExporting(false);
+    }
   }, [date, filters]);
 
   const allEvents = useMemo(() => {
@@ -303,12 +315,9 @@ function ActivityPageContent() {
         title="Activity Stream"
         subtitle="Universal audit log of every completed user-triggered action"
         actions={
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer"
-          >
+          <Button variant="outline" size="sm" onClick={handleExport} loading={exporting}>
             <Download className="h-3.5 w-3.5" /> Export CSV
-          </button>
+          </Button>
         }
       />
 

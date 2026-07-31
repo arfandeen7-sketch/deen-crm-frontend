@@ -69,6 +69,7 @@ function LeadsPageContent() {
     try {
       const blob = await leadsService.export(filters);
       downloadBlob(blob, `leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast.success("Leads exported");
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {

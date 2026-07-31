@@ -6,9 +6,12 @@ import { Calculator, Save } from "lucide-react";
 import { usePayrollPreview, useCalculatePayroll } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import type { PayrollFigures } from "@/types";
 
 const MONTH_NAMES = [
@@ -24,6 +27,7 @@ export default function PayrollPreviewPage() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [fetchKey, setFetchKey] = useState<{ month: number; year: number } | null>(null);
+  const [commitOpen, setCommitOpen] = useState(false);
 
   // Only fetch when the user explicitly clicks "Calculate Preview" — avoids
   // running expensive per-employee computations on every month/year change.
@@ -58,6 +62,7 @@ export default function PayrollPreviewPage() {
     // refetch() not strictly needed — setting fetchKey enables the query and
     // the queryKey change triggers a fresh fetch. Call refetch for safety.
     void refetch();
+    toast.success("Preview calculated");
   };
 
   const handleCommitAll = () => {
@@ -65,15 +70,15 @@ export default function PayrollPreviewPage() {
       toast.error("Nothing to save — calculate the preview first.");
       return;
     }
-    if (!confirm(`Save draft payslips for all ${rows.length} employees for ${MONTH_NAMES[month - 1]} ${year}?`)) return;
     calculate.mutate(
       { month, year },
       {
         onSuccess: () => {
           toast.success(`Draft payslips saved for ${rows.length} employees`);
+          setCommitOpen(false);
           router.push("/hrms/payslips");
         },
-        onError: () => toast.error("Failed to save payslips"),
+        onError: (e) => toast.error(getErrorMessage(e)),
       }
     );
   };
@@ -116,13 +121,13 @@ export default function PayrollPreviewPage() {
           subtitle="Calculate salary figures for every employee before committing payslips"
           actions={
             <CanAccess module="hrms" page="payroll" action="generate">
-              <button
-                onClick={handleCommitAll}
-                disabled={calculate.isPending || rows.length === 0}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              <Button
+                onClick={() => setCommitOpen(true)}
+                loading={calculate.isPending}
+                disabled={rows.length === 0}
               >
                 <Save className="h-4 w-4" /> Commit &amp; Save All
-              </button>
+              </Button>
             </CanAccess>
           }
         />
@@ -147,13 +152,13 @@ export default function PayrollPreviewPage() {
               return <option key={y} value={y}>{y}</option>;
             })}
           </Select>
-          <button
+          <Button
+            variant="outline"
             onClick={handleCalculatePreview}
-            disabled={isLoading || isFetching}
-            className="flex items-center gap-1.5 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+            loading={isLoading || isFetching}
           >
             <Calculator className="h-4 w-4" /> Calculate Preview
-          </button>
+          </Button>
         </div>
 
         {rows.length > 0 && (
@@ -190,6 +195,17 @@ export default function PayrollPreviewPage() {
           loading={isLoading || isFetching}
           emptyTitle="No preview yet"
           emptyMessage="Select a month and year, then click Calculate Preview to compute salary figures for all eligible employees."
+        />
+
+        <ConfirmModal
+          open={commitOpen}
+          onClose={() => setCommitOpen(false)}
+          onConfirm={handleCommitAll}
+          title="Commit & save all payslips?"
+          message={`This will save draft payslips for all ${rows.length} employees for ${MONTH_NAMES[month - 1]} ${year}.`}
+          confirmLabel="Commit & Save"
+          loading={calculate.isPending}
+          danger={false}
         />
       </div>
     </AccessGuard>

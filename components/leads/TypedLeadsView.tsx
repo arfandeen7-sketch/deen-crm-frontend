@@ -85,6 +85,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
     try {
       const blob = await leadsService.export(params);
       downloadBlob(blob, `leads-${category}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast.success("Leads exported");
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {

@@ -133,6 +133,7 @@ export default function LeadReportsPage() {
         blob,
         `lead-report-${new Date().toISOString().slice(0, 10)}.${format === "xlsx" ? "xlsx" : "csv"}`,
       );
+      toast.success(`Report exported as ${format.toUpperCase()}`);
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {

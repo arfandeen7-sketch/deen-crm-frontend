@@ -8,6 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Field, Textarea } from "@/components/ui/Input";
 import { LEAVE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
@@ -103,33 +104,48 @@ export default function LeaveManagementPage() {
       stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
-          <button onClick={() => setDetailTarget(r)} className="rounded p-1 text-foreground-secondary hover:bg-panel" title="View Details">
-            <Eye className="h-4 w-4" />
-          </button>
+          <IconButton icon={Eye} title="View Details" onClick={() => setDetailTarget(r)} />
           {r.status === "pending" && role === "hr_manager" && canAction("hrms", "leave", "approve") && (
-            <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Approve">
-              <Check className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={Check}
+              title="Approve"
+              variant="success"
+              loading={review.isPending && review.variables?.id === r.id}
+              onClick={() => handleApprove(r.id)}
+            />
           )}
           {r.status === "pending" && role === "hr_manager" && canAction("hrms", "leave", "reject") && (
-            <button onClick={() => { setRejectTarget(r); setRejectNote(""); }} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
-              <X className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={X}
+              title="Reject"
+              variant="danger"
+              onClick={() => { setRejectTarget(r); setRejectNote(""); }}
+            />
           )}
           {r.status === "hr_approved" && role === "master" && canAction("hrms", "leave", "approve") && (
-            <button onClick={() => handleApprove(r.id)} className="rounded p-1 text-emerald-600 hover:bg-emerald-50" title="Final Approve">
-              <Check className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={Check}
+              title="Final Approve"
+              variant="success"
+              loading={review.isPending && review.variables?.id === r.id}
+              onClick={() => handleApprove(r.id)}
+            />
           )}
           {r.status === "hr_approved" && role === "master" && canAction("hrms", "leave", "reject") && (
-            <button onClick={() => { setRejectTarget(r); setRejectNote(""); }} className="rounded p-1 text-rose-600 hover:bg-rose-50" title="Reject">
-              <X className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={X}
+              title="Reject"
+              variant="danger"
+              onClick={() => { setRejectTarget(r); setRejectNote(""); }}
+            />
           )}
           {(r.status === "pending" || r.status === "hr_approved" || r.status === "approved") && canAction("hrms", "leave", "cancel") && (
-            <button onClick={() => setCancelTarget(r)} className="rounded p-1 text-amber-600 hover:bg-amber-50" title="Cancel Leave">
-              <X className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={X}
+              title="Cancel Leave"
+              variant="warning"
+              onClick={() => setCancelTarget(r)}
+            />
           )}
         </div>
       ),

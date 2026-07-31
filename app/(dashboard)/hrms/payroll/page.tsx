@@ -7,9 +7,13 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { IconButton } from "@/components/ui/IconButton";
 import { PAYROLL_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { Payslip } from "@/types";
@@ -20,6 +24,8 @@ export default function PayrollManagementPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
+  const [runMonthlyOpen, setRunMonthlyOpen] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { data, isLoading } = usePayslipList({ page, pageSize, month, year });
   const calculate = useCalculatePayroll();
@@ -32,42 +38,50 @@ export default function PayrollManagementPage() {
     if (!userId) return;
     calculate.mutate({ userId, month, year }, {
       onSuccess: () => toast.success("Payslip calculated"),
-      onError: () => toast.error("Failed to calculate payroll"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
   const handleDownload = async (id: string) => {
-    const blob = await payslipService.download(id);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payslip-${id}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setDownloadingId(id);
+    try {
+      const blob = await payslipService.download(id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payslip-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Payslip downloaded");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handleSendPayslip = (id: string) => {
     sendPayslip.mutate(id, {
       onSuccess: () => toast.success("Payslip sent"),
-      onError: () => toast.error("Failed to send payslip"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
   const handleSendBulk = () => {
     sendBulk.mutate({ month, year }, {
       onSuccess: (res) => toast.success(`Sent: ${res.sent} / ${res.total}`),
-      onError: () => toast.error("Failed to send bulk payslips"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
   const handleRunMonthly = () => {
-    if (!confirm(`Run monthly payroll for ${month}/${year}? This will calculate, generate PDFs, and email all eligible employees.`)) return;
     runMonthly.mutate({ month, year }, {
       onSuccess: (res) => {
         toast.success(`Monthly payroll complete: ${res.sent}/${res.total} sent`);
         if (res.errors.length > 0) toast.error(`${res.errors.length} error(s) occurred`);
+        setRunMonthlyOpen(false);
       },
-      onError: () => toast.error("Failed to run monthly payroll"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
@@ -88,9 +102,12 @@ export default function PayrollManagementPage() {
       stickyRight: true,
       render: (r) => (
         <div className="flex gap-1">
-          <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download">
-            <Download className="h-4 w-4" />
-          </button>
+          <IconButton
+            icon={Download}
+            title="Download PDF"
+            loading={downloadingId === r.id}
+            onClick={() => handleDownload(r.id)}
+          />
           <button
             onClick={() => handleSendPayslip(r.id)}
             disabled={sendPayslip.isPending && sendPayslip.variables === r.id}
@@ -112,12 +129,12 @@ export default function PayrollManagementPage() {
         subtitle="Calculate and manage monthly payslips"
         actions={
           <div className="flex gap-2">
-            <button onClick={handleRunMonthly} disabled={runMonthly.isPending} className="flex items-center gap-1.5 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50">
+            <Button variant="outline" onClick={() => setRunMonthlyOpen(true)} loading={runMonthly.isPending}>
               <PlayCircle className="h-4 w-4" /> Run Monthly Payroll
-            </button>
-            <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+            </Button>
+            <Button variant="outline" onClick={handleSendBulk} loading={sendBulk.isPending}>
               <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
-            </button>
+            </Button>
             {/* <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               Calculate Payslip
             </button> */}
@@ -149,6 +166,17 @@ export default function PayrollManagementPage() {
       {data && (
         <Pagination page={data.page} pageSize={pageSize} total={data.total} totalPages={data.totalPages} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
       )}
+
+      <ConfirmModal
+        open={runMonthlyOpen}
+        onClose={() => setRunMonthlyOpen(false)}
+        onConfirm={handleRunMonthly}
+        title="Run monthly payroll?"
+        message={`This will calculate, generate PDFs, and email all eligible employees for ${month}/${year}. This action cannot be undone.`}
+        confirmLabel="Run Payroll"
+        loading={runMonthly.isPending}
+        danger={false}
+      />
     </div>
     </AccessGuard>
   );

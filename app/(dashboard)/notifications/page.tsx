@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, Filter, Trash2, Phone, Building2 } from "lucide-react";
 import { useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
+import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { timeAgo } from "@/lib/utils";
 import type { AppNotification, AssignmentNotificationLead } from "@/types";
 
@@ -115,10 +118,21 @@ export default function NotificationsPage() {
   const { markRead, markAllRead } = useNotificationMutations();
 
   async function handleRead(id: string, leadId?: string | null) {
-    await markRead.mutateAsync(id);
+    try {
+      await markRead.mutateAsync(id);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
     if (leadId) {
       router.push(`/leads/${leadId}`);
     }
+  }
+
+  function handleMarkAllRead() {
+    markAllRead.mutate(undefined, {
+      onSuccess: () => toast.success("All notifications marked as read"),
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
   }
 
   const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
@@ -143,14 +157,10 @@ export default function NotificationsPage() {
             </div>
             <div className="flex items-center gap-3">
               {unreadCount > 0 && (
-                <button
-                  onClick={() => markAllRead.mutate()}
-                  disabled={markAllRead.isPending}
-                  className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50"
-                >
+                <Button variant="outline" size="sm" onClick={handleMarkAllRead} loading={markAllRead.isPending}>
                   <CheckCheck className="h-4 w-4" />
                   Mark all as read
-                </button>
+                </Button>
               )}
             </div>
           </div>

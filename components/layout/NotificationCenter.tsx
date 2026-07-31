@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, Phone, Building2 } from "lucide-react";
 import { useUnreadCount, useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { timeAgo } from "@/lib/utils";
 import type { AppNotification, AssignmentNotificationLead } from "@/types";
 
@@ -104,9 +106,20 @@ export function NotificationCenter() {
   }, []);
 
   async function handleRead(id: string, leadId?: string | null) {
-    await markRead.mutateAsync(id);
+    try {
+      await markRead.mutateAsync(id);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
     setOpen(false);
     if (leadId) router.push(`/leads/${leadId}`);
+  }
+
+  function handleMarkAllRead() {
+    markAllRead.mutate(undefined, {
+      onSuccess: () => toast.success("All notifications marked as read"),
+      onError: (e) => toast.error(getErrorMessage(e)),
+    });
   }
 
   return (
@@ -137,8 +150,9 @@ export function NotificationCenter() {
             </div>
             {badgeCount > 0 && (
               <button
-                onClick={() => markAllRead.mutate()}
-                className="flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-black transition-colors cursor-pointer"
+                onClick={handleMarkAllRead}
+                disabled={markAllRead.isPending}
+                className="flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-black transition-colors cursor-pointer disabled:opacity-50"
                 title="Mark all as read"
               >
                 <CheckCheck className="h-3.5 w-3.5" /> All read

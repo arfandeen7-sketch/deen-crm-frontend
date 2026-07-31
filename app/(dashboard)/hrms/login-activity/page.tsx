@@ -6,6 +6,8 @@ import { useLoginActivityList } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { toast } from "sonner";
 import { DEFAULT_PAGE_SIZE, ROLE_LABELS } from "@/constants";
 
 import { formatDate } from "@/lib/utils";
@@ -26,8 +28,8 @@ export default function LoginActivityPage() {
     dateTo: dateTo || undefined,
   });
 
-  const handleExport = async () => {
-    alert("Export not supported yet");
+  const handleExport = () => {
+    toast.info("Export for login activity is not available yet");
   };
 
   const formatDuration = (mins?: number | null) => {
@@ -53,9 +55,9 @@ export default function LoginActivityPage() {
         title="Login Activity"
         subtitle="Track employee login and logout activity"
         actions={
-          <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4" /> Export
-          </button>
+          </Button>
         }
       />
 

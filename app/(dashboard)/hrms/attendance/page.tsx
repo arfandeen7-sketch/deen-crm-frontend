@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { AccessGuard } from "@/components/shared/Guards";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ATTENDANCE_STATUS_COLORS } from "@/constants";
 import { getErrorMessage } from "@/lib/utils";
 
@@ -165,13 +166,13 @@ export default function AttendanceCheckInOutPage() {
                   )}
                 </div>
               ) : (
-                <button
+                <Button
                   onClick={() => setShowCamera("checkin")}
-                  disabled={checkIn.isPending}
-                  className="mt-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  loading={checkIn.isPending}
+                  className="mt-2 bg-emerald-600 hover:bg-emerald-700"
                 >
-                  {checkIn.isPending ? "Processing…" : "Check In"}
-                </button>
+                  <LogIn className="h-4 w-4" /> Check In
+                </Button>
               )}
             </div>
 
@@ -195,13 +196,13 @@ export default function AttendanceCheckInOutPage() {
                   )}
                 </div>
               ) : hasCheckedIn ? (
-                <button
+                <Button
                   onClick={() => setShowCamera("checkout")}
-                  disabled={checkOut.isPending}
-                  className="mt-2 rounded-lg bg-rose-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  loading={checkOut.isPending}
+                  className="mt-2 bg-rose-600 hover:bg-rose-700"
                 >
-                  {checkOut.isPending ? "Processing…" : "Check Out"}
-                </button>
+                  <LogOut className="h-4 w-4" /> Check Out
+                </Button>
               ) : (
                 <p className="mt-2 text-sm text-foreground-muted">Check in first</p>
               )}

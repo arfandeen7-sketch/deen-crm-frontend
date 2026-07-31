@@ -5,7 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { smtpConfigSchema, type SmtpConfigFormValues } from "@/schemas/email.schema";
 import { useSmtpConfig, useSaveSmtpConfig, useTestSmtp } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { Send, Save } from "lucide-react";
 import { useState } from "react";
 import { AccessGuard } from "@/components/shared/Guards";
@@ -33,7 +35,7 @@ export default function EmailConfigPage() {
   const onSubmit = (values: SmtpConfigFormValues) => {
     save.mutate(values, {
       onSuccess: () => toast.success("SMTP configuration saved"),
-      onError: () => toast.error("Failed to save configuration"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
@@ -41,7 +43,7 @@ export default function EmailConfigPage() {
     if (!testEmail) return toast.error("Enter a test email address");
     test.mutate(testEmail, {
       onSuccess: (res) => res.success ? toast.success("Test email sent!") : toast.error(res.message),
-      onError: () => toast.error("Test failed"),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
@@ -96,9 +98,9 @@ export default function EmailConfigPage() {
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <button type="submit" disabled={save.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              <Save className="h-4 w-4" /> {save.isPending ? "Saving…" : "Save Configuration"}
-            </button>
+            <Button type="submit" loading={save.isPending}>
+              <Save className="h-4 w-4" /> Save Configuration
+            </Button>
           </div>
         </div>
       </form>
@@ -114,9 +116,9 @@ export default function EmailConfigPage() {
             type="email"
             className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
-          <button onClick={handleTest} disabled={test.isPending} className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-            <Send className="h-4 w-4" /> {test.isPending ? "Sending…" : "Send Test"}
-          </button>
+          <Button onClick={handleTest} loading={test.isPending} className="bg-emerald-600 hover:bg-emerald-700">
+            <Send className="h-4 w-4" /> Send Test
+          </Button>
         </div>
       </div>
     </div>

@@ -8,8 +8,11 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { ROLE_LABELS, EMPLOYMENT_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { employeeService } from "@/services/hr/hr.service";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import type { User } from "@/types";
@@ -20,6 +23,7 @@ export default function EmployeesPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const { data, isLoading } = useEmployeeList({
     page,
@@ -29,13 +33,21 @@ export default function EmployeesPage() {
   });
 
   const handleExport = async () => {
-    const blob = await employeeService.export({ search, status });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "employees.xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
+    setExporting(true);
+    try {
+      const blob = await employeeService.export({ search, status });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "employees.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Employees exported");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const columns: Column<User>[] = [
@@ -80,14 +92,14 @@ export default function EmployeesPage() {
         actions={
           <div className="flex gap-2">
             <CanAccess module="hrms" page="employees" action="export">
-              <button onClick={handleExport} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <Button variant="outline" onClick={handleExport} loading={exporting}>
                 <Download className="h-4 w-4" /> Export
-              </button>
+              </Button>
             </CanAccess>
             <CanAccess module="hrms" page="employees" action="create">
-              <button onClick={() => router.push("/hrms/employees/create")} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+              <Button onClick={() => router.push("/hrms/employees/create")}>
                 <Plus className="h-4 w-4" /> Add Employee
-              </button>
+              </Button>
             </CanAccess>
           </div>
         }

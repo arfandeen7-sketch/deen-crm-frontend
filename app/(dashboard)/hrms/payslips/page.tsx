@@ -7,9 +7,12 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { payslipService } from "@/services/hrms/payslip.service";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/services/api/client";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useAuth } from "@/hooks/useAuth";
 import { Select } from "@/components/ui/Input";
@@ -22,6 +25,8 @@ export default function PayslipsPage() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [selected, setSelected] = useState<string[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [printingId, setPrintingId] = useState<string | null>(null);
   const { canAction } = useAuth();
 
   const { data, isLoading } = usePayslipList({ page, pageSize, month, year });
@@ -29,27 +34,41 @@ export default function PayslipsPage() {
   const sendBulk = useSendBulkPayslips();
 
   const handleDownload = async (id: string) => {
-    const blob = await payslipService.download(id);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payslip-${id}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setDownloadingId(id);
+    try {
+      const blob = await payslipService.download(id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `payslip-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Payslip downloaded");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handlePrint = async (id: string) => {
-    const blob = await payslipService.download(id);
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url);
-    win?.addEventListener("load", () => { win.print(); URL.revokeObjectURL(url); });
+    setPrintingId(id);
+    try {
+      const blob = await payslipService.download(id);
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url);
+      win?.addEventListener("load", () => { win.print(); URL.revokeObjectURL(url); });
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setPrintingId(null);
+    }
   };
 
   const handleSendBulk = () => {
     sendBulk.mutate({ month, year }, {
-      onSuccess: (res) => {
-        toast.success(`Sent: ${res.sent} / ${res.total}`);
-      },
+      onSuccess: (res) => toast.success(`Sent: ${res.sent} / ${res.total}`),
+      onError: (e) => toast.error(getErrorMessage(e)),
     });
   };
 
@@ -73,23 +92,33 @@ export default function PayslipsPage() {
       render: (r) => (
         <div className="flex gap-1">
           {canAction("hrms", "payslips", "download") && (
-            <button onClick={() => handleDownload(r.id)} className="rounded p-1 text-gray-900 hover:bg-indigo-50" title="Download PDF">
-              <Download className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={Download}
+              title="Download PDF"
+              loading={downloadingId === r.id}
+              onClick={() => handleDownload(r.id)}
+            />
           )}
           {canAction("hrms", "payslips", "print") && (
-            <button onClick={() => handlePrint(r.id)} className="rounded p-1 text-violet-600 hover:bg-violet-50" title="Print Payslip">
-              <Printer className="h-4 w-4" />
-            </button>
+            <IconButton
+              icon={Printer}
+              title="Print Payslip"
+              variant="info"
+              loading={printingId === r.id}
+              onClick={() => handlePrint(r.id)}
+            />
           )}
           {canAction("hrms", "payslips", "send") && (
-            <button
-              onClick={() => sendPayslip.mutate(r.id, { onSuccess: () => toast.success("Payslip sent") })}
-              className="rounded p-1 text-sky-600 hover:bg-sky-50"
+            <IconButton
+              icon={Mail}
               title="Send Payslip"
-            >
-              <Mail className="h-4 w-4" />
-            </button>
+              variant="info"
+              loading={sendPayslip.isPending && sendPayslip.variables === r.id}
+              onClick={() => sendPayslip.mutate(r.id, {
+                onSuccess: () => toast.success("Payslip sent"),
+                onError: (e) => toast.error(getErrorMessage(e)),
+              })}
+            />
           )}
         </div>
       ),
@@ -104,9 +133,9 @@ export default function PayslipsPage() {
         subtitle="View, download, and email payslips"
         actions={
           <CanAccess module="hrms" page="payslips" action="send">
-            <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <Button onClick={handleSendBulk} loading={sendBulk.isPending}>
               <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
-            </button>
+            </Button>
           </CanAccess>
         }
       />
