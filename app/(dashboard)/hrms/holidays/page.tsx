@@ -24,8 +24,13 @@ const MONTHS = [
 ];
 
 export default function PublicHolidaysPage() {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  const nowParts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Dubai",
+  }).formatToParts(new Date());
+  const currentYear = Number(nowParts.find((p) => p.type === "year")?.value ?? new Date().getFullYear());
+  const currentMonth = Number(nowParts.find((p) => p.type === "month")?.value ?? new Date().getMonth() + 1);
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
   const { data, isLoading } = useHolidayList(year);

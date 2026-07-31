@@ -13,14 +13,13 @@ import { AccessGuard } from "@/components/shared/Guards";
 import type { AttendanceRecord, UserRole } from "@/types";
 
 function todayISO(): string {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Dubai" });
 }
 
 function shiftDate(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00");
   d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  return d.toLocaleDateString("en-CA", { timeZone: "Asia/Dubai" });
 }
 
 export default function CheckInOutPage() {

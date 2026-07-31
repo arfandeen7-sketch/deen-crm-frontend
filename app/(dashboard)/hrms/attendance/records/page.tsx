@@ -32,8 +32,13 @@ export default function AttendanceRecordsPage() {
 
   const { data: employees } = useEmployeeList({ page: 1, pageSize: 100 });
 
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  const nowParts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Dubai",
+  }).formatToParts(new Date());
+  const currentMonth = Number(nowParts.find((p) => p.type === "month")?.value ?? new Date().getMonth() + 1);
+  const currentYear = Number(nowParts.find((p) => p.type === "year")?.value ?? new Date().getFullYear());
   const { data: summary } = useAttendanceUserSummary(
     selectedUserId || "",
     { month: currentMonth, year: currentYear }
@@ -48,7 +53,7 @@ export default function AttendanceRecordsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `attendance_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+    a.download = `attendance_export_${new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Dubai" })}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
   };

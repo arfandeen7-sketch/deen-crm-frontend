@@ -22,9 +22,13 @@ import { getErrorMessage } from "@/services/api/client";
 import type { Holiday } from "@/types";
 
 export default function LeaveCalendarPage() {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const nowParts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Dubai",
+  }).formatToParts(new Date());
+  const [year, setYear] = useState(Number(nowParts.find((p) => p.type === "year")?.value ?? new Date().getFullYear()));
+  const [month, setMonth] = useState(Number(nowParts.find((p) => p.type === "month")?.value ?? new Date().getMonth() + 1));
 
   // Holiday management state
   const [holidayModalOpen, setHolidayModalOpen] = useState(false);

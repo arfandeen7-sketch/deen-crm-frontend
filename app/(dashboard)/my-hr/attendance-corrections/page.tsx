@@ -41,6 +41,7 @@ function formatTime(value?: string | null): string {
   return new Date(value).toLocaleTimeString("en-AE", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Dubai",
   });
 }
 

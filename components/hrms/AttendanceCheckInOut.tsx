@@ -75,7 +75,7 @@ export function AttendanceCheckInOut() {
               <div>
                 <p className="text-sm font-medium text-slate-700">Checked In</p>
                 <p className="text-lg font-semibold text-emerald-600">
-                  {new Date(today!.checkInTime!).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(today!.checkInTime!).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dubai" })}
                 </p>
               </div>
             ) : (
@@ -96,7 +96,7 @@ export function AttendanceCheckInOut() {
               <div>
                 <p className="text-sm font-medium text-slate-700">Checked Out</p>
                 <p className="text-lg font-semibold text-rose-600">
-                  {new Date(today!.checkOutTime!).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(today!.checkOutTime!).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dubai" })}
                 </p>
               </div>
             ) : hasCheckedIn ? (

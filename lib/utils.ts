@@ -15,6 +15,7 @@ export function formatDate(value?: string | null): string {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Dubai",
   });
 }
 
@@ -27,7 +28,16 @@ export function toDatetimeLocal(value?: string | null): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Dubai",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
 /** Format an ISO date string with time. */
@@ -41,6 +51,7 @@ export function formatDateTime(value?: string | null): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Dubai",
   });
 }
 

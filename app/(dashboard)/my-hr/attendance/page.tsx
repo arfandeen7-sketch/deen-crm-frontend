@@ -19,12 +19,18 @@ import type { AttendanceRecord } from "@/types";
 export default function MyAttendancePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const now = new Date();
+  const nowParts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Dubai",
+  }).formatToParts(new Date());
+  const currentMonth = Number(nowParts.find((p) => p.type === "month")?.value ?? new Date().getMonth() + 1);
+  const currentYear = Number(nowParts.find((p) => p.type === "year")?.value ?? new Date().getFullYear());
 
   const { user } = useAuth();
   const { canModule } = usePermissions();
   const { data, isLoading } = useMyAttendance({ page, pageSize });
-  const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: now.getMonth() + 1, year: now.getFullYear() }, canModule("hrms"));
+  const { data: summary } = useAttendanceUserSummary(user?.id ?? "", { month: currentMonth, year: currentYear }, canModule("hrms"));
 
   const formatHours = (value: AttendanceRecord["totalWorkingHours"]) => {
     if (value === null || value === undefined) return "—";
@@ -35,8 +41,8 @@ export default function MyAttendancePage() {
 
   const columns: Column<AttendanceRecord>[] = [
     { key: "date", header: "Date", render: (r) => formatDate(r.date) },
-    { key: "checkIn", header: "Check In", render: (r) => r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
-    { key: "checkOut", header: "Check Out", render: (r) => r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit" }) : "—" },
+    { key: "checkIn", header: "Check In", render: (r) => r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dubai" }) : "—" },
+    { key: "checkOut", header: "Check Out", render: (r) => r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString("en-AE", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dubai" }) : "—" },
     { key: "hours", header: "Hours", render: (r) => formatHours(r.totalWorkingHours) },
     { key: "status", header: "Status", render: (r) => <Badge className={ATTENDANCE_STATUS_COLORS[r.status]}>{r.status.replace("_", " ")}</Badge> },
     {
