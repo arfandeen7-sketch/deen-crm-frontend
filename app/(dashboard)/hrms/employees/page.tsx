@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, Edit, Plus, Search } from "lucide-react";
 import { useEmployeeList } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
@@ -51,6 +51,23 @@ export default function EmployeesPage() {
         const s = u.employmentStatus || "active";
         return <Badge className={EMPLOYMENT_STATUS_COLORS[s]}>{s.replace("_", " ")}</Badge>;
       },
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      stickyRight: true,
+      render: (u) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/hrms/employees/${u.id}/edit`);
+          }}
+          className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          title="Edit employee"
+        >
+          <Edit className="h-3.5 w-3.5" /> Edit
+        </button>
+      ),
     },
   ];
 

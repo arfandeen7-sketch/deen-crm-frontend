@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Mail, Send, PlayCircle } from "lucide-react";
+import { Download, Send, PlayCircle } from "lucide-react";
 import { usePayslipList, useCalculatePayroll, useSendPayslip, useSendBulkPayslips, useRunMonthlyPayroll } from "@/hooks/useHrms";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
@@ -46,6 +46,13 @@ export default function PayrollManagementPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSendPayslip = (id: string) => {
+    sendPayslip.mutate(id, {
+      onSuccess: () => toast.success("Payslip sent"),
+      onError: () => toast.error("Failed to send payslip"),
+    });
+  };
+
   const handleSendBulk = () => {
     sendBulk.mutate({ month, year }, {
       onSuccess: (res) => toast.success(`Sent: ${res.sent} / ${res.total}`),
@@ -85,11 +92,12 @@ export default function PayrollManagementPage() {
             <Download className="h-4 w-4" />
           </button>
           <button
-            onClick={() => sendPayslip.mutate(r.id, { onSuccess: () => toast.success("Payslip sent") })}
-            className="rounded p-1 text-sky-600 hover:bg-sky-50"
-            title="Send"
+            onClick={() => handleSendPayslip(r.id)}
+            disabled={sendPayslip.isPending && sendPayslip.variables === r.id}
+            className="flex items-center gap-1 rounded-md border border-sky-300 px-2 py-1 text-xs font-medium text-sky-700 hover:bg-sky-50 disabled:opacity-50"
+            title="Send individual payslip"
           >
-            <Mail className="h-4 w-4" />
+            <Send className="h-3.5 w-3.5" /> Send
           </button>
         </div>
       ),
@@ -110,9 +118,9 @@ export default function PayrollManagementPage() {
             <button onClick={handleSendBulk} disabled={sendBulk.isPending} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
               <Send className="h-4 w-4" /> Send Bulk ({month}/{year})
             </button>
-            <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            {/* <button onClick={handleCalculate} disabled={calculate.isPending} className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               Calculate Payslip
-            </button>
+            </button> */}
           </div>
         }
       />
