@@ -579,6 +579,32 @@ export interface Payslip {
   user?: Pick<User, "id" | "fullName" | "department" | "designation" | "employeeId" | "bankName" | "bankAccountNumber"> | null;
 }
 
+// ── HRMS: Payroll Preview Figures ─────────────────────────────────────────────
+// Computed (not persisted) salary figures for one employee for a month.
+// Mirrors `PayrollFigures` in deen-crm-backend/src/services/hrms/payroll.service.ts.
+
+export interface PayrollFigures {
+  userId: string;
+  fullName: string;
+  employeeId: string | null;
+  department: string | null;
+  designation: string | null;
+  bankName: string | null;
+  bankIban: string | null;
+  month: number;
+  year: number;
+  basicSalary: number;
+  allowances: number;
+  presentDays: number;
+  halfDays: number;
+  approvedLeaveDays: number;
+  unpaidLeaveDays: number;
+  workingDaysInMonth: number;
+  overtimeAmount: number;
+  deductions: number;
+  netSalary: number;
+}
+
 // ── HRMS: Email Configuration ────────────────────────────────────────────────
 
 export interface SmtpConfig {
@@ -932,7 +958,7 @@ export interface AssignmentNotificationLead {
 
 export interface AppNotification {
   id: string;
-  type: "assignment" | "followup" | "system" | "leave" | "regularization";
+  type: "assignment" | "followup" | "system" | "leave" | "regularization" | "payslip";
   title: string;
   body: string | null;
   leadId: string | null;

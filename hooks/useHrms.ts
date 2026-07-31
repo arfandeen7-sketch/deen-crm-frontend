@@ -368,7 +368,7 @@ export function useAllocateLeave() {
 
 export function usePayrollPreview(params: PayrollPreviewParams, enabled = true) {
   return useQuery({
-    queryKey: ["payroll", "preview", params],
+    queryKey: ["payroll", "preview", params.month, params.year, params.userId ?? "all", params.overtimeAmount ?? 0],
     queryFn: () => payrollService.preview(params),
     enabled,
   });

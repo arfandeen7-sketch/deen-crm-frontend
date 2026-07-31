@@ -27,6 +27,7 @@ import {
   PieChart,
   Plug,
   Activity,
+  Calculator,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -129,6 +130,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Leave Types", href: "/hrms/leave-types", icon: SlidersHorizontal, navAccess: { module: "hrms", page: "leave_types" } },
       { label: "Public Holidays", href: "/hrms/holidays", icon: CalendarX, navAccess: { module: "hrms", page: "leave_holidays" } },
       { label: "Payroll Management", href: "/hrms/payroll", icon: Wallet, navAccess: { module: "hrms", page: "payroll" } },
+      { label: "Payroll Preview", href: "/hrms/payroll/preview", icon: Calculator, navAccess: { module: "hrms", page: "payroll" } },
       { label: "Payslips", href: "/hrms/payslips", icon: FileText, navAccess: { module: "hrms", page: "payslips" } },
       { label: "HR Reports", href: "/hrms/reports", icon: PieChart, navAccess: { module: "hrms", page: "login_activity" } },
     ],

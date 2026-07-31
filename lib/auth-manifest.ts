@@ -79,6 +79,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/hrms/leave-types": { type: "permission", requirement: { module: "hrms", page: "leave_types", action: "view" } },
   "/hrms/holidays": { type: "permission", requirement: { module: "hrms", page: "leave_holidays", action: "view" } },
   "/hrms/payroll": { type: "permission", requirement: { module: "hrms", page: "payroll", action: "view" } },
+  "/hrms/payroll/preview": { type: "permission", requirement: { module: "hrms", page: "payroll", action: "view" } },
   "/hrms/payslips": { type: "permission", requirement: { module: "hrms", page: "payslips", action: "view" } },
   "/hrms/email-config": { type: "permission", requirement: { module: "hrms", page: "employees", action: "edit" } },
   "/hrms/login-activity": { type: "permission", requirement: { module: "hrms", page: "login_activity", action: "view" } },
