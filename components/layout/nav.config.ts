@@ -155,7 +155,7 @@ export const NAV_GROUPS: NavGroup[] = [
     section: "GENERAL",
     hideForMaster: true,
     items: [
-      { label: "My Team", href: "/my-team", icon: Users2 },
+      { label: "My Team", href: "/my-team", icon: Users2, navAccess: { module: "users", page: "teams" } },
     ],
   },
   {

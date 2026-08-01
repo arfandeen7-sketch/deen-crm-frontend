@@ -194,7 +194,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 (!item.masterOnly || isMaster) &&
                 checkNavAccess(canModule, canPage, canAction, item.navAccess)
             );
-            return visibleItems.length > 0 || group.isSingular;
+            return visibleItems.length > 0;
           });
 
           if (visibleGroups.length === 0) return null;

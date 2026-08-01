@@ -29,7 +29,13 @@ export function useUsers() {
 /** Lightweight list of assignable users for dropdowns. */
 export function useAssignableUsers() {
   const { role, user, canAction } = useAuth();
-  const enabled = canAction("leads", "all_leads", "assign");
+  // The backend GET /api/users/assignable requires users/all_users/view.
+  // Only fire that query when the user has BOTH lead-assign AND user-list
+  // permission; otherwise rely on the team-members fallback below so we
+  // don't trigger a 403 (which the API interceptor hard-redirects from
+  // protected routes like /leads).
+  const canAssignLeads = canAction("leads", "all_leads", "assign");
+  const enabled = canAssignLeads && canAction("users", "all_users", "view");
   const query = useQuery<AssignableUser[]>({
     queryKey: ["users", "assignable"],
     queryFn: () => usersService.assignable(),
@@ -46,11 +52,11 @@ export function useAssignableUsers() {
   const teamQuery = useQuery({
     queryKey: ["teams", "my-team"],
     queryFn: () => teamsService.getMyTeam(),
-    enabled: enabled && role === "sales_manager",
+    enabled: canAssignLeads && role === "sales_manager",
   });
 
   const fallbackUsers = useMemo<AssignableUser[]>(() => {
-    if (!enabled || !user) return [];
+    if (!canAssignLeads || !user) return [];
     const unique = new Map<string, AssignableUser>();
 
     // Always include the current user (manager sees themselves)
@@ -81,7 +87,7 @@ export function useAssignableUsers() {
     }
 
     return Array.from(unique.values());
-  }, [enabled, role, user, teamQuery.data]);
+  }, [canAssignLeads, role, user, teamQuery.data]);
 
   const hasRemoteData = Array.isArray(query.data) && query.data.length > 0;
   const users = hasRemoteData ? (query.data as AssignableUser[]) : fallbackUsers;
