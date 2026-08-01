@@ -29,11 +29,22 @@ export function useUsers() {
 /** Lightweight list of assignable users for dropdowns. */
 export function useAssignableUsers() {
   const { role, user, canAction } = useAuth();
-  const enabled = canAction("leads", "all_leads", "assign");
+  // Whether the user needs the assignable-users list at all (i.e. they can
+  // assign leads). Sales executives typically cannot, so the hook stays idle.
+  const canAssignLeads = canAction("leads", "all_leads", "assign");
+  // The backend `GET /api/users/assignable` route is gated on
+  // `users:all_users:view`. Sales managers only have `users:teams:view`, so
+  // calling that endpoint would return 403 — which the global axios 403
+  // interceptor turns into a redirect away from the page (e.g. /leads →
+  // /dashboard/overview). Only fire the remote query when the user actually
+  // has permission to list all users; otherwise rely on the team fallback.
+  const canListAllUsers = canAction("users", "all_users", "view");
+  const remoteEnabled = canAssignLeads && canListAllUsers;
+
   const query = useQuery<AssignableUser[]>({
     queryKey: ["users", "assignable"],
     queryFn: () => usersService.assignable(),
-    enabled,
+    enabled: remoteEnabled,
     retry: (failCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status;
       if (status === 403 || status === 404) return false;
@@ -42,15 +53,16 @@ export function useAssignableUsers() {
   });
 
   // For sales managers, fetch team members via /teams/my-team as a fallback
-  // when /users/assignable returns an empty list (e.g. backend bug or missing data).
+  // when /users/assignable is not permitted (or returns an empty list).
+  // /teams/my-team is gated on `users:teams:view`, which sales managers have.
   const teamQuery = useQuery({
     queryKey: ["teams", "my-team"],
     queryFn: () => teamsService.getMyTeam(),
-    enabled: enabled && role === "sales_manager",
+    enabled: canAssignLeads && role === "sales_manager",
   });
 
   const fallbackUsers = useMemo<AssignableUser[]>(() => {
-    if (!enabled || !user) return [];
+    if (!canAssignLeads || !user) return [];
     const unique = new Map<string, AssignableUser>();
 
     // Always include the current user (manager sees themselves)
@@ -81,7 +93,7 @@ export function useAssignableUsers() {
     }
 
     return Array.from(unique.values());
-  }, [enabled, role, user, teamQuery.data]);
+  }, [canAssignLeads, role, user, teamQuery.data]);
 
   const hasRemoteData = Array.isArray(query.data) && query.data.length > 0;
   const users = hasRemoteData ? (query.data as AssignableUser[]) : fallbackUsers;
