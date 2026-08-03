@@ -5,6 +5,21 @@ const optionalString = z
   .optional()
   .transform((v) => (v === "" ? undefined : v));
 
+// "Unassigned" (the empty dropdown option) must serialize to `null`, NOT
+// `undefined`. `undefined` keys are dropped by JSON.stringify, so the backend
+// cannot distinguish "unassign" from "field not sent" — the lead would stay
+// assigned. `null` is an explicit, serializable "clear this field" signal.
+//
+// Uses `.nullable()` (not `.optional()`) so the input and output types are
+// both `string | null` — this keeps react-hook-form's zodResolver happy
+// (input type must match output type when re-parsing in onSubmit).
+const assignedToSchema = z
+  .string()
+  .uuid()
+  .nullable()
+  .or(z.literal(""))
+  .transform((v) => (v === "" ? null : v));
+
 export const leadSchema = z.object({
   leadName: z.string().min(1, "Lead name is required"),
   mobileNumber: z
@@ -23,7 +38,7 @@ export const leadSchema = z.object({
   serviceType: z.string().min(1, "Service type is required"),
   leadStatus: z.string().min(1, "Status is required"),
   leadPriority: optionalString,
-  assignedTo: optionalString,
+  assignedTo: assignedToSchema,
   brokerId: optionalString,
   followUpDate: optionalString,
   city: optionalString,

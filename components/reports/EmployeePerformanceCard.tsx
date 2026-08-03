@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Bell, ClipboardList, Eye, PhoneCall, Star, Tag, UserPlus2 } from "lucide-react";
+import { AlertTriangle, Bell, ClipboardList, Eye, PhoneCall, Star, Tag, UserMinus2, UserPlus2 } from "lucide-react";
 import { cn, timeAgo } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
@@ -16,6 +16,7 @@ const ACTIVITY_ICONS: Record<LeadActivityAction, typeof Tag> = {
   comment_added: ClipboardList,
   followup_scheduled: PhoneCall,
   assigned: UserPlus2,
+  unassigned: UserMinus2,
   field_updated: ClipboardList,
   imported: ClipboardList,
   viewed: Eye,

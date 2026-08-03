@@ -56,6 +56,7 @@ export function AssignmentHistoryModal({
           <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-200" />
           {history.map((entry: AssignmentHistoryEntry, idx: number) => {
             const isLatest = idx === 0;
+            const isUnassign = entry.action === "unassigned";
             const assigner = entry.assignedBy?.name ?? "Unknown";
             const assignee = entry.assignedTo?.name ?? "Unknown";
             return (
@@ -64,17 +65,35 @@ export function AssignmentHistoryModal({
                 <div
                   className={`relative z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 ${
                     isLatest
-                      ? "border-blue-500 bg-blue-500"
-                      : "border-slate-300 bg-white"
+                      ? isUnassign
+                        ? "border-rose-500 bg-rose-500"
+                        : "border-blue-500 bg-blue-500"
+                      : isUnassign
+                        ? "border-rose-300 bg-white"
+                        : "border-slate-300 bg-white"
                   }`}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium text-slate-800">
-                      {assigner} <span className="text-slate-400">→</span> {assignee}
+                      {isUnassign ? (
+                        <>
+                          {assigner} <span className="text-rose-400">unassigned</span> {assignee}
+                        </>
+                      ) : (
+                        <>
+                          {assigner} <span className="text-slate-400">→</span> {assignee}
+                        </>
+                      )}
                     </p>
                     {isLatest && (
-                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-600">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                          isUnassign
+                            ? "bg-rose-50 text-rose-600"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
                         Latest
                       </span>
                     )}

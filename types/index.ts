@@ -939,6 +939,7 @@ export type LeadActivityAction =
   | "comment_added"
   | "followup_scheduled"
   | "assigned"
+  | "unassigned"
   | "field_updated"
   | "imported"
   | "viewed";
@@ -966,6 +967,8 @@ export interface AssignmentHistoryUser {
 
 export interface AssignmentHistoryEntry {
   id: string;
+  /** "assigned" = assigned/reassigned to a user; "unassigned" = cleared. */
+  action: "assigned" | "unassigned";
   assignedBy: AssignmentHistoryUser | null;
   assignedTo: AssignmentHistoryUser | null;
   assignedAt: string;
