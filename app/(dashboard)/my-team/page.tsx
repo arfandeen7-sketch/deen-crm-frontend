@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { TeamMemberCard } from "@/components/teams/TeamMemberCard";
 import { useMyTeam } from "@/hooks/useTeams";
 import { useAuth } from "@/hooks/useAuth";
+import { AccessGuard } from "@/components/shared/Guards";
 import { Skeleton, LoadingState } from "@/components/ui/States";
 
 export default function MyTeamPage() {
@@ -57,6 +58,7 @@ export default function MyTeamPage() {
   }
 
   return (
+    <AccessGuard module="users" page="teams" action="view">
     <div className="space-y-5">
       <PageHeader
         title="My Team"
@@ -110,6 +112,7 @@ export default function MyTeamPage() {
         </div>
       )}
     </div>
+    </AccessGuard>
   );
 }
 
