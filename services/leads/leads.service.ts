@@ -7,6 +7,8 @@ import {
 } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
+  ImportMapping,
+  ImportParseResult,
   ImportResult,
   Lead,
   LeadQueryParams,
@@ -45,9 +47,10 @@ export const leadsService = {
     return postData<{ matched: number; updated: number }>("/leads/bulk-status", { leadIds, status });
   },
 
-  async import(file: File): Promise<ImportResult> {
+  async import(file: File, mapping?: ImportMapping): Promise<ImportResult> {
     const form = new FormData();
     form.append("file", file);
+    if (mapping) form.append("mapping", JSON.stringify(mapping));
     const res = await api.post<{ data: ImportResult } | ImportResult>(
       "/leads/import",
       form,
@@ -56,6 +59,18 @@ export const leadsService = {
     // Backend returns the structured report; support both envelope styles.
     const body = res.data as { data?: ImportResult } & Partial<ImportResult>;
     return (body.data ?? body) as ImportResult;
+  },
+
+  /** Step 1 of the mapping wizard: parse the file and return headers + preview. */
+  async parseImport(file: File): Promise<ImportParseResult> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await api.post<{ data: ImportParseResult }>(
+      "/leads/import/parse",
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data.data;
   },
 
   async export(params: LeadQueryParams = {}): Promise<Blob> {

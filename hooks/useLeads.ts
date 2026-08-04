@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { leadsService, type LeadInput } from "@/services/leads/leads.service";
-import type { LeadQueryParams } from "@/types";
+import type { ImportMapping, LeadQueryParams } from "@/types";
 import { POLL_FAST } from "@/constants";
 import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
 import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
@@ -102,9 +102,14 @@ export function useLeadMutations() {
   });
 
   const importLeads = useMutation({
-    mutationFn: (file: File) => leadsService.import(file),
+    mutationFn: ({ file, mapping }: { file: File; mapping?: ImportMapping }) =>
+      leadsService.import(file, mapping),
     onSuccess: invalidate,
   });
 
-  return { create, update, remove, bulkAssign, bulkStatus, importLeads };
+  const parseImport = useMutation({
+    mutationFn: (file: File) => leadsService.parseImport(file),
+  });
+
+  return { create, update, remove, bulkAssign, bulkStatus, importLeads, parseImport };
 }

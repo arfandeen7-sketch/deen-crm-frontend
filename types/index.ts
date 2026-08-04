@@ -765,6 +765,23 @@ export interface ImportResult {
   errors: { row: number; reason: string }[];
 }
 
+/** A system field the user can map a CSV column to. */
+export interface ImportSystemField {
+  key: string;
+  label: string;
+  required: boolean;
+}
+
+/** Response from POST /leads/import/parse — step 1 of the mapping wizard. */
+export interface ImportParseResult {
+  headers: string[];
+  previewRows: Record<string, string>[];
+  systemFields: ImportSystemField[];
+}
+
+/** Mapping of CSV header name -> system field key (or "" for unmapped). */
+export type ImportMapping = Record<string, string>;
+
 export interface UsersListResponse {
   users: User[];
   roleCounts: Record<UserRole, number>;

@@ -17,7 +17,6 @@ import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
-import { ImportLeadsModal } from "@/components/leads/ImportLeadsModal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
@@ -53,7 +52,6 @@ function LeadsPageContent() {
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
 
   const rows = data?.data ?? [];
 
@@ -312,7 +310,7 @@ function LeadsPageContent() {
               </Button>
             </CanAccess>
             <CanAccess module="leads" page="all_leads" action="import">
-              <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Button variant="outline" onClick={() => router.push("/leads/import")}>
                 <Upload className="h-4 w-4" /> Import
               </Button>
             </CanAccess>
@@ -357,8 +355,6 @@ function LeadsPageContent() {
           onPageSizeChange={(s) => setFilter("pageSize", s)}
         />
       )}
-
-      <ImportLeadsModal open={importOpen} onClose={() => setImportOpen(false)} />
 
       <ConfirmModal
         open={!!deleteId}
