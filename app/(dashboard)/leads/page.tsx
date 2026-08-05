@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, Calendar } from "lucide-react";
+import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, Calendar, History } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +17,7 @@ import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
+import { AssignmentHistoryModal } from "@/components/leads/AssignmentHistoryModal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
@@ -52,6 +53,7 @@ function LeadsPageContent() {
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [historyLead, setHistoryLead] = useState<{ id: string; name: string } | null>(null);
 
   const rows = data?.data ?? [];
 
@@ -131,6 +133,59 @@ function LeadsPageContent() {
         ) : (
           <span className="text-xs text-slate-400">Unassigned</span>
         ),
+    },
+    {
+      key: "assignmentHistory",
+      header: "Assignment History",
+      render: (l) => {
+        // Shows the latest assignment ("Assigner → Assignee") with a
+        // "(+N more)" indicator. Clicking the history icon opens a modal
+        // with the complete assignment timeline (newest first).
+        // Reuses LeadActivity (action='assigned') as the permanent audit trail.
+        const hasAssignment = l.assignedByUser || l.assignedUser || l.assignedAt;
+        if (!hasAssignment) return <Dash />;
+
+        const assigner = l.assignedByUser?.fullName;
+        const assignee = l.assignedUser?.fullName;
+        const flow = assigner && assignee
+          ? `${assigner} → ${assignee}`
+          : assigner ?? assignee ?? null;
+        if (!flow) return <Dash />;
+
+        const moreCount = Math.max(0, (l.assignmentCount ?? 0) - 1);
+
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium text-slate-800 truncate">{flow}</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHistoryLead({ id: l.id, name: `${l.leadName}${l.lastName ? ` ${l.lastName}` : ""}` });
+                }}
+                className="shrink-0 rounded p-0.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                title="View assignment history"
+              >
+                <History className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            {l.assignedAt && (
+              <p className="text-xs text-slate-400">{formatDateTime(l.assignedAt)}</p>
+            )}
+            {moreCount > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setHistoryLead({ id: l.id, name: `${l.leadName}${l.lastName ? ` ${l.lastName}` : ""}` });
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+              >
+                (+{moreCount} more)
+              </button>
+            )}
+          </div>
+        );
+      },
     },
     { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
     {
@@ -356,6 +411,12 @@ function LeadsPageContent() {
         />
       )}
 
+      <AssignmentHistoryModal
+        leadId={historyLead?.id ?? null}
+        leadName={historyLead?.name}
+        open={!!historyLead}
+        onClose={() => setHistoryLead(null)}
+      />
       <ConfirmModal
         open={!!deleteId}
         onClose={() => setDeleteId(null)}

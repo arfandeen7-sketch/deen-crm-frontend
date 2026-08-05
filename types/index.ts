@@ -184,9 +184,16 @@ export interface Lead {
   leadStatus: string;
   leadPriority?: string | null;
   assignedTo?: string | null;
+  // assignedBy = user who performed the latest assignment (the assigner).
+  // assignedAt = timestamp of the latest assignment. Independent from createdBy.
+  assignedBy?: string | null;
+  assignedAt?: string | null;
   brokerId?: string | null;
   isImported: boolean;
   isTouched: boolean;
+  // Total number of assignment events recorded in LeadActivity (action='assigned').
+  // Powers the "(+N more)" indicator in the Assignment History column.
+  assignmentCount?: number;
   createdBy: string;
   ingestionSource: LeadIngestionSource;
   externalLeadId?: string | null;
@@ -194,6 +201,7 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   assignedUser?: Pick<User, "id" | "fullName"> | null;
+  assignedByUser?: Pick<User, "id" | "fullName"> | null;
   creator?: Pick<User, "id" | "fullName"> | null;
   broker?: Pick<Broker, "id" | "brokerName"> | null;
   statusHistory?: LeadStatusHistory[];
@@ -948,6 +956,7 @@ export type LeadActivityAction =
   | "comment_added"
   | "followup_scheduled"
   | "assigned"
+  | "unassigned"
   | "field_updated"
   | "imported"
   | "viewed";
@@ -960,6 +969,33 @@ export interface LeadActivity {
   metadata: Record<string, unknown>;
   createdAt: string;
   actor?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Assignment History ───────────────────────────────────────────────────────
+// Reuses LeadActivity (action = 'assigned') as the permanent audit trail.
+// Each entry represents one assignment/reassignment event in the chain.
+
+export type AssignmentType = "manual" | "bulk" | "created" | "imported";
+
+export interface AssignmentHistoryUser {
+  id: string;
+  name: string;
+}
+
+export interface AssignmentHistoryEntry {
+  id: string;
+  /** "assigned" = assigned/reassigned to a user; "unassigned" = cleared. */
+  action: "assigned" | "unassigned";
+  assignedBy: AssignmentHistoryUser | null;
+  assignedTo: AssignmentHistoryUser | null;
+  assignedAt: string;
+  type: AssignmentType;
+}
+
+export interface AssignmentHistoryResponse {
+  leadId: string;
+  count: number;
+  history: AssignmentHistoryEntry[];
 }
 
 // ── App Notifications ────────────────────────────────────────────────────────

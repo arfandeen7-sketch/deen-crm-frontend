@@ -17,3 +17,19 @@ export function useLeadActivity(leadId: string) {
     retry: retrySkipAuth,
   });
 }
+
+/**
+ * Fetches the complete assignment chain for a lead (newest first).
+ * Lazy — only fires when `enabled` is true (typically on modal open).
+ * Reuses the same permission gate as lead detail.
+ */
+export function useAssignmentHistory(leadId: string | null, enabled = true) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["leads:detail"]);
+  const queryEnabled = !!leadId && hasPermission && enabled;
+  return useQuery({
+    queryKey: ["assignment-history", leadId],
+    queryFn: () => activityService.assignmentHistory(leadId!),
+    enabled: queryEnabled,
+    retry: retrySkipAuth,
+  });
+}

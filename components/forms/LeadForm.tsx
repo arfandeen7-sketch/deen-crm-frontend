@@ -168,7 +168,10 @@ export function LeadForm({
                 control={control}
                 name="assignedTo"
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select
+                    {...field}
+                    value={field.value ?? ""}
+                  >
                     <option value="">Unassigned</option>
                     {users.map((u) => (
                       <option key={u.id} value={u.id}>{u.fullName}</option>
