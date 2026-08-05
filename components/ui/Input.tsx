@@ -63,6 +63,8 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   placeholder?: string;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, invalid, children, value, defaultValue, onChange, placeholder, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -171,11 +173,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     // Determine active display label.
     // When internalValue is non-empty but the matching option hasn't loaded yet
     // (e.g. async manager list), fall back to placeholder rather than options[0]
-    // so we never show a misleading "first option" label.
+    // so we never show a misleading "first option" label. Showing the raw value
+    // is a reasonable fallback for value-is-label selects (status, source), but
+    // not when the value is an opaque id such as a user uuid.
     const selectedOption = options.find((opt) => opt.value === internalValue);
+    const valueIsOpaqueId = UUID_PATTERN.test(internalValue);
     const displayLabel = selectedOption
       ? selectedOption.label
-      : internalValue
+      : internalValue && !valueIsOpaqueId
         ? internalValue
         : (placeholder || "");
 

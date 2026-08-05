@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { leadSchema, type LeadFormValues } from "@/schemas/lead.schema";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAssignableUsers } from "@/hooks/useUsers";
+import { useAuth } from "@/hooks/useAuth";
 import { useBrokerOptions } from "@/hooks/useBrokers";
 import { SERVICE_TYPES } from "@/constants";
 import { toDatetimeLocal } from "@/lib/utils";
@@ -32,6 +34,34 @@ export function LeadForm({
   const configurations = useFieldOptions("configuration");
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
+  const { user, role } = useAuth();
+
+  // Executives and managers can only work leads assigned to them, so the ones
+  // they create default to themselves instead of "Unassigned". The backend
+  // applies the same rule, this just keeps the form honest about it.
+  const selfAssign = !initial && (role === "sales_executive" || role === "sales_manager");
+  // Executives never hand a lead to someone else — they see who owns it, but
+  // reassignment is a manager/master action.
+  const assigneeLocked = role === "sales_executive";
+
+  // The assignee dropdown only lists users the current role is allowed to
+  // assign to, which for an executive is nobody. Without the lead's own
+  // assignee in that list the Select has no option matching its value and
+  // renders the raw user id, so seed the list with the people we already know.
+  const assignableUsers = useMemo(() => {
+    const byId = new Map<string, { id: string; fullName: string }>();
+    if (initial?.assignedUser) {
+      byId.set(initial.assignedUser.id, {
+        id: initial.assignedUser.id,
+        fullName: initial.assignedUser.fullName,
+      });
+    }
+    if (user && (selfAssign || assigneeLocked)) {
+      byId.set(user.id, { id: user.id, fullName: user.fullName });
+    }
+    users.forEach((u) => byId.set(u.id, { id: u.id, fullName: u.fullName }));
+    return Array.from(byId.values());
+  }, [initial?.assignedUser, user, selfAssign, assigneeLocked, users]);
 
   const {
     register,
@@ -50,7 +80,7 @@ export function LeadForm({
       serviceType: initial?.serviceType ?? "Buy",
       leadStatus: initial?.leadStatus ?? "Fresh",
       leadPriority: initial?.leadPriority ?? "",
-      assignedTo: initial?.assignedTo ?? "",
+      assignedTo: initial?.assignedTo ?? (selfAssign ? user?.id ?? "" : ""),
       brokerId: initial?.brokerId ?? "",
       followUpDate: toDatetimeLocal(initial?.followUpDate),
       city: initial?.city ?? "",
@@ -163,7 +193,11 @@ export function LeadForm({
             <Field label="Follow Up Date &amp; Time" error={errors.followUpDate?.message}>
               <Input type="datetime-local" {...register("followUpDate")} />
             </Field>
-            <Field label="Assigned User" error={errors.assignedTo?.message}>
+            <Field
+              label="Assigned User"
+              error={errors.assignedTo?.message}
+              hint={assigneeLocked ? "Only a manager can reassign this lead" : undefined}
+            >
               <Controller
                 control={control}
                 name="assignedTo"
@@ -171,10 +205,14 @@ export function LeadForm({
                   <Select
                     {...field}
                     value={field.value ?? ""}
+                    disabled={assigneeLocked}
+                    placeholder="Unassigned"
                   >
-                    <option value="">Unassigned</option>
-                    {users.map((u) => (
-                      <option key={u.id} value={u.id}>{u.fullName}</option>
+                    {!selfAssign && <option value="">Unassigned</option>}
+                    {assignableUsers.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.id === user?.id ? `${u.fullName} (me)` : u.fullName}
+                      </option>
                     ))}
                   </Select>
                 )}
