@@ -35,7 +35,7 @@ import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useLeadActivity } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
-import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency } from "@/lib/utils";
+import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection";
 
 function InfoRow({
@@ -47,12 +47,16 @@ function InfoRow({
   label: string;
   value?: React.ReactNode;
 }) {
+  const rendered =
+    typeof value === "string" || typeof value === "number" || value == null
+      ? displayValue(value as string | number | null | undefined)
+      : value;
   return (
     <div className="flex items-start gap-3 py-2">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
       <div className="min-w-0">
         <p className="text-xs text-slate-500">{label}</p>
-        <p className="text-sm text-slate-800">{value ?? "—"}</p>
+        <p className="text-sm text-slate-800">{rendered}</p>
       </div>
     </div>
   );
@@ -95,8 +99,8 @@ function LeadDetailPageContent() {
       </Link>
 
       <PageHeader
-        title={`${lead.leadName}${lead.lastName ? ` ${lead.lastName}` : ""}`}
-        subtitle={`${lead.source} · ${lead.serviceType}`}
+        title={`${displayValue(lead.leadName)}${!isEmptyDisplayValue(lead.lastName) ? ` ${lead.lastName}` : ""}`}
+        subtitle={`${displayValue(lead.source)} · ${displayValue(lead.serviceType)}`}
         actions={
           <>
             <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>

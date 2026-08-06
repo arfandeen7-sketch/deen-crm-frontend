@@ -73,12 +73,35 @@ export function timeAgo(value?: string | null): string {
 /** Initials from a full name, e.g. "Ahmed Khan" -> "AK". */
 export function initials(name?: string | null): string {
   if (!name) return "?";
-  return name
+  const cleaned = displayValue(name, "");
+  if (!cleaned) return "?";
+  return cleaned
     .trim()
     .split(/\s+/)
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
+}
+
+/**
+ * Display helper for lead/import fields. Blank values and import placeholders
+ * (`N/A`, `-`) render as an em dash so empty CSV cells look intentional.
+ */
+export function displayValue(
+  value?: string | number | null,
+  fallback = "—",
+): string {
+  if (value == null) return fallback;
+  const trimmed = String(value).trim();
+  if (!trimmed) return fallback;
+  const upper = trimmed.toUpperCase();
+  if (upper === "N/A" || trimmed === "-" || trimmed === "—") return fallback;
+  return trimmed;
+}
+
+/** True when a stored value is blank or an import empty-cell placeholder. */
+export function isEmptyDisplayValue(value?: string | null): boolean {
+  return displayValue(value, "") === "";
 }
 
 /** Build a query string from a params object, skipping empty values. */

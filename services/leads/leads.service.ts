@@ -51,10 +51,10 @@ export const leadsService = {
     const form = new FormData();
     form.append("file", file);
     if (mapping) form.append("mapping", JSON.stringify(mapping));
+    // Let the browser set multipart Content-Type with the correct boundary.
     const res = await api.post<{ data: ImportResult } | ImportResult>(
       "/leads/import",
       form,
-      { headers: { "Content-Type": "multipart/form-data" } },
     );
     // Backend returns the structured report; support both envelope styles.
     const body = res.data as { data?: ImportResult } & Partial<ImportResult>;
@@ -68,7 +68,6 @@ export const leadsService = {
     const res = await api.post<{ data: ImportParseResult }>(
       "/leads/import/parse",
       form,
-      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return res.data.data;
   },

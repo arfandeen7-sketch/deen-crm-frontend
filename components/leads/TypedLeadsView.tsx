@@ -22,7 +22,7 @@ import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
-import { downloadBlob, formatDate, formatDateTime } from "@/lib/utils";
+import { downloadBlob, formatDate, formatDateTime, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import type { Lead, LeadQueryParams } from "@/types";
 
@@ -113,10 +113,11 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
       header: "Name",
       render: (l) => (
         <div className="flex items-center gap-2.5">
-          <UserAvatar name={l.leadName} size="sm" />
+          <UserAvatar name={displayValue(l.leadName, "Lead")} size="sm" />
           <div>
             <p className="font-medium text-slate-900">
-              {l.leadName}{l.lastName ? ` ${l.lastName}` : ""}
+              {displayValue(l.leadName)}
+              {!isEmptyDisplayValue(l.lastName) ? ` ${l.lastName}` : ""}
             </p>
             {l.email && <p className="text-xs text-slate-400">{l.email}</p>}
           </div>
@@ -126,14 +127,16 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
     {
       key: "contact",
       header: "Contact",
-      render: (l) => <span className="text-sm text-slate-700">{l.mobileNumber}</span>,
+      render: (l) => (
+        <span className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</span>
+      ),
     },
     {
       key: "source",
       header: "Source",
       render: (l) => (
         <div className="space-y-0.5">
-          <p className="text-sm text-slate-700">{l.source}</p>
+          <p className="text-sm text-slate-700">{displayValue(l.source)}</p>
           {l.ingestionSource !== "manual" && l.ingestionSource !== "import"}
         </div>
       ),

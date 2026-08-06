@@ -20,8 +20,8 @@ import { Select } from "@/components/ui/Input";
 import { useLeadMutations } from "@/hooks/useLeads";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
-import { downloadBlob } from "@/lib/utils";
-import { autoMatchColumns } from "@/lib/import-mapping";
+import { downloadBlob, displayValue } from "@/lib/utils";
+import { autoMatchColumns, dedupeMapping } from "@/lib/import-mapping";
 import { AccessGuard } from "@/components/shared/Guards";
 import type {
   ImportMapping,
@@ -65,10 +65,14 @@ export default function ImportLeadsPage() {
   // Step 2 -> 3: send the file + the user's mapping to the import endpoint.
   async function handleImport() {
     if (!file || !parseResult) return;
+    // Collapse any accidental duplicate system-key assignments so the UI
+    // selection (first match) is what the backend receives.
+    const cleanMapping = dedupeMapping(mapping);
+    setMapping(cleanMapping);
     // Validate required system fields are mapped.
     const missingRequired = parseResult.systemFields
       .filter((f) => f.required)
-      .filter((f) => !Object.values(mapping).includes(f.key));
+      .filter((f) => !Object.values(cleanMapping).includes(f.key));
     if (missingRequired.length > 0) {
       toast.error(
         `Please map required fields: ${missingRequired.map((f) => f.label).join(", ")}`,
@@ -76,7 +80,7 @@ export default function ImportLeadsPage() {
       return;
     }
     try {
-      const res = await importLeads.mutateAsync({ file, mapping });
+      const res = await importLeads.mutateAsync({ file, mapping: cleanMapping });
       setResult(res);
       setStep("result");
       toast.success(`Imported ${res.imported} lead(s)`);
@@ -114,7 +118,7 @@ export default function ImportLeadsPage() {
         </Link>
         <PageHeader
           title="Import Leads"
-          subtitle="Bulk upload leads from a CSV or Excel file"
+          subtitle="Bulk upload leads from a CSV or Excel file. Any cell values are accepted — empty cells become N/A, and new dropdown values are added automatically."
           actions={
             <Button variant="outline" onClick={handleTemplate} loading={downloading}>
               <Download className="h-4 w-4" /> Download Template
@@ -319,7 +323,7 @@ function MapStep({
       <Card>
         <CardHeader
           title="Map Columns"
-          subtitle="Match each system field to a column from your file. Required fields are marked with *."
+          subtitle="Match each system field to a column from your file. Required fields (*) must be mapped — cells may be empty (saved as N/A). New source, status, and similar values are created automatically."
         />
         <CardBody className="space-y-4">
           <div className="overflow-x-auto">
@@ -372,7 +376,13 @@ function MapStep({
                         </Select>
                       </td>
                       <td className="border-b border-border px-4 py-3 text-xs text-foreground-secondary">
-                        {mappedHeader ? sampleFor(mappedHeader) || <span className="text-slate-300">(empty)</span> : <span className="text-slate-300">—</span>}
+                        {mappedHeader ? (
+                          sampleFor(mappedHeader) || (
+                            <span className="text-slate-300">—</span>
+                          )
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -444,10 +454,11 @@ function PreviewTable({
   mapping: ImportMapping;
 }) {
   const { previewRows, systemFields } = parseResult;
-  // Build the system-key -> csvHeader reverse lookup.
+  // Build the system-key -> csvHeader reverse lookup (first match wins,
+  // matching the Select UI and backend applyMapping preference).
   const reverse: Record<string, string> = {};
   for (const [csvHeader, systemKey] of Object.entries(mapping)) {
-    if (systemKey) reverse[systemKey] = csvHeader;
+    if (systemKey && !(systemKey in reverse)) reverse[systemKey] = csvHeader;
   }
   const mappedFields = systemFields.filter((f) => reverse[f.key]);
 
@@ -494,7 +505,11 @@ function PreviewTable({
                           key={f.key}
                           className="whitespace-nowrap border-b border-border px-4 py-3 text-xs text-foreground-secondary"
                         >
-                          {csvHeader ? row[csvHeader] : <span className="text-slate-300">—</span>}
+                          {csvHeader ? (
+                            displayValue(row[csvHeader])
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
                         </td>
                       );
                     })}

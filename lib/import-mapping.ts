@@ -57,16 +57,51 @@ const ALIASES: Record<string, string[]> = {
   created_time: ["created at", "createdat", "created date", "date", "created", "timestamp", "imported at", "lead date", "leaddate"],
 };
 
+function findExactMatch(
+  header: string,
+  systemFields: ImportSystemField[],
+): string | null {
+  const normHeader = normalize(header);
+  for (const f of systemFields) {
+    if (normalize(f.key) === normHeader) return f.key;
+  }
+  for (const f of systemFields) {
+    const aliases = ALIASES[f.key] ?? [];
+    if (aliases.some((a) => normalize(a) === normHeader)) return f.key;
+  }
+  return null;
+}
+
+function findFuzzyMatch(
+  header: string,
+  systemFields: ImportSystemField[],
+  usedKeys: Set<string>,
+  threshold: number,
+): string | null {
+  let best: { key: string; score: number } | null = null;
+  for (const f of systemFields) {
+    if (usedKeys.has(f.key)) continue;
+    const candidates = [f.key, ...(ALIASES[f.key] ?? [])];
+    for (const candidate of candidates) {
+      const score = diceCoefficient(header, candidate);
+      if (!best || score > best.score) best = { key: f.key, score };
+    }
+  }
+  if (!best || best.score < threshold) return null;
+  return best.key;
+}
+
 /**
  * Builds an initial ImportMapping by auto-matching each CSV header to a system
  * field. Strategy, in priority order:
- *   1. Exact normalized match against a system key.
- *   2. Exact normalized match against a known alias for a system key.
- *   3. Highest fuzzy (dice) similarity against system keys + aliases, but only
- *      if the score is >= `threshold` (default 0.6) to avoid weak pairings.
+ *   1. Exact normalized match against a system key or known alias.
+ *   2. Highest fuzzy (dice) similarity against remaining system keys + aliases,
+ *      but only if the score is >= `threshold` (default 0.6).
  *
- * Each CSV header is matched independently; the same system field can be
- * matched to multiple headers (the UI is responsible for resolving conflicts).
+ * Each system field is assigned at most once (first exact match wins, then best
+ * fuzzy among leftovers). This keeps the mapping UI, preview, and backend import
+ * in sync — previously duplicate assignments meant the UI showed the first
+ * column while import used the last (often empty) and failed required checks.
  * Unmatched headers map to "".
  */
 export function autoMatchColumns(
@@ -75,40 +110,51 @@ export function autoMatchColumns(
   threshold = 0.6
 ): ImportMapping {
   const mapping: ImportMapping = {};
+  for (const header of csvHeaders) mapping[header] = "";
+
+  const usedKeys = new Set<string>();
+
+  // Phase 1: exact key / alias matches (left-to-right; first header wins).
   for (const header of csvHeaders) {
-    const normHeader = normalize(header);
-    let best: { key: string; score: number } | null = null;
-
-    // 1. Exact normalized match against a system key.
-    for (const f of systemFields) {
-      if (normalize(f.key) === normHeader) {
-        best = { key: f.key, score: 1 };
-        break;
-      }
+    const key = findExactMatch(header, systemFields);
+    if (key && !usedKeys.has(key)) {
+      mapping[header] = key;
+      usedKeys.add(key);
     }
-    if (!best) {
-      // 2. Exact normalized match against an alias.
-      for (const f of systemFields) {
-        const aliases = ALIASES[f.key] ?? [];
-        if (aliases.some((a) => normalize(a) === normHeader)) {
-          best = { key: f.key, score: 1 };
-          break;
-        }
-      }
-    }
-    if (!best) {
-      // 3. Fuzzy similarity across system keys + aliases.
-      for (const f of systemFields) {
-        const candidates = [f.key, ...(ALIASES[f.key] ?? [])];
-        for (const candidate of candidates) {
-          const score = diceCoefficient(header, candidate);
-          if (!best || score > best.score) best = { key: f.key, score };
-        }
-      }
-      if (best && best.score < threshold) best = null;
-    }
-
-    mapping[header] = best?.key ?? "";
   }
+
+  // Phase 2: fuzzy matches for remaining headers against remaining system keys.
+  for (const header of csvHeaders) {
+    if (mapping[header]) continue;
+    const key = findFuzzyMatch(header, systemFields, usedKeys, threshold);
+    if (key) {
+      mapping[header] = key;
+      usedKeys.add(key);
+    }
+  }
+
   return mapping;
+}
+
+/**
+ * Ensures each system key appears at most once in the mapping (first CSV header
+ * wins). Safe to call before import so a stale/hand-edited mapping cannot
+ * overwrite a good column with a later empty one on the backend.
+ */
+export function dedupeMapping(mapping: ImportMapping): ImportMapping {
+  const seen = new Set<string>();
+  const next: ImportMapping = {};
+  for (const [csvHeader, systemKey] of Object.entries(mapping)) {
+    if (!systemKey) {
+      next[csvHeader] = "";
+      continue;
+    }
+    if (seen.has(systemKey)) {
+      next[csvHeader] = "";
+      continue;
+    }
+    seen.add(systemKey);
+    next[csvHeader] = systemKey;
+  }
+  return next;
 }

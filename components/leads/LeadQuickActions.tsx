@@ -22,7 +22,7 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
-import { toDatetimeLocal, cn } from "@/lib/utils";
+import { toDatetimeLocal, cn, isEmptyDisplayValue } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 type ActiveModal = "status" | "comment" | "followup" | "assign" | null;
@@ -154,7 +154,8 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
     }
   }
 
-  const normalizedPhone = lead.mobileNumber.replace(/\D/g, "");
+  const hasPhone = !isEmptyDisplayValue(lead.mobileNumber);
+  const normalizedPhone = hasPhone ? lead.mobileNumber.replace(/\D/g, "") : "";
 
   return (
     <div className="relative" ref={ref} onClick={(e) => e.stopPropagation()}>
@@ -206,10 +207,12 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               <UserCheck className="h-4 w-4 text-slate-400" /> Assign Lead
             </button>
           )}
-          {(canAction("leads", "all_leads", "call") || canAction("leads", "all_leads", "whatsapp") || canAction("leads", "all_leads", "email")) && (
+          {((canAction("leads", "all_leads", "call") && hasPhone) ||
+            (canAction("leads", "all_leads", "whatsapp") && hasPhone) ||
+            (canAction("leads", "all_leads", "email") && lead.email)) && (
             <div className="my-1 border-t border-slate-100" />
           )}
-          {canAction("leads", "all_leads", "call") && (
+          {canAction("leads", "all_leads", "call") && hasPhone && (
             <a
               href={`tel:${lead.mobileNumber}`}
               className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -217,7 +220,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               <Phone className="h-4 w-4 text-emerald-500" /> Call Lead
             </a>
           )}
-          {canAction("leads", "all_leads", "whatsapp") && (
+          {canAction("leads", "all_leads", "whatsapp") && hasPhone && normalizedPhone && (
             <a
               href={`https://wa.me/${normalizedPhone}`}
               target="_blank"
