@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck, Phone, Building2, Handshake } from "lucide-react";
+import { Bell, CheckCheck, Phone, Building2, Handshake, CalendarClock } from "lucide-react";
 import { useUnreadCount, useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/services/api/client";
@@ -68,6 +68,9 @@ function NotificationRow({
           <div className="flex items-center gap-1.5">
             {n.type === "deal_closed" && (
               <Handshake className="h-3.5 w-3.5 shrink-0 text-teal-600" />
+            )}
+            {n.type === "followup" && (
+              <CalendarClock className="h-3.5 w-3.5 shrink-0 text-amber-600" />
             )}
             <p className="truncate text-sm font-semibold text-zinc-900">{n.title}</p>
           </div>
