@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck, Filter, Trash2, Phone, Building2 } from "lucide-react";
+import { Bell, CheckCheck, Filter, Trash2, Phone, Building2, Handshake } from "lucide-react";
 import { useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
@@ -72,7 +72,10 @@ function NotificationCard({
         <div className={`flex-1 min-w-0 ${notification.isRead ? "pl-6" : ""}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-zinc-900 mb-1">
+              <h3 className="text-sm font-semibold text-zinc-900 mb-1 flex items-center gap-1.5">
+                {notification.type === "deal_closed" && (
+                  <Handshake className="h-4 w-4 shrink-0 text-teal-600" />
+                )}
                 {notification.title}
               </h3>
               {notification.body && (

@@ -58,7 +58,9 @@ export function Leaderboard({
               <span className="flex-1 truncate text-sm text-slate-700">{e.fullName}</span>
               <div className="flex flex-col items-end gap-1">
                 <span className="text-sm font-semibold text-slate-900 leading-none">
-                  {e.value.toFixed(suffix === "%" ? 1 : 0)}
+                  {title.toLowerCase().includes("sales")
+                    ? Math.round(e.value).toLocaleString()
+                    : e.value.toFixed(suffix === "%" ? 1 : 0)}
                   {suffix}
                 </span>
                 <div className={cn("h-1.5 w-16 overflow-hidden rounded-full", bgBarColor)}>

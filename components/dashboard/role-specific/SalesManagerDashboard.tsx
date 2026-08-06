@@ -5,7 +5,6 @@ import { Users2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useDashboardSummary,
-  useStatusCount,
   useLeadCategoryCount,
 } from "@/hooks/useDashboard";
 import { useMyTeam } from "@/hooks/useTeams";
@@ -15,7 +14,6 @@ import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
 
 export function SalesManagerDashboard() {
   const summary = useDashboardSummary();
-  const interested = useStatusCount("Interested");
   const untouched = useLeadCategoryCount("untouched");
   const unassigned = useLeadCategoryCount("unassigned");
   const teamQuery = useMyTeam();
@@ -50,12 +48,15 @@ export function SalesManagerDashboard() {
 
         <div className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36">
           <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Interested</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Deals Closed</span>
             <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {interested.isLoading ? "..." : (interested.data ?? 0).toString().padStart(2, "0")}
+              {summary.isLoading ? "..." : (summary.data?.dealsClosed ?? 0).toString().padStart(2, "0")}
             </div>
+            <p className="mt-1 text-xs font-medium text-teal-700">
+              AED {summary.isLoading ? "…" : Math.round(summary.data?.salesAmount ?? 0).toLocaleString()}
+            </p>
           </div>
-          <div className="h-1 bg-emerald-600 absolute bottom-0 left-6 right-6 rounded-full" />
+          <div className="h-1 bg-teal-600 absolute bottom-0 left-6 right-6 rounded-full" />
         </div>
 
         <Link href="/leads/unassigned" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">

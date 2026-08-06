@@ -6,7 +6,6 @@ import {
   useDashboardSummary,
   useTodayFollowupCount,
   useMissedFollowupCount,
-  useUpcomingFollowupCount,
 } from "@/hooks/useDashboard";
 import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
 import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
@@ -18,7 +17,6 @@ export function SalesExecutiveDashboard() {
   const summary = useDashboardSummary();
   const todayCount = useTodayFollowupCount();
   const missedCount = useMissedFollowupCount();
-  const upcomingCount = useUpcomingFollowupCount();
   const { user } = useAuth();
 
   const quickActions = ROLE_QUICK_ACTIONS.sales_executive;
@@ -57,15 +55,18 @@ export function SalesExecutiveDashboard() {
           <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-6 rounded-full" />
         </Link>
 
-        <Link href="/followup/upcoming" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
+        <div className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36">
           <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Upcoming Follow-ups</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Deals Closed</span>
             <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {upcomingCount.isLoading ? "..." : (upcomingCount.data ?? 0).toString().padStart(2, "0")}
+              {summary.isLoading ? "..." : (summary.data?.dealsClosed ?? 0).toString().padStart(2, "0")}
             </div>
+            <p className="mt-1 text-xs font-medium text-teal-700">
+              AED {summary.isLoading ? "…" : Math.round(summary.data?.salesAmount ?? 0).toLocaleString()}
+            </p>
           </div>
-          <div className="h-1 bg-amber-500 absolute bottom-0 left-6 right-0 rounded-full" />
-        </Link>
+          <div className="h-1 bg-teal-600 absolute bottom-0 left-6 right-0 rounded-full" />
+        </div>
       </div>
 
       {/* ── Recent Leads (assigned to me, 2/3) & Missed Follow-ups (1/3) ── */}

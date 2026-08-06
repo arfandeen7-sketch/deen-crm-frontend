@@ -15,6 +15,8 @@ import {
   Target,
   CalendarCheck,
   Timer,
+  Handshake,
+  Banknote,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -210,6 +212,20 @@ export default function LeadReportsPage() {
     [employees.data],
   );
 
+  const topSales: LeaderboardEntry[] = useMemo(
+    () =>
+      [...employees.data]
+        .sort((a, b) => (b.salesAmount ?? 0) - (a.salesAmount ?? 0))
+        .slice(0, 5)
+        .map((e, i) => ({
+          userId: e.userId,
+          fullName: e.fullName,
+          value: e.salesAmount ?? 0,
+          rank: i + 1,
+        })),
+    [employees.data],
+  );
+
   const needsAttention: LeaderboardEntry[] = useMemo(
     () =>
       [...employees.data]
@@ -316,7 +332,7 @@ export default function LeadReportsPage() {
       </Card>
 
       {/* KPI summary row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-8">
         <KpiCard label="Total Leads" icon={Users} accent="indigo" loading={kpisLoading} value={kpis?.totalLeads.current} comparison={hasDateFilter ? kpis?.totalLeads : null} />
         <KpiCard
           label="New Leads"
@@ -361,6 +377,22 @@ export default function LeadReportsPage() {
           loading={kpisLoading}
           value={kpis?.avgResponseTimeMinutes != null ? Math.round(kpis.avgResponseTimeMinutes) : "—"}
           suffix={kpis?.avgResponseTimeMinutes != null ? " min" : ""}
+        />
+        <KpiCard
+          label="Deals Closed"
+          icon={Handshake}
+          accent="emerald"
+          loading={kpisLoading}
+          value={kpis?.dealsClosed.current}
+          comparison={hasDateFilter ? kpis?.dealsClosed : null}
+        />
+        <KpiCard
+          label="Sales (AED)"
+          icon={Banknote}
+          accent="indigo"
+          loading={kpisLoading}
+          value={kpis?.salesAmount.current != null ? Math.round(kpis.salesAmount.current).toLocaleString() : 0}
+          comparison={hasDateFilter ? kpis?.salesAmount : null}
         />
       </div>
       {summaryUnavailable && (
@@ -501,9 +533,10 @@ export default function LeadReportsPage() {
       </div>
 
       {/* Team Leaderboards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
         <Leaderboard title="Top Conversion Rate" entries={topConversion} suffix="%" />
         <Leaderboard title="Top Touch Rate" entries={topTouch} suffix="%" />
+        <Leaderboard title="Top Sales (AED)" entries={topSales} suffix="" />
         <Leaderboard title="Needs Attention" entries={needsAttention} suffix=" pts" emptyLabel="All employees performing well." />
         <Leaderboard title="Most Improved" entries={mostImproved} suffix=" pts" emptyLabel="No previous period data." />
       </div>

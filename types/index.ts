@@ -699,9 +699,26 @@ export interface ApiError {
 }
 
 // Dashboard responses
+export interface DashboardRecentDeal {
+  id: string;
+  leadId: string;
+  leadName: string;
+  amount: number;
+  currency: string;
+  closedAt: string;
+  employeeId: string;
+  employeeName: string;
+  closerId: string;
+  closerName: string;
+}
+
 export interface DashboardSummary {
   sourceCounts: { source: string; count: number }[];
   totalLeads: number;
+  dealsClosed?: number;
+  salesAmount?: number;
+  avgDealValue?: number;
+  recentDeals?: DashboardRecentDeal[];
 }
 
 export interface StatusAnalytics {
@@ -853,6 +870,9 @@ export interface LeadReportRow {
   missedFollowUps: number;
   statusBreakdown: Record<string, number>;
   lastActivityAt?: string | null;
+  dealsClosed?: number;
+  salesAmount?: number;
+  avgDealValue?: number;
 }
 
 export interface LeadReportResponse {
@@ -871,6 +891,9 @@ export interface UserPerformanceItem {
   statusBreakdown: Record<string, number>;
   lastActivityAt?: string | null;
   converted?: number;
+  dealsClosed?: number;
+  salesAmount?: number;
+  avgDealValue?: number;
 }
 
 export interface LeadTimeSeriesItem {
@@ -920,6 +943,8 @@ export interface LeadReportKpis {
   conversionRate: KpiComparisonValue;
   followUpCompletionRate: KpiComparisonValue;
   avgResponseTimeMinutes: number | null;
+  dealsClosed: KpiComparisonValue;
+  salesAmount: KpiComparisonValue;
 }
 
 export interface LeadFunnelStage {
@@ -1011,7 +1036,7 @@ export interface AssignmentNotificationLead {
 
 export interface AppNotification {
   id: string;
-  type: "assignment" | "followup" | "system" | "leave" | "regularization" | "payslip";
+  type: "assignment" | "followup" | "system" | "leave" | "regularization" | "payslip" | "deal_closed";
   title: string;
   body: string | null;
   leadId: string | null;
@@ -1037,6 +1062,9 @@ export interface TeamMember {
     totalLeads: number;
     activeLeads: number;
     convertedLeads: number;
+    dealsClosed?: number;
+    salesAmount?: number;
+    avgDealValue?: number;
   };
 }
 
@@ -1050,6 +1078,8 @@ export interface TeamOverview {
     managerLeads: number;
     teamLeads: number;
     totalLeads: number;
+    dealsClosed?: number;
+    salesAmount?: number;
   };
 }
 

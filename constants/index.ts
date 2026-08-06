@@ -34,10 +34,14 @@ export const LEAD_STATUS_COLORS: Record<string, string> = {
   "Not Interested": "bg-rose-100 text-rose-700",
   "No Answer Msg Dropped": "bg-amber-100 text-amber-700",
   "Not Receiving Calls": "bg-orange-100 text-orange-700",
+  "Deal Closed": "bg-teal-100 text-teal-800",
 };
 
 // Statuses considered a "conversion" for KPI/performance calculations.
 export const CONVERTED_LEAD_STATUSES = ["Interested", "Existing Client"];
+
+/** Exact lead_status value that records a sale (must match Dynamic Fields). */
+export const DEAL_CLOSED_STATUS = "Deal Closed";
 
 // Funnel stage order used for the (approximate, snapshot-based) Lead Funnel
 // chart. A true progression funnel requires backend aggregation over

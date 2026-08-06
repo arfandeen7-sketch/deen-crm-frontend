@@ -123,6 +123,16 @@ export function EmployeePerformanceCard({
           <p className="text-[11px] text-slate-500">Follow-up Rate</p>
         </div>
         <div>
+          <p className="text-lg font-semibold text-teal-700">{item.dealsClosed ?? 0}</p>
+          <p className="text-[11px] text-slate-500">Deals Closed</p>
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-teal-800">
+            AED {Number(item.salesAmount ?? 0).toLocaleString()}
+          </p>
+          <p className="text-[11px] text-slate-500">Sales</p>
+        </div>
+        <div>
           <p className="text-lg font-semibold text-rose-600">{item.missedFollowUps}</p>
           <p className="text-[11px] text-slate-500">Missed F/U</p>
         </div>

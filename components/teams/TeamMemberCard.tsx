@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, Target, CheckCircle2 } from "lucide-react";
+import { TrendingUp, Target, CheckCircle2, Handshake, Banknote } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -75,14 +75,35 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-teal-50 p-3">
+                  <div className="flex items-center gap-1.5 text-teal-700">
+                    <Handshake className="h-3.5 w-3.5" />
+                    <p className="text-xs">Deals Closed</p>
+                  </div>
+                  <p className="mt-1 text-lg font-semibold text-teal-800">
+                    {member.stats.dealsClosed ?? 0}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-teal-50/80 p-3">
+                  <div className="flex items-center gap-1.5 text-teal-700">
+                    <Banknote className="h-3.5 w-3.5" />
+                    <p className="text-xs">Sales (AED)</p>
+                  </div>
+                  <p className="mt-1 text-lg font-semibold text-teal-900">
+                    {Math.round(member.stats.salesAmount ?? 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-xs font-medium text-slate-500">Conversion Rate</p>
                   <p className="text-sm font-semibold text-slate-900">{conversionRate}%</p>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all"
+                    className="h-full rounded-full bg-emerald-500 transition-all"
                     style={{ width: `${Math.min(conversionRate, 100)}%` }}
                   />
                 </div>

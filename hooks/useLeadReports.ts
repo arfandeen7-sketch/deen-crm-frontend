@@ -132,7 +132,9 @@ function aggregate(rows: UserPerformanceItem[] | undefined) {
     (s, r) => s + CONVERTED_LEAD_STATUSES.reduce((ss, st) => ss + (r.statusBreakdown?.[st] ?? 0), 0),
     0,
   );
-  return { assigned, touched, followedUp, missedFollowUps, converted };
+  const dealsClosed = list.reduce((s, r) => s + (r.dealsClosed ?? 0), 0);
+  const salesAmount = list.reduce((s, r) => s + (r.salesAmount ?? 0), 0);
+  return { assigned, touched, followedUp, missedFollowUps, converted, dealsClosed, salesAmount };
 }
 
 function comparisonValue(current: number, previous: number): KpiComparisonValue {
@@ -173,6 +175,8 @@ export function useKpiComparison(params: LeadReportParams) {
       conversionRate: comparisonValue(convRateCur, convRatePrev),
       followUpCompletionRate: comparisonValue(fuRateCur, fuRatePrev),
       avgResponseTimeMinutes: summary.data?.avgResponseTimeMinutes ?? null,
+      dealsClosed: comparisonValue(cur.dealsClosed, prev.dealsClosed),
+      salesAmount: comparisonValue(cur.salesAmount, prev.salesAmount),
     };
   }, [current.data, previous.data, summary.data]);
 
@@ -322,6 +326,9 @@ function useEnhancedEmployeePerformance(
         statusBreakdown: {},
         lastActivityAt: undefined,
         converted: 0,
+        dealsClosed: 0,
+        salesAmount: 0,
+        avgDealValue: 0,
         role: user.role,
         department: user.department,
         designation: user.designation,

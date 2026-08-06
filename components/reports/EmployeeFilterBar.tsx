@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/Input";
 
-export type EmployeeSortKey = "assigned" | "touchRate" | "conversionRate" | "followUpCompletionRate" | "performanceScore";
+export type EmployeeSortKey = "assigned" | "touchRate" | "conversionRate" | "followUpCompletionRate" | "performanceScore" | "salesAmount" | "dealsClosed";
 
 const SORT_OPTIONS: { key: EmployeeSortKey; label: string }[] = [
   { key: "performanceScore", label: "Performance Score" },
@@ -12,6 +12,8 @@ const SORT_OPTIONS: { key: EmployeeSortKey; label: string }[] = [
   { key: "touchRate", label: "Touch Rate" },
   { key: "conversionRate", label: "Conversion Rate" },
   { key: "followUpCompletionRate", label: "Follow-up Rate" },
+  { key: "dealsClosed", label: "Deals Closed" },
+  { key: "salesAmount", label: "Sales Amount" },
 ];
 
 export function EmployeeFilterBar({

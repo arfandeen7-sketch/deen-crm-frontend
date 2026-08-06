@@ -112,6 +112,9 @@ export const reportsService = {
       statusBreakdown: r.statusBreakdown,
       lastActivityAt: r.lastActivityAt,
       converted: convertedCount(r.statusBreakdown),
+      dealsClosed: r.dealsClosed ?? 0,
+      salesAmount: r.salesAmount ?? 0,
+      avgDealValue: r.avgDealValue ?? 0,
     }));
   },
 
@@ -128,6 +131,9 @@ export const reportsService = {
       statusBreakdown: row.statusBreakdown ?? {},
       lastActivityAt: row.lastActivityAt,
       converted: row.converted ?? convertedCount(row.statusBreakdown),
+      dealsClosed: row.dealsClosed ?? 0,
+      salesAmount: row.salesAmount ?? 0,
+      avgDealValue: row.avgDealValue ?? 0,
     }));
   },
 
@@ -152,6 +158,9 @@ export const reportsService = {
       statusBreakdown: row.statusBreakdown,
       lastActivityAt: row.lastActivityAt,
       converted: convertedCount(row.statusBreakdown),
+      dealsClosed: row.dealsClosed ?? 0,
+      salesAmount: row.salesAmount ?? 0,
+      avgDealValue: row.avgDealValue ?? 0,
     };
   },
 
