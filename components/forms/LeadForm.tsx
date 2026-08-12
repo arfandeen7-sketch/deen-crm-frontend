@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { leadSchema, type LeadFormValues } from "@/schemas/lead.schema";
+import {
+  leadWithClientSchema,
+  type LeadWithClientFormValues,
+} from "@/schemas/lead.schema";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
@@ -12,17 +15,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBrokerOptions } from "@/hooks/useBrokers";
 import { SERVICE_TYPES } from "@/constants";
 import { toDatetimeLocal } from "@/lib/utils";
-import type { Lead } from "@/types";
+import type { Client, Lead } from "@/types";
 
 export function LeadForm({
   initial,
+  initialClient,
   submitting,
   onSubmit,
   onCancel,
 }: {
   initial?: Lead;
+  initialClient?: Client | null;
   submitting?: boolean;
-  onSubmit: (values: LeadFormValues) => void;
+  onSubmit: (values: LeadWithClientFormValues) => void;
   onCancel?: () => void;
 }) {
   const isPFLead = initial?.ingestionSource === "property_finder";
@@ -68,9 +73,10 @@ export function LeadForm({
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<LeadFormValues>({
-    resolver: zodResolver(leadSchema),
+  } = useForm<LeadWithClientFormValues>({
+    resolver: zodResolver(leadWithClientSchema),
     defaultValues: {
+      // Lead fields
       leadName: initial?.leadName ?? "",
       mobileNumber: initial?.mobileNumber ?? "",
       alternateMobile: initial?.alternateMobile ?? "",
@@ -90,6 +96,15 @@ export function LeadForm({
       propertySize: initial?.propertySize ?? "",
       configuration: initial?.configuration ?? "",
       comments: initial?.comments ?? "",
+      // Client Detail fields (pre-fill from existing client record on edit)
+      clientFullName:         initialClient?.fullName ?? "",
+      clientMobileNumber:     initialClient?.mobileNumber ?? "",
+      clientEmail:            initialClient?.email ?? "",
+      clientDateOfBirth:      initialClient?.dateOfBirth
+        ? initialClient.dateOfBirth.slice(0, 10)
+        : "",
+      clientPassportNumber:   initialClient?.passportNumber ?? "",
+      clientEmiratesIdNumber: initialClient?.emiratesIdNumber ?? "",
     },
   });
 
@@ -273,6 +288,37 @@ export function LeadForm({
         <Field label="Comments" error={errors.comments?.message}>
           <Textarea placeholder="Notes about this lead…" {...register("comments")} />
         </Field>
+
+        {/* ── Client Details ─────────────────────────────────────────────── */}
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+            Client Details
+            <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
+          </h3>
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Client Full Name" error={errors.clientFullName?.message}>
+              <Input placeholder="As per passport / Emirates ID" {...register("clientFullName")} />
+            </Field>
+            <Field label="Client Mobile" error={errors.clientMobileNumber?.message}>
+              <Input placeholder="+9715XXXXXXXX" {...register("clientMobileNumber")} />
+            </Field>
+            <Field label="Client Email" error={errors.clientEmail?.message}>
+              <Input type="email" placeholder="client@example.com" {...register("clientEmail")} />
+            </Field>
+            <Field label="Date of Birth" error={errors.clientDateOfBirth?.message}>
+              <Input type="date" {...register("clientDateOfBirth")} />
+            </Field>
+            <Field label="Passport Number" error={errors.clientPassportNumber?.message}>
+              <Input placeholder="e.g. A12345678" {...register("clientPassportNumber")} />
+            </Field>
+            <Field label="Emirates ID Number" error={errors.clientEmiratesIdNumber?.message}>
+              <Input placeholder="784-XXXX-XXXXXXX-X" {...register("clientEmiratesIdNumber")} />
+            </Field>
+          </section>
+          <p className="mt-2 text-xs text-neutral-400">
+            Passport and Emirates ID documents can be uploaded from the lead detail page after saving.
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-4">

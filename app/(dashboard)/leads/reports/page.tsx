@@ -32,6 +32,7 @@ import { AccessGuard } from "@/components/shared/Guards";
 import { KpiCard } from "@/components/reports/KpiCard";
 import { EmployeePerformanceCard } from "@/components/reports/EmployeePerformanceCard";
 import { EmployeeHistoricalReportModal } from "@/components/reports/EmployeeHistoricalReportModal";
+import { EmployeeLeadsModal } from "@/components/reports/EmployeeLeadsModal";
 import { Leaderboard } from "@/components/reports/Leaderboard";
 import { EmployeeFilterBar, type EmployeeSortKey } from "@/components/reports/EmployeeFilterBar";
 import {
@@ -91,6 +92,7 @@ export default function LeadReportsPage() {
   const [empSort, setEmpSort] = useState<EmployeeSortKey>("performanceScore");
   const [pinned, setPinned] = useState<string[]>([]);
   const [reportEmployee, setReportEmployee] = useState<EmployeePerformance | null>(null);
+  const [leadsModalEmployee, setLeadsModalEmployee] = useState<{ userId: string; fullName: string } | null>(null);
 
   useEffect(() => {
     setPinned(readPinned());
@@ -526,6 +528,7 @@ export default function LeadReportsPage() {
                 onSendReminder={() => handleSendReminder(e.userId, e.fullName)}
                 sendingReminder={sendReminder.isPending}
                 onViewReport={() => setReportEmployee(e)}
+                onViewLeads={() => setLeadsModalEmployee({ userId: e.userId, fullName: e.fullName })}
               />
             ))}
           </div>
@@ -544,6 +547,12 @@ export default function LeadReportsPage() {
         open={Boolean(reportEmployee)}
         onClose={() => setReportEmployee(null)}
         employee={reportEmployee ?? undefined}
+      />
+      <EmployeeLeadsModal
+        open={Boolean(leadsModalEmployee)}
+        onClose={() => setLeadsModalEmployee(null)}
+        userId={leadsModalEmployee?.userId ?? ""}
+        userName={leadsModalEmployee?.fullName ?? ""}
       />
     </div>
     </AccessGuard>

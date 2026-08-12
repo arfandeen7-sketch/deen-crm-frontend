@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CalendarCheck, MousePointerClick, Target, TrendingUp, Handshake, Banknote } from "lucide-react";
+import { ArrowLeft, CalendarCheck, MousePointerClick, Target, TrendingUp, Handshake, Banknote, FilePlus2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -150,8 +150,9 @@ function EmployeeReportPageContent() {
         </CardBody>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <KpiCard label="Assigned Leads" icon={Target} accent="indigo" value={employee.assigned} />
+        <KpiCard label="Manually Created" icon={FilePlus2} accent="violet" value={employee.manuallyCreated ?? 0} />
         <KpiCard label="Touch Rate" icon={MousePointerClick} accent="emerald" value={employee.touchRate.toFixed(0)} suffix="%" />
         <KpiCard label="Conversion Rate" icon={TrendingUp} accent="violet" value={employee.conversionRate.toFixed(0)} suffix="%" />
         <KpiCard label="Follow-up Rate" icon={CalendarCheck} accent="amber" value={employee.followUpCompletionRate.toFixed(0)} suffix="%" />

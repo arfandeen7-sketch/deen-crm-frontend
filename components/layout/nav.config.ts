@@ -28,6 +28,8 @@ import {
   Plug,
   Activity,
   Calculator,
+  Contact,
+  TrendingUp,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -84,7 +86,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Leads", href: "/leads", icon: Users2, navAccess: { module: "leads", page: "all_leads" } },
       { label: "Untouched Leads", href: "/leads/untouched", icon: Ghost, navAccess: { module: "leads", page: "untouched_leads" } },
-      { label: "Fresh Leads", href: "/leads/fresh", icon: UserPlus, navAccess: { module: "leads", page: "fresh_leads" } },
+      { label: "Deal Closed", href: "/leads/deal-closed", icon: TrendingUp, navAccess: { module: "leads", page: "deal_closed" } },
       { label: "Imported Leads", href: "/leads/imported", icon: FileDown, navAccess: { module: "leads", page: "imported_leads" } },
       { label: "Assigned Leads", href: "/leads/assigned", icon: UserCheck, navAccess: { module: "leads", page: "assigned_leads" } },
       { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX, navAccess: { module: "leads", page: "unassigned_leads" } },
@@ -144,6 +146,16 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Brokers", href: "/brokers", icon: Handshake, navAccess: { module: "brokers", page: "all_brokers" } },
       { label: "Create Broker", href: "/brokers/create", icon: UserPlus, navAccess: { module: "brokers", page: "all_brokers", action: "create" } },
+    ],
+  },
+  {
+    id: "client_details",
+    title: "Client Details",
+    icon: Contact,
+    moduleKey: "client_details",
+    section: "MENU",
+    items: [
+      { label: "All Clients", href: "/clients", icon: Contact, navAccess: { module: "client_details", page: "all_clients", action: "view" } },
     ],
   },
   {

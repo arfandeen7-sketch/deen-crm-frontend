@@ -57,6 +57,7 @@ api.interceptors.response.use(
       const isProtectedRoute =
         pathname.startsWith("/leads") ||
         pathname.startsWith("/brokers") ||
+        pathname.startsWith("/clients") ||
         pathname.startsWith("/users") ||
         pathname.startsWith("/hrms") ||
         pathname.startsWith("/teams") ||

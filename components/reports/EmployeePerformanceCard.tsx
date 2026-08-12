@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { AlertTriangle, Bell, ClipboardList, Eye, PhoneCall, Star, Tag, UserMinus2, UserPlus2 } from "lucide-react";
+import { AlertTriangle, Bell, ClipboardList, Eye, PhoneCall, Star, Tag, UserMinus2, UserPlus2, FilePlus2 } from "lucide-react";
 import { cn, timeAgo } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
@@ -35,6 +34,7 @@ export function EmployeePerformanceCard({
   onSendReminder,
   sendingReminder,
   onViewReport,
+  onViewLeads,
 }: {
   item: EmployeePerformance;
   pinned?: boolean;
@@ -42,6 +42,7 @@ export function EmployeePerformanceCard({
   onSendReminder?: () => void;
   sendingReminder?: boolean;
   onViewReport?: () => void;
+  onViewLeads?: () => void;
 }) {
   const lowTouch = item.touchRate < 50;
   const highMissed = item.missedFollowUps >= 5;
@@ -133,6 +134,10 @@ export function EmployeePerformanceCard({
           <p className="text-[11px] text-slate-500">Sales</p>
         </div>
         <div>
+          <p className="text-lg font-semibold text-indigo-600">{item.manuallyCreated ?? 0}</p>
+          <p className="text-[11px] text-slate-500">Manually Created</p>
+        </div>
+        <div>
           <p className="text-lg font-semibold text-rose-600">{item.missedFollowUps}</p>
           <p className="text-[11px] text-slate-500">Missed F/U</p>
         </div>
@@ -174,11 +179,17 @@ export function EmployeePerformanceCard({
       </div>
 
       <div className="flex items-center gap-2 border-t border-slate-100 p-3">
-        <Link href={`/leads?assignedTo=${item.userId}`} className="flex-1">
-          <Button variant="outline" size="sm" className="w-full">
+        <div className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={onViewLeads}
+            disabled={!onViewLeads}
+          >
             View All Leads
           </Button>
-        </Link>
+        </div>
         <div className="flex-1">
           <Button
             variant="outline"

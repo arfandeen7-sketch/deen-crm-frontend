@@ -37,6 +37,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/leads": { type: "permission", requirement: { module: "leads", page: "all_leads", action: "view" } },
   "/leads/untouched": { type: "permission", requirement: { module: "leads", page: "untouched_leads", action: "view" } },
   "/leads/fresh": { type: "permission", requirement: { module: "leads", page: "fresh_leads", action: "view" } },
+  "/leads/deal-closed": { type: "permission", requirement: { module: "leads", page: "deal_closed", action: "view" } },
   "/leads/imported": { type: "permission", requirement: { module: "leads", page: "imported_leads", action: "view" } },
   "/leads/assigned": { type: "permission", requirement: { module: "leads", page: "assigned_leads", action: "view" } },
   "/leads/unassigned": { type: "permission", requirement: { module: "leads", page: "unassigned_leads", action: "view" } },
@@ -91,6 +92,10 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/brokers/[id]": { type: "permission", requirement: { module: "brokers", page: "all_brokers", action: "view" } },
   "/brokers/[id]/edit": { type: "permission", requirement: { module: "brokers", page: "all_brokers", action: "edit" } },
 
+  // Client Details
+  "/clients": { type: "permission", requirement: { module: "client_details", page: "all_clients", action: "view" } },
+  "/clients/[leadId]": { type: "permission", requirement: { module: "client_details", page: "all_clients", action: "view" } },
+
   // Dynamic Fields
   "/dynamic-fields/[category]": { type: "permission", requirement: { module: "dynamic_fields", page: "manage_fields", action: "view" } },
 
@@ -125,6 +130,9 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "leads:detail": { module: "leads", page: "all_leads", action: "view" },
   "leads:untouched": { module: "leads", page: "untouched_leads", action: "view" },
   "leads:fresh": { module: "leads", page: "fresh_leads", action: "view" },
+  "leads:deal-closed:list": { module: "leads", page: "deal_closed", action: "view" },
+  "leads:deal-closed:stats": { module: "leads", page: "deal_closed", action: "view" },
+  "leads:deal-closed:employee-summary": { module: "leads", page: "deal_closed", action: "view" },
   "leads:imported": { module: "leads", page: "imported_leads", action: "view" },
   "leads:assigned": { module: "leads", page: "assigned_leads", action: "view" },
   "leads:unassigned": { module: "leads", page: "unassigned_leads", action: "view" },
@@ -191,6 +199,9 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "integrations:detail": { module: "integrations", page: "all_integrations", action: "view" },
 
   "teams:list": { module: "users", page: "teams", action: "view" },
+
+  "clients:list":   { module: "client_details", page: "all_clients", action: "view" },
+  "clients:detail": { module: "client_details", page: "all_clients", action: "view" },
 };
 
 // ── Mutation / Action Requirements ───────────────────────────────────────────
@@ -240,6 +251,10 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "dynamic-fields:create": { module: "dynamic_fields", page: "manage_fields", action: "create" },
   "dynamic-fields:edit": { module: "dynamic_fields", page: "manage_fields", action: "edit" },
   "dynamic-fields:delete": { module: "dynamic_fields", page: "manage_fields", action: "delete" },
+
+  "clients:edit": { module: "client_details", page: "all_clients", action: "edit" },
+  "clients:upload-documents": { module: "client_details", page: "all_clients", action: "upload_documents" },
+  "clients:export": { module: "client_details", page: "all_clients", action: "export" },
 
   "integrations:connect": { module: "integrations", page: "all_integrations", action: "connect" },
   "integrations:edit": { module: "integrations", page: "all_integrations", action: "edit" },

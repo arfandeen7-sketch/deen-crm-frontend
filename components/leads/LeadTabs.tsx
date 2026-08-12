@@ -8,7 +8,7 @@ import { usePermissions } from "@/contexts/PermissionContext";
 const ALL_TABS = [
   { label: "All Leads",   href: "/leads",             module: "leads",        page: "all_leads" },
   { label: "Untouched",   href: "/leads/untouched",   module: "leads",        page: "untouched_leads" },
-  { label: "Fresh",       href: "/leads/fresh",       module: "leads",        page: "fresh_leads" },
+  { label: "Deal Closed", href: "/leads/deal-closed", module: "leads",        page: "deal_closed" },
   { label: "Imported",    href: "/leads/imported",    module: "leads",        page: "imported_leads" },
   { label: "Assigned",    href: "/leads/assigned",    module: "leads",        page: "assigned_leads" },
   { label: "Non Assigned", href: "/leads/unassigned", module: "leads",        page: "unassigned_leads" },

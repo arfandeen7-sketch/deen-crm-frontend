@@ -10,17 +10,30 @@ import { LeadForm } from "@/components/forms/LeadForm";
 import { AccessGuard } from "@/components/shared/Guards";
 import { useLeadMutations } from "@/hooks/useLeads";
 import { getErrorMessage } from "@/services/api/client";
-import type { LeadFormValues } from "@/schemas/lead.schema";
-import { leadSchema } from "@/schemas/lead.schema";
+import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormValues } from "@/schemas/lead.schema";
+import { clientsService } from "@/services/clients/clients.service";
 
 export default function CreateLeadPage() {
   const router = useRouter();
   const { create } = useLeadMutations();
 
-  async function onSubmit(values: LeadFormValues) {
+  async function onSubmit(values: LeadWithClientFormValues) {
     try {
-      const parsed = leadSchema.parse(values);
-      const lead = await create.mutateAsync(parsed);
+      const parsed = leadWithClientSchema.parse(values);
+      const { leadValues, clientValues } = splitLeadClientValues(parsed);
+
+      // 1. Save the lead
+      const lead = await create.mutateAsync(leadValues);
+
+      // 2. Save client details if any fields were filled in
+      const hasClientData = Object.values(clientValues).some(Boolean);
+      if (hasClientData) {
+        await clientsService.upsert(lead.id, clientValues).catch(() => {
+          // Client details save failure is non-fatal on create — user can edit later
+          toast.warning("Lead created, but client details could not be saved. You can add them from the lead page.");
+        });
+      }
+
       toast.success("Lead created");
       router.push(`/leads/${lead.id}`);
     } catch (e) {

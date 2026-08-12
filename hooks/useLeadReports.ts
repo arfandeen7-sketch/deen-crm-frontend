@@ -329,6 +329,7 @@ function useEnhancedEmployeePerformance(
         dealsClosed: 0,
         salesAmount: 0,
         avgDealValue: 0,
+        manuallyCreated: 0,
         role: user.role,
         department: user.department,
         designation: user.designation,

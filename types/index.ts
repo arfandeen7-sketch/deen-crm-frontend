@@ -205,6 +205,7 @@ export interface Lead {
   creator?: Pick<User, "id" | "fullName"> | null;
   broker?: Pick<Broker, "id" | "brokerName"> | null;
   statusHistory?: LeadStatusHistory[];
+  client?: Client | null;
   // Property Finder enrichment fields
   pfPropertyTitle?: string | null;
   pfPropertyReference?: string | null;
@@ -230,6 +231,49 @@ export interface Lead {
   pfTags?: string | null;
 }
 
+// ── Client Details ────────────────────────────────────────────────────────────
+
+export interface Client {
+  id: string;
+  leadId: string;
+  // Personal info
+  fullName?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  dateOfBirth?: string | null;
+  // Identity document numbers
+  passportNumber?: string | null;
+  emiratesIdNumber?: string | null;
+  // Passport document metadata
+  passportFilePath?: string | null;
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID document metadata
+  emiratesIdFilePath?: string | null;
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
+  // Signed download URLs (generated per-request, not stored)
+  passportUrl?: string | null;
+  emiratesIdUrl?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
+  lead?: Pick<Lead, "id" | "leadName" | "leadStatus"> & {
+    assignedUser?: Pick<User, "id" | "fullName"> | null;
+    creator?: Pick<User, "id" | "fullName"> | null;
+    sale?: { amount: number; closedAt: string } | null;
+  } | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  passportUploader?: Pick<User, "id" | "fullName"> | null;
+  emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+}
+
 export interface LeadStatusHistory {
   id: string;
   leadId: string;
@@ -238,6 +282,80 @@ export interface LeadStatusHistory {
   changedBy: string;
   changedAt: string;
   changer?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Deal Closed / Sales ───────────────────────────────────────────────────────
+
+export interface ClosedDealClient {
+  id: string;
+  fullName?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  dateOfBirth?: string | null;
+  passportNumber?: string | null;
+  emiratesIdNumber?: string | null;
+  hasPassportFile: boolean;
+  hasEmiratesIdFile: boolean;
+}
+
+export interface ClosedDeal {
+  id: string;           // LeadSale id
+  leadId: string;
+  leadName: string;
+  mobileNumber: string;
+  leadSource: string;
+  projectName?: string | null;
+  community?: string | null;
+  propertyType?: string | null;
+  unitNumber?: string | null;
+  propertySize?: string | null;
+  propertyPrice?: string | null;
+  salesValue: number;
+  currency: string;
+  leadStatus: string;
+  // people
+  salesUser?: Pick<User, "id" | "fullName"> | null;
+  salesUserRole?: string | null;
+  salesManager?: Pick<User, "id" | "fullName"> | null;
+  closedBy?: Pick<User, "id" | "fullName"> | null;
+  assignedTo?: Pick<User, "id" | "fullName"> | null;
+  createdBy?: Pick<User, "id" | "fullName"> | null;
+  // dates
+  closedAt: string;
+  leadCreatedAt: string;
+  // client
+  client?: ClosedDealClient | null;
+}
+
+export interface DealClosedStats {
+  totalDeals: number;
+  totalSalesValue: number;
+  avgDealValue: number;
+  thisMonthDeals: number;
+  thisMonthSalesValue: number;
+}
+
+export interface DealEmployeeSummary {
+  employeeId: string;
+  employeeName: string;
+  role?: string | null;
+  managerName?: string | null;
+  closedDeals: number;
+  totalSalesValue: number;
+}
+
+export interface DealClosedQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  closedFrom?: string;
+  closedTo?: string;
+  employeeId?: string;
+  managerId?: string;
+  projectName?: string;
+  community?: string;
+  source?: string;
+  propertyType?: string;
 }
 
 // ── HRMS: Attendance ─────────────────────────────────────────────────────────
@@ -873,6 +991,7 @@ export interface LeadReportRow {
   dealsClosed?: number;
   salesAmount?: number;
   avgDealValue?: number;
+  manuallyCreated?: number;
 }
 
 export interface LeadReportResponse {
@@ -894,6 +1013,7 @@ export interface UserPerformanceItem {
   dealsClosed?: number;
   salesAmount?: number;
   avgDealValue?: number;
+  manuallyCreated?: number;
 }
 
 export interface LeadTimeSeriesItem {

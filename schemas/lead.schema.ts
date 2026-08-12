@@ -52,3 +52,62 @@ export const leadSchema = z.object({
 
 export type LeadFormValues = z.input<typeof leadSchema>;
 export type LeadFormOutput = z.output<typeof leadSchema>;
+
+// ── Extended schema that includes optional Client Details fields ──────────────
+// These are saved via a separate /api/clients/:leadId call — they are NOT
+// forwarded to the lead API. The create/edit pages split the values.
+
+export const leadWithClientSchema = leadSchema.extend({
+  clientFullName:         optionalString,
+  clientMobileNumber:     optionalString,
+  clientEmail: z
+    .string()
+    .email("Enter a valid client email")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
+  clientDateOfBirth:      optionalString,
+  clientPassportNumber:   optionalString,
+  clientEmiratesIdNumber: optionalString,
+});
+
+export type LeadWithClientFormValues = z.input<typeof leadWithClientSchema>;
+export type LeadWithClientFormOutput  = z.output<typeof leadWithClientSchema>;
+
+/**
+ * Splits a combined LeadWithClient form output into separate lead and client
+ * payloads ready to send to their respective API endpoints.
+ */
+export function splitLeadClientValues(values: LeadWithClientFormOutput): {
+  leadValues: LeadFormOutput;
+  clientValues: {
+    fullName?: string;
+    mobileNumber?: string;
+    email?: string;
+    dateOfBirth?: string;
+    passportNumber?: string;
+    emiratesIdNumber?: string;
+  };
+} {
+  const {
+    clientFullName,
+    clientMobileNumber,
+    clientEmail,
+    clientDateOfBirth,
+    clientPassportNumber,
+    clientEmiratesIdNumber,
+    ...leadValues
+  } = values;
+
+  return {
+    leadValues,
+    clientValues: {
+      fullName:         clientFullName,
+      mobileNumber:     clientMobileNumber,
+      email:            clientEmail,
+      dateOfBirth:      clientDateOfBirth,
+      passportNumber:   clientPassportNumber,
+      emiratesIdNumber: clientEmiratesIdNumber,
+    },
+  };
+}

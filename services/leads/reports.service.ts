@@ -115,6 +115,7 @@ export const reportsService = {
       dealsClosed: r.dealsClosed ?? 0,
       salesAmount: r.salesAmount ?? 0,
       avgDealValue: r.avgDealValue ?? 0,
+      manuallyCreated: r.manuallyCreated ?? 0,
     }));
   },
 
@@ -134,6 +135,7 @@ export const reportsService = {
       dealsClosed: row.dealsClosed ?? 0,
       salesAmount: row.salesAmount ?? 0,
       avgDealValue: row.avgDealValue ?? 0,
+      manuallyCreated: row.manuallyCreated ?? 0,
     }));
   },
 
@@ -161,6 +163,7 @@ export const reportsService = {
       dealsClosed: row.dealsClosed ?? 0,
       salesAmount: row.salesAmount ?? 0,
       avgDealValue: row.avgDealValue ?? 0,
+      manuallyCreated: row.manuallyCreated ?? 0,
     };
   },
 
