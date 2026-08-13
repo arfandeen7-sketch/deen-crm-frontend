@@ -12,6 +12,7 @@ import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
 import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
+import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
 
 export function SalesExecutiveDashboard() {
   const summary = useDashboardSummary();
@@ -87,6 +88,11 @@ export function SalesExecutiveDashboard() {
             showAssignedTo={false}
           />
         </div>
+      </div>
+
+      {/* ── My Todos ── */}
+      <div className="py-8 border-t border-zinc-200">
+        <TodoListWidget />
       </div>
 
       {/* ── Attendance & Quick Actions ── */}

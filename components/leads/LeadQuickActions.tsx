@@ -9,6 +9,7 @@ import {
   Tag,
   MessageSquare,
   Calendar,
+  CheckCircle2,
   UserCheck,
   Phone,
   MessageCircle,
@@ -41,6 +42,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
   const [status, setStatus] = useState(lead.leadStatus);
   const [comment, setComment] = useState("");
   const [followUpDate, setFollowUpDate] = useState(toDatetimeLocal(lead.followUpDate));
+  const [followUpNote, setFollowUpNote] = useState(lead.followUpNote ?? "");
   const [assignTo, setAssignTo] = useState(lead.assignedTo ?? "");
 
   // Close other dropdowns when this one opens (one-at-a-time)
@@ -105,11 +107,16 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
 
   function openModal(m: ActiveModal) {
     setOpen(false);
+    if (m === "followup") {
+      setFollowUpDate(toDatetimeLocal(lead.followUpDate));
+      setFollowUpNote(lead.followUpNote ?? "");
+    }
     setActive(m);
   }
   function closeModal() {
     setActive(null);
     setComment("");
+    setFollowUpNote(lead.followUpNote ?? "");
   }
 
   async function handleStatus() {
@@ -135,9 +142,28 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
 
   async function handleFollowUp() {
     try {
-      await update.mutateAsync({ id: lead.id, body: { followUpDate: followUpDate || undefined } });
+      await update.mutateAsync({
+        id: lead.id,
+        body: {
+          followUpDate: followUpDate || undefined,
+          followUpNote: followUpNote.trim() || null,
+        },
+      });
       toast.success("Follow-up scheduled");
       closeModal();
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  async function handleMarkFollowUpDone() {
+    try {
+      await update.mutateAsync({
+        id: lead.id,
+        body: { followUpDate: null, followUpNote: null },
+      });
+      toast.success("Follow-up marked as done");
+      setOpen(false);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -199,6 +225,15 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
           >
             <Calendar className="h-4 w-4 text-slate-400" /> Schedule Follow-Up
           </button>
+          {lead.followUpDate && (
+            <button
+              onClick={handleMarkFollowUpDone}
+              disabled={update.isPending}
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            >
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Mark Follow-Up Done
+            </button>
+          )}
           {canAction("leads", "all_leads", "assign") && (
             <button
               onClick={() => openModal("assign")}
@@ -305,6 +340,14 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
             type="datetime-local"
             value={followUpDate}
             onChange={(e) => setFollowUpDate(e.target.value)}
+          />
+        </Field>
+        <Field label="Note" className="mt-3">
+          <Textarea
+            placeholder="Optional note for this follow-up…"
+            value={followUpNote}
+            onChange={(e) => setFollowUpNote(e.target.value)}
+            rows={3}
           />
         </Field>
       </Modal>

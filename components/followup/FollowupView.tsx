@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutList, CalendarDays } from "lucide-react";
+import { LayoutList, CalendarDays, Check } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { Button } from "@/components/ui/Button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
@@ -14,6 +16,8 @@ import { UserAvatar } from "@/components/ui/Avatar";
 import { cn, formatDate } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { useFollowup, type FollowupVariant } from "@/hooks/useFollowup";
+import { useLeadMutations } from "@/hooks/useLeads";
+import { getErrorMessage } from "@/services/api/client";
 import type { Lead, LeadQueryParams } from "@/types";
 
 const TABS: { key: FollowupVariant; label: string; href: string }[] = [
@@ -25,12 +29,29 @@ const TABS: { key: FollowupVariant; label: string; href: string }[] = [
 export function FollowupView({ variant }: { variant: FollowupVariant }) {
   const router = useRouter();
   const [view, setView] = useState<"table" | "calendar">("table");
+  const [completingId, setCompletingId] = useState<string | null>(null);
   const [params, setParams] = useState<LeadQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
   });
   const { data, isLoading, isError, refetch } = useFollowup(variant, params);
+  const { update } = useLeadMutations();
   const rows = data?.data ?? [];
+
+  async function handleMarkDone(lead: Lead) {
+    setCompletingId(lead.id);
+    try {
+      await update.mutateAsync({
+        id: lead.id,
+        body: { followUpDate: null, followUpNote: null },
+      });
+      toast.success("Follow-up marked as done");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setCompletingId(null);
+    }
+  }
 
   const columns: Column<Lead>[] = [
     {
@@ -61,6 +82,40 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
         <span className={cn(variant === "missed" && "font-medium text-rose-600")}>
           {formatDate(l.followUpDate)}
         </span>
+      ),
+    },
+    {
+      key: "note",
+      header: "Note",
+      render: (l) =>
+        l.followUpNote ? (
+          <span className="line-clamp-2 max-w-[220px] text-slate-600" title={l.followUpNote}>
+            {l.followUpNote}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-400">—</span>
+        ),
+    },
+    {
+      key: "actions",
+      header: "",
+      stickyRight: true,
+      headerClassName: "text-right",
+      className: "text-right",
+      render: (l) => (
+        <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+          <Button
+            size="sm"
+            variant="outline"
+            loading={completingId === l.id}
+            disabled={completingId !== null && completingId !== l.id}
+            onClick={() => handleMarkDone(l)}
+            className="gap-1.5"
+          >
+            <Check className="h-3.5 w-3.5" />
+            Mark Done
+          </Button>
+        </div>
       ),
     },
   ];
@@ -115,7 +170,12 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
       </Card>
 
       {view === "calendar" ? (
-        <CalendarView rows={rows} onSelect={(id) => router.push(`/leads/${id}`)} />
+        <CalendarView
+          rows={rows}
+          completingId={completingId}
+          onSelect={(id) => router.push(`/leads/${id}`)}
+          onMarkDone={handleMarkDone}
+        />
       ) : (
         <>
           <DataTable
@@ -145,7 +205,17 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
   );
 }
 
-function CalendarView({ rows, onSelect }: { rows: Lead[]; onSelect: (id: string) => void }) {
+function CalendarView({
+  rows,
+  completingId,
+  onSelect,
+  onMarkDone,
+}: {
+  rows: Lead[];
+  completingId: string | null;
+  onSelect: (id: string) => void;
+  onMarkDone: (lead: Lead) => void;
+}) {
   // Group leads by their follow-up date.
   const groups = rows.reduce<Record<string, Lead[]>>((acc, lead) => {
     const key = lead.followUpDate?.slice(0, 10) ?? "unscheduled";
@@ -173,15 +243,39 @@ function CalendarView({ rows, onSelect }: { rows: Lead[]; onSelect: (id: string)
             {groups[date].map((l) => (
               <li
                 key={l.id}
-                onClick={() => onSelect(l.id)}
                 className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 p-2 hover:bg-slate-50"
               >
-                <UserAvatar name={l.leadName} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-800">{l.leadName}</p>
-                  <p className="text-xs text-slate-500">{l.mobileNumber}</p>
-                </div>
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  onClick={() => onSelect(l.id)}
+                >
+                  <UserAvatar name={l.leadName} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">{l.leadName}</p>
+                    <p className="text-xs text-slate-500">{l.mobileNumber}</p>
+                    {l.followUpNote && (
+                      <p className="mt-0.5 truncate text-xs text-slate-400" title={l.followUpNote}>
+                        {l.followUpNote}
+                      </p>
+                    )}
+                  </div>
+                </button>
                 <StatusBadge status={l.leadStatus} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={completingId === l.id}
+                  disabled={completingId !== null && completingId !== l.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMarkDone(l);
+                  }}
+                  className="shrink-0 gap-1"
+                  title="Mark Done"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </Button>
               </li>
             ))}
           </ul>

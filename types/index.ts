@@ -166,6 +166,7 @@ export interface Lead {
   lastName?: string | null;
   leadDate: string;
   followUpDate?: string | null;
+  followUpNote?: string | null;
   projectName?: string | null;
   serviceType: string;
   mobileNumber: string;
@@ -1100,6 +1101,7 @@ export type LeadActivityAction =
   | "status_changed"
   | "comment_added"
   | "followup_scheduled"
+  | "followup_completed"
   | "assigned"
   | "unassigned"
   | "field_updated"
@@ -1141,6 +1143,24 @@ export interface AssignmentHistoryResponse {
   leadId: string;
   count: number;
   history: AssignmentHistoryEntry[];
+}
+
+// ── Follow-up History ────────────────────────────────────────────────────────
+// Reuses LeadActivity (action = followup_scheduled | followup_completed).
+
+export interface FollowupHistoryEntry {
+  id: string;
+  action: "followup_scheduled" | "followup_completed";
+  followUpDate: string | null;
+  followUpNote: string | null;
+  actor: Pick<User, "id" | "fullName"> | null;
+  createdAt: string;
+}
+
+export interface FollowupHistoryResponse {
+  leadId: string;
+  count: number;
+  history: FollowupHistoryEntry[];
 }
 
 // ── App Notifications ────────────────────────────────────────────────────────
@@ -1458,4 +1478,37 @@ export interface ActivityListParams {
   outcome?: ActivityOutcome;
   source?: ActivitySource;
   search?: string;
+}
+
+// ── Todos (dashboard self-service) ───────────────────────────────────────────
+
+export type TodoPriority = "no_priority" | "low" | "medium" | "high";
+
+export interface Todo {
+  id: string;
+  userId: string;
+  title: string;
+  priority: TodoPriority;
+  isDone: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTodoInput {
+  title: string;
+  priority?: TodoPriority;
+}
+
+export interface UpdateTodoInput {
+  title?: string;
+  priority?: TodoPriority;
+  isDone?: boolean;
+}
+
+export interface EmployeeTodoGroup {
+  user: Pick<User, "id" | "fullName" | "email" | "role" | "department" | "designation">;
+  todos: Todo[];
+  openCount: number;
+  doneCount: number;
 }

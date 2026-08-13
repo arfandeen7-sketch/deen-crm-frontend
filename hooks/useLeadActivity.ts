@@ -33,3 +33,16 @@ export function useAssignmentHistory(leadId: string | null, enabled = true) {
     retry: retrySkipAuth,
   });
 }
+
+/** Complete follow-up trail for a lead (scheduled + completed), newest first. */
+export function useFollowupHistory(leadId: string | null, enabled = true) {
+  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["leads:detail"]);
+  const queryEnabled = !!leadId && hasPermission && enabled;
+  return useQuery({
+    queryKey: ["followup-history", leadId],
+    queryFn: () => activityService.followupHistory(leadId!),
+    enabled: queryEnabled,
+    refetchInterval: queryEnabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}

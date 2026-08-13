@@ -13,6 +13,8 @@ import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
 import { EmployeeActivitySection } from "@/components/dashboard/EmployeeActivitySection";
 import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
 import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
+import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
+import { EmployeeTodosWidget } from "@/components/dashboard/EmployeeTodosWidget";
 
 export function MasterDashboard() {
   const summary = useDashboardSummary();
@@ -84,6 +86,16 @@ export function MasterDashboard() {
 
       {/* ── Employee Activity Section ── */}
       <EmployeeActivitySection showLeadData={true} />
+
+      {/* ── My Todos & Employee Todos ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-8 border-t border-zinc-200">
+        <div className="flex flex-col min-h-[340px] pr-4">
+          <TodoListWidget />
+        </div>
+        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
+          <EmployeeTodosWidget />
+        </div>
+      </div>
 
       {/* ── Leads By Source (2/3) & Quick Actions (1/3) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-t border-zinc-200">

@@ -13,6 +13,7 @@ import {
 import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
 import { LEAVE_STATUS_COLORS } from "@/constants";
 import { EmployeeActivitySection } from "@/components/dashboard/EmployeeActivitySection";
+import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
 
 function todayISO(): string {
   return new Date().toISOString().split("T")[0];
@@ -196,8 +197,13 @@ export function HrManagerDashboard() {
       {/* ── Employee Activity Section ── */}
       <EmployeeActivitySection showLeadData={false} />
 
+      {/* ── My Todos ── */}
+      <div className="py-8 border-t border-zinc-200">
+        <TodoListWidget />
+      </div>
+
       {/* ── Split Section 2: Payroll Summary & Quick Actions ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-t border-zinc-200">
         <div className="lg:col-span-2 flex flex-col min-h-[340px] pr-4">
           <div>
             <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Payroll This Month</h3>

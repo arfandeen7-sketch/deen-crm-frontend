@@ -6,6 +6,7 @@ import { smtpConfigSchema, type SmtpConfigFormValues } from "@/schemas/email.sch
 import { useSmtpConfig, useSaveSmtpConfig, useTestSmtp } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Input";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/services/api/client";
 import { Send, Save } from "lucide-react";
@@ -80,11 +81,11 @@ export default function EmailConfigPage() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Encryption</label>
-              <select {...register("encryption")} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+              <Select {...register("encryption")}>
                 <option value="tls">TLS</option>
                 <option value="ssl">SSL</option>
                 <option value="none">None</option>
-              </select>
+              </Select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">From Name *</label>

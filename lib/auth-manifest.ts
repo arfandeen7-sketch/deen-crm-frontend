@@ -299,6 +299,8 @@ export const SELF_SERVICE_QUERIES = new Set([
   "hrms:my-payslips",
   "hrms:team-calendar",
   "teams:my-team",
+  "todos:mine",
+  "todos:employees",
 ]);
 
 // ── Helper: Match dynamic route patterns ─────────────────────────────────────

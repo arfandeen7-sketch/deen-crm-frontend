@@ -89,6 +89,7 @@ export function LeadForm({
       assignedTo: initial?.assignedTo ?? (selfAssign ? user?.id ?? "" : ""),
       brokerId: initial?.brokerId ?? "",
       followUpDate: toDatetimeLocal(initial?.followUpDate),
+      followUpNote: initial?.followUpNote ?? "",
       city: initial?.city ?? "",
       locality: initial?.locality ?? "",
       unitNumber: initial?.unitNumber ?? "",
@@ -248,6 +249,13 @@ export function LeadForm({
               />
             </Field>
           </section>
+          <Field label="Follow Up Note" error={errors.followUpNote?.message} className="mt-4">
+            <Textarea
+              placeholder="Optional note for this follow-up…"
+              rows={3}
+              {...register("followUpNote")}
+            />
+          </Field>
         </div>
 
         <div>

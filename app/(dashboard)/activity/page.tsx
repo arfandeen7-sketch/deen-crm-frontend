@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Input";
 import { LoadingState, EmptyState, ErrorState } from "@/components/ui/States";
 import { useActivityFeed, useActivityFiltersMeta } from "@/hooks/useActivity";
 import { getStoredToken } from "@/store/auth.store";
@@ -180,50 +181,54 @@ function FilterBar({
         Filters:
       </div>
 
-      <select
+      <Select
         value={params.category ?? ""}
         onChange={(e) => onChange({ category: e.target.value || undefined })}
-        className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 focus:border-neutral-400 focus:outline-none cursor-pointer"
+        className="w-auto min-w-[9rem] [&_button]:h-8 [&_button]:text-xs [&_button]:font-medium"
+        placeholder="All categories"
       >
         <option value="">All categories</option>
         {meta?.categories.map((c) => (
           <option key={c} value={c}>{humanize(c)}</option>
         ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={params.eventName ?? ""}
         onChange={(e) => onChange({ eventName: e.target.value || undefined })}
-        className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 focus:border-neutral-400 focus:outline-none cursor-pointer max-w-48"
+        className="w-auto min-w-[9rem] max-w-48 [&_button]:h-8 [&_button]:text-xs [&_button]:font-medium"
+        placeholder="All events"
       >
         <option value="">All events</option>
         {meta?.eventNames.map((e) => (
           <option key={e} value={e}>{e}</option>
         ))}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={params.actorType ?? ""}
         onChange={(e) => onChange({ actorType: (e.target.value || undefined) as ActivityListParams["actorType"] })}
-        className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 focus:border-neutral-400 focus:outline-none cursor-pointer"
+        className="w-auto min-w-[8rem] [&_button]:h-8 [&_button]:text-xs [&_button]:font-medium"
+        placeholder="All actors"
       >
         <option value="">All actors</option>
         <option value="user">User</option>
         <option value="system">System</option>
         <option value="external">External</option>
         <option value="unknown">Unknown</option>
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={params.outcome ?? ""}
         onChange={(e) => onChange({ outcome: (e.target.value || undefined) as ActivityOutcome })}
-        className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 focus:border-neutral-400 focus:outline-none cursor-pointer"
+        className="w-auto min-w-[8rem] [&_button]:h-8 [&_button]:text-xs [&_button]:font-medium"
+        placeholder="All outcomes"
       >
         <option value="">All outcomes</option>
         <option value="success">Success</option>
         <option value="failure">Failure</option>
         <option value="partial">Partial</option>
-      </select>
+      </Select>
 
       <input
         type="text"

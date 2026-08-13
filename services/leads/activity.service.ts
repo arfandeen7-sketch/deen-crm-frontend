@@ -1,6 +1,11 @@
 import { getData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
-import type { AssignmentHistoryResponse, LeadActivity, Paginated } from "@/types";
+import type {
+  AssignmentHistoryResponse,
+  FollowupHistoryResponse,
+  LeadActivity,
+  Paginated,
+} from "@/types";
 
 export interface ActivityQuery {
   page?: number;
@@ -22,5 +27,9 @@ export const activityService = {
 
   assignmentHistory(leadId: string): Promise<AssignmentHistoryResponse> {
     return getData<AssignmentHistoryResponse>(`/leads/${leadId}/assignment-history`);
+  },
+
+  followupHistory(leadId: string): Promise<FollowupHistoryResponse> {
+    return getData<FollowupHistoryResponse>(`/leads/${leadId}/followup-history`);
   },
 };

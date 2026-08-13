@@ -11,6 +11,7 @@ import { useMyTeam } from "@/hooks/useTeams";
 import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
 import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
 import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
+import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
 
 export function SalesManagerDashboard() {
   const summary = useDashboardSummary();
@@ -79,6 +80,11 @@ export function SalesManagerDashboard() {
         <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
           <FollowUpsWidget />
         </div>
+      </div>
+
+      {/* ── My Todos ── */}
+      <div className="py-8 border-t border-zinc-200">
+        <TodoListWidget />
       </div>
 
       {/* ── My Team & Quick Actions ── */}

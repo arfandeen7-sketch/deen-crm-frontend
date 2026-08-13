@@ -11,7 +11,6 @@ import {
   User as UserIcon,
   Eye,
   X,
-  ChevronDown,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LeadTabs } from "@/components/leads/LeadTabs";
@@ -21,6 +20,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { Modal } from "@/components/ui/Modal";
 import { StatusBadge } from "@/components/ui/Badge";
+import { Select } from "@/components/ui/Input";
 import { AccessGuard } from "@/components/shared/Guards";
 import {
   useDealClosedList,
@@ -296,21 +296,19 @@ function FilterSelect({
   placeholder: string;
 }) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 appearance-none rounded-lg border border-neutral-200 bg-white pl-3 pr-8 text-xs text-neutral-900 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all duration-150"
-      >
-        <option value="">{placeholder}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400" />
-    </div>
+    <Select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="min-w-[9rem] [&_button]:h-9 [&_button]:text-xs"
+      placeholder={placeholder}
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </Select>
   );
 }
 

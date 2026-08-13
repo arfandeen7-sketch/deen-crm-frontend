@@ -6,6 +6,7 @@ import { useCheckInOutList, useEmployeeList } from "@/hooks/useHrms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { Select } from "@/components/ui/Input";
 import { TableSkeleton, EmptyState } from "@/components/ui/States";
 import { ATTENDANCE_STATUS_COLORS, ROLE_BADGE_CLASSES, ROLE_LABELS } from "@/constants";
 import { formatDate } from "@/lib/utils";
@@ -117,10 +118,10 @@ export default function CheckInOutPage() {
                 <User className="inline h-3 w-3 mr-1" />
                 Employee
               </label>
-              <select
+              <Select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                placeholder="All Employees"
               >
                 <option value="">All Employees</option>
                 {employees?.data.map((emp) => (
@@ -128,7 +129,7 @@ export default function CheckInOutPage() {
                     {emp.fullName}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
         </div>

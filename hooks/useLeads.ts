@@ -71,6 +71,8 @@ export function useLeadMutations() {
     qc.invalidateQueries({ queryKey: [KEY] });
     qc.invalidateQueries({ queryKey: ["dashboard"] });
     qc.invalidateQueries({ queryKey: ["followup"] });
+    qc.invalidateQueries({ queryKey: ["followup-history"] });
+    qc.invalidateQueries({ queryKey: ["lead-activity"] });
   };
 
   const create = useMutation({

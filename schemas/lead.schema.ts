@@ -41,6 +41,11 @@ export const leadSchema = z.object({
   assignedTo: assignedToSchema,
   brokerId: optionalString,
   followUpDate: optionalString,
+  // Empty string clears the note on save (full form submit always includes this field).
+  followUpNote: z
+    .string()
+    .optional()
+    .transform((v) => (v == null || v === "" ? null : v)),
   city: optionalString,
   locality: optionalString,
   unitNumber: optionalString,

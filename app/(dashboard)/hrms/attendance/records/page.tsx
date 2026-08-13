@@ -8,6 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Input";
 import { ATTENDANCE_STATUS_COLORS, DEFAULT_PAGE_SIZE } from "@/constants";
 import { attendanceService } from "@/services/attendance/attendance.service";
 import { formatDate } from "@/lib/utils";
@@ -170,13 +171,13 @@ export default function AttendanceRecordsPage() {
                 <User className="inline h-3 w-3 mr-1" />
                 Employee
               </label>
-              <select
+              <Select
                 value={selectedUserId}
                 onChange={(e) => {
                   setSelectedUserId(e.target.value);
                   setPage(1);
                 }}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                placeholder="All Employees"
               >
                 <option value="">All Employees</option>
                 {employees?.data.map((emp) => (
@@ -184,7 +185,7 @@ export default function AttendanceRecordsPage() {
                     {emp.fullName}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
         </div>

@@ -22,6 +22,9 @@ import {
   Hash,
   Layers,
   BedDouble,
+  MessageSquare,
+  CheckCircle2,
+  CalendarClock,
 } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -33,7 +36,7 @@ import { StatusBadge, PriorityBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
-import { useLeadActivity } from "@/hooks/useLeadActivity";
+import { useLeadActivity, useFollowupHistory } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
 import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection";
@@ -77,8 +80,9 @@ function LeadDetailPageContent() {
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { remove } = useLeadMutations();
   const { data: activityData } = useLeadActivity(params.id);
+  const { data: followupHistory } = useFollowupHistory(params.id);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"history" | "activity">("history");
+  const [activeTab, setActiveTab] = useState<"history" | "followups" | "activity">("history");
 
   async function handleDelete() {
     try {
@@ -138,6 +142,7 @@ function LeadDetailPageContent() {
               <InfoRow icon={Mail} label="Email" value={lead.email} />
               <InfoRow icon={Calendar} label="Lead Date" value={formatDate(lead.leadDate)} />
               <InfoRow icon={Calendar} label="Follow Up Date" value={formatDate(lead.followUpDate)} />
+              <InfoRow icon={MessageSquare} label="Follow Up Note" value={lead.followUpNote} />
             </CardBody>
           </Card>
 
@@ -205,17 +210,23 @@ function LeadDetailPageContent() {
           <Card>
             {/* Tab bar */}
             <div className="flex gap-1 border-b border-slate-100 px-4 pt-3">
-              {(["history", "activity"] as const).map((t) => (
+              {(
+                [
+                  { key: "history", label: "Status History" },
+                  { key: "followups", label: "Follow-up History" },
+                  { key: "activity", label: "Activity Log" },
+                ] as const
+              ).map((t) => (
                 <button
-                  key={t}
-                  onClick={() => setActiveTab(t)}
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
                   className={`rounded-t-md px-4 py-2 text-sm font-medium transition-colors ${
-                    activeTab === t
+                    activeTab === t.key
                       ? "border-b-2 border-gray-900 text-gray-900"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
-                  {t === "history" ? "Status History" : "Activity Log"}
+                  {t.label}
                 </button>
               ))}
             </div>
@@ -248,33 +259,76 @@ function LeadDetailPageContent() {
                     <History className="h-4 w-4" /> No status changes yet.
                   </p>
                 )
-              ) : (
-                activityData && activityData.data?.length > 0 ? (
+              ) : activeTab === "followups" ? (
+                followupHistory && followupHistory.history.length > 0 ? (
                   <ol className="relative space-y-4 border-l border-slate-200 pl-5">
-                    {activityData.data.map((a) => (
-                      <li key={a.id} className="relative">
-                        <span className="absolute -left-[1.55rem] top-1 h-3 w-3 rounded-full bg-slate-400 ring-4 ring-slate-50" />
-                        <p className="text-sm font-medium text-slate-800 capitalize">
-                          {humanize(a.action)}
-                        </p>
-                        {a.metadata && Object.keys(a.metadata).length > 0 && (
-                          <p className="mt-0.5 text-xs text-slate-500">
-                            {Object.entries(a.metadata)
-                              .map(([k, v]) => `${humanize(k)}: ${v}`)
-                              .join(" · ")}
+                    {followupHistory.history.map((entry) => {
+                      const done = entry.action === "followup_completed";
+                      return (
+                        <li key={entry.id} className="relative">
+                          <span
+                            className={`absolute -left-[1.55rem] top-1 flex h-3 w-3 items-center justify-center rounded-full ring-4 ${
+                              done
+                                ? "bg-emerald-500 ring-emerald-50"
+                                : "bg-amber-500 ring-amber-50"
+                            }`}
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            {done ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                                <CheckCircle2 className="h-3 w-3" /> Completed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                <CalendarClock className="h-3 w-3" /> Scheduled
+                              </span>
+                            )}
+                            {entry.followUpDate && (
+                              <span className="text-sm text-slate-700">
+                                {formatDateTime(entry.followUpDate)}
+                              </span>
+                            )}
+                          </div>
+                          {entry.followUpNote && (
+                            <p className="mt-1 text-sm text-slate-600">{entry.followUpNote}</p>
+                          )}
+                          <p className="mt-1 text-xs text-slate-400">
+                            {entry.actor?.fullName ?? "System"} · {formatDateTime(entry.createdAt)}
                           </p>
-                        )}
-                        <p className="mt-1 text-xs text-slate-400">
-                          {a.actor?.fullName ?? "System"} · {timeAgo(a.createdAt)}
-                        </p>
-                      </li>
-                    ))}
+                        </li>
+                      );
+                    })}
                   </ol>
                 ) : (
                   <p className="flex items-center gap-2 text-sm text-slate-500">
-                    <History className="h-4 w-4" /> No activity recorded yet.
+                    <CalendarClock className="h-4 w-4" /> No follow-up history yet.
                   </p>
                 )
+              ) : activityData && activityData.data?.length > 0 ? (
+                <ol className="relative space-y-4 border-l border-slate-200 pl-5">
+                  {activityData.data.map((a) => (
+                    <li key={a.id} className="relative">
+                      <span className="absolute -left-[1.55rem] top-1 h-3 w-3 rounded-full bg-slate-400 ring-4 ring-slate-50" />
+                      <p className="text-sm font-medium text-slate-800 capitalize">
+                        {humanize(a.action)}
+                      </p>
+                      {a.metadata && Object.keys(a.metadata).length > 0 && (
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {Object.entries(a.metadata)
+                            .map(([k, v]) => `${humanize(k)}: ${v}`)
+                            .join(" · ")}
+                        </p>
+                      )}
+                      <p className="mt-1 text-xs text-slate-400">
+                        {a.actor?.fullName ?? "System"} · {timeAgo(a.createdAt)}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="flex items-center gap-2 text-sm text-slate-500">
+                  <History className="h-4 w-4" /> No activity recorded yet.
+                </p>
               )}
             </CardBody>
           </Card>
