@@ -42,10 +42,12 @@ export const leadSchema = z.object({
   brokerId: optionalString,
   followUpDate: optionalString,
   // Empty string clears the note on save (full form submit always includes this field).
+  // Uses `.nullable()` (not `.optional()`) so input and output are both
+  // `string | null` — same reason as assignedTo above.
   followUpNote: z
     .string()
-    .optional()
-    .transform((v) => (v == null || v === "" ? null : v)),
+    .nullable()
+    .transform((v) => (v === "" || v == null ? null : v)),
   city: optionalString,
   locality: optionalString,
   unitNumber: optionalString,
