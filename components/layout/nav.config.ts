@@ -30,6 +30,7 @@ import {
   Calculator,
   Contact,
   TrendingUp,
+  Building2,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -91,6 +92,17 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Assigned Leads", href: "/leads/assigned", icon: UserCheck, navAccess: { module: "leads", page: "assigned_leads" } },
       { label: "Non Assigned Leads", href: "/leads/unassigned", icon: UserX, navAccess: { module: "leads", page: "unassigned_leads" } },
       { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, navAccess: { module: "lead_reports" } },
+    ],
+  },
+  {
+    id: "properties",
+    title: "Properties",
+    icon: Building2,
+    href: "/properties",
+    isSingular: true,
+    section: "MENU",
+    items: [
+      { label: "All Properties", href: "/properties", icon: Building2 },
     ],
   },
   {
