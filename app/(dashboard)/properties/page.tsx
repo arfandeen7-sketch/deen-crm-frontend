@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Building2, Search, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { Building2, Search, SlidersHorizontal, Plus, ClipboardList } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { PropertyCard } from "@/components/properties/PropertyCard";
 import { usePropertiesList } from "@/hooks/useProperties";
+import { usePropertySubmissionsList } from "@/hooks/usePropertySubmissions";
+import { useAuth } from "@/hooks/useAuth";
 import { Input, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { displayValue } from "@/lib/utils";
@@ -14,12 +17,19 @@ import { displayValue } from "@/lib/utils";
 const PAGE_SIZE = 12;
 
 export default function PropertiesPage() {
+  const { isMaster } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [offeringType, setOfferingType] = useState("");
   const [category, setCategory] = useState("");
   const [furnishingType, setFurnishingType] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Pending submissions count for the badge on the "Submissions" button
+  const { data: pendingData } = usePropertySubmissionsList(
+    isMaster ? { status: "pending", pageSize: 1 } : { pageSize: 1 },
+  );
+  const pendingCount = isMaster ? (pendingData?.meta.total ?? 0) : 0;
 
   const params = useMemo(
     () => ({
@@ -54,6 +64,29 @@ export default function PropertiesPage() {
       <PageHeader
         title="Properties"
         subtitle="All listings from your Property Finder portal"
+        actions={
+          <div className="flex items-center gap-2">
+            {isMaster && (
+              <Link href="/properties/submissions">
+                <Button variant="secondary" size="md">
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  Submissions
+                  {pendingCount > 0 && (
+                    <span className="ml-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {pendingCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            )}
+            <Link href="/properties/create">
+              <Button variant="primary" size="md">
+                <Plus className="h-3.5 w-3.5" />
+                Add Property
+              </Button>
+            </Link>
+          </div>
+        }
       />
 
       {/* Search + Filter bar */}

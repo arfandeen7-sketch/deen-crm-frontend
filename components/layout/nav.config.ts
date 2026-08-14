@@ -31,6 +31,8 @@ import {
   Contact,
   TrendingUp,
   Building2,
+  Plus,
+  ClipboardList,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -103,6 +105,8 @@ export const NAV_GROUPS: NavGroup[] = [
     section: "MENU",
     items: [
       { label: "All Properties", href: "/properties", icon: Building2 },
+      { label: "Add Property", href: "/properties/create", icon: Plus },
+      { label: "Submissions", href: "/properties/submissions", icon: ClipboardList, masterOnly: true },
     ],
   },
   {

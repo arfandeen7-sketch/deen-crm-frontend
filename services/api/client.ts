@@ -65,7 +65,8 @@ api.interceptors.response.use(
         pathname.startsWith("/dynamic-fields") ||
         pathname.startsWith("/followup") ||
         pathname.startsWith("/activity") ||
-        pathname.startsWith("/properties");
+        pathname.startsWith("/properties") ||
+        pathname.startsWith("/property-submissions");
 
       if (isProtectedRoute) {
         window.location.href = "/dashboard/overview";
