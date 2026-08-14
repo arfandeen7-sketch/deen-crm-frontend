@@ -297,6 +297,8 @@ export function PropertyFinderSection({ lead }: Props) {
             <InfoRow icon={Hash} label="Listing ID" value={data?.listingId} />
             <InfoRow icon={Layers} label="Property Type" value={data?.propertyType} />
             <InfoRow icon={Tag} label="Category" value={data?.propertyCategory} />
+            <InfoRow icon={Home} label="Service Type" value={data?.serviceType} />
+            <InfoRow icon={DollarSign} label="Price Type" value={data?.priceType} />
             <InfoRow
               icon={DollarSign}
               label="Price"

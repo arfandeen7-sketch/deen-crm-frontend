@@ -275,6 +275,74 @@ export interface Client {
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
 }
 
+// ── Tenant Details ────────────────────────────────────────────────────────────
+
+export interface Tenant {
+  id: string;
+  leadId: string;
+  // Personal info
+  fullName?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  dateOfBirth?: string | null;
+  // Identity document numbers
+  passportNumber?: string | null;
+  emiratesIdNumber?: string | null;
+  // Passport document metadata
+  passportFilePath?: string | null;
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID document metadata
+  emiratesIdFilePath?: string | null;
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
+  // Signed download URLs (generated per-request, not stored)
+  passportUrl?: string | null;
+  emiratesIdUrl?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
+  lead?: Pick<Lead, "id" | "leadName" | "leadStatus"> & {
+    assignedUser?: Pick<User, "id" | "fullName"> | null;
+    creator?: Pick<User, "id" | "fullName"> | null;
+  } | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  passportUploader?: Pick<User, "id" | "fullName"> | null;
+  emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Rental Agreement ──────────────────────────────────────────────────────────
+
+export interface RentalAgreement {
+  id: string;
+  leadId: string;
+  // Agreement period
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  // Financial terms
+  rentAmount?: number | string | null;
+  currency: string;
+  numberOfCheques?: number | null;
+  securityDeposit?: number | string | null;
+  // Additional terms
+  notes?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
+  lead?: Pick<Lead, "id" | "leadName" | "leadStatus"> & {
+    assignedUser?: Pick<User, "id" | "fullName"> | null;
+  } | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+}
+
 export interface LeadStatusHistory {
   id: string;
   leadId: string;

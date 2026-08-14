@@ -9,6 +9,7 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeadOptions } from "@/hooks/useLeads";
 import { useBrokerOptions } from "@/hooks/useBrokers";
+import { SERVICE_TYPES } from "@/constants";
 import type { LeadQueryParams } from "@/types";
 
 export function LeadFilters({
@@ -106,9 +107,9 @@ export function LeadFilters({
           className="h-10 w-auto"
         >
           <option value="">All service types</option>
-          <option value="Sales">Sales</option>
-          <option value="Rent">Rent</option>
-          <option value="Lease">Lease</option>
+          {SERVICE_TYPES.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </Select>
         <Select
           value={filters.leadPriority ?? ""}

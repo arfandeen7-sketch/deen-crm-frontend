@@ -126,6 +126,16 @@ function LeadsPageContent() {
         </div>
       ),
     },
+    {
+      key: "serviceType",
+      header: "Service Type",
+      render: (l) =>
+        l.serviceType ? (
+          <span className="text-sm text-slate-700">{l.serviceType}</span>
+        ) : (
+          <Dash />
+        ),
+    },
     { key: "status", header: "Status", render: (l) => <StatusBadge status={l.leadStatus} /> },
     {
       key: "assigned",

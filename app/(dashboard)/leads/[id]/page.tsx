@@ -41,6 +41,8 @@ import { getErrorMessage } from "@/services/api/client";
 import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection";
 import { ClientDetailsCard } from "@/components/clients/ClientDetailsCard";
+import { TenantDetailsCard } from "@/components/tenants/TenantDetailsCard";
+import { RentalAgreementCard } from "@/components/rentalAgreements/RentalAgreementCard";
 
 function InfoRow({
   icon: Icon,
@@ -203,9 +205,19 @@ function LeadDetailPageContent() {
             </CardBody>
           </Card>
 
-          <CanAccess module="client_details" page="all_clients" action="view">
-            <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} />
-          </CanAccess>
+          {/* After Deal Closed: show Client Details (Sale) or Tenant + Rental Agreement (Rent) */}
+          {lead.leadStatus === "Deal Closed" && (
+            <CanAccess module="client_details" page="all_clients" action="view">
+              {lead.serviceType === "Rent" ? (
+                <>
+                  <TenantDetailsCard leadId={lead.id} leadName={lead.leadName} />
+                  <RentalAgreementCard leadId={lead.id} />
+                </>
+              ) : (
+                <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} />
+              )}
+            </CanAccess>
+          )}
 
           <Card>
             {/* Tab bar */}

@@ -31,6 +31,7 @@ export interface PropertyFinderFields {
   propertyCategory?: string;
   price?: number;
   priceType?: string;
+  serviceType?: string;
   currency: string;
   bedrooms?: string;
   bathrooms?: string;
