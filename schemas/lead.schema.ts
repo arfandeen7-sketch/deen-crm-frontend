@@ -65,6 +65,7 @@ export type LeadFormOutput = z.output<typeof leadSchema>;
 // forwarded to the lead API. The create/edit pages split the values.
 
 export const leadWithClientSchema = leadSchema.extend({
+  // ── Buyer (Client) Details — shown when serviceType is NOT "Rent" ───────
   clientFullName:         optionalString,
   clientMobileNumber:     optionalString,
   clientEmail: z
@@ -76,6 +77,21 @@ export const leadWithClientSchema = leadSchema.extend({
   clientDateOfBirth:      optionalString,
   clientPassportNumber:   optionalString,
   clientEmiratesIdNumber: optionalString,
+
+  // ── Tenant Details — shown when serviceType IS "Rent" ──────────────────
+  tenantFullName:           optionalString,
+  tenantMobileNumber:       optionalString,
+  tenantEmail: z
+    .string()
+    .email("Enter a valid tenant email")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
+  tenantDateOfBirth:        optionalString,
+  tenantPassportNumber:     optionalString,
+  tenantEmiratesIdNumber:   optionalString,
+  tenantAgreementStartDate: optionalString,
+  tenantAgreementEndDate:   optionalString,
 });
 
 export type LeadWithClientFormValues = z.input<typeof leadWithClientSchema>;
@@ -95,14 +111,34 @@ export function splitLeadClientValues(values: LeadWithClientFormOutput): {
     passportNumber?: string;
     emiratesIdNumber?: string;
   };
+  tenantValues: {
+    fullName?: string;
+    mobileNumber?: string;
+    email?: string;
+    dateOfBirth?: string;
+    passportNumber?: string;
+    emiratesIdNumber?: string;
+    agreementStartDate?: string;
+    agreementEndDate?: string;
+  };
 } {
   const {
+    // Buyer (client) fields
     clientFullName,
     clientMobileNumber,
     clientEmail,
     clientDateOfBirth,
     clientPassportNumber,
     clientEmiratesIdNumber,
+    // Tenant fields
+    tenantFullName,
+    tenantMobileNumber,
+    tenantEmail,
+    tenantDateOfBirth,
+    tenantPassportNumber,
+    tenantEmiratesIdNumber,
+    tenantAgreementStartDate,
+    tenantAgreementEndDate,
     ...leadValues
   } = values;
 
@@ -115,6 +151,16 @@ export function splitLeadClientValues(values: LeadWithClientFormOutput): {
       dateOfBirth:      clientDateOfBirth,
       passportNumber:   clientPassportNumber,
       emiratesIdNumber: clientEmiratesIdNumber,
+    },
+    tenantValues: {
+      fullName:             tenantFullName,
+      mobileNumber:         tenantMobileNumber,
+      email:                tenantEmail,
+      dateOfBirth:          tenantDateOfBirth,
+      passportNumber:       tenantPassportNumber,
+      emiratesIdNumber:     tenantEmiratesIdNumber,
+      agreementStartDate:   tenantAgreementStartDate,
+      agreementEndDate:     tenantAgreementEndDate,
     },
   };
 }

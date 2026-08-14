@@ -29,6 +29,7 @@ export interface PropertyFinderFields {
   propertyReference?: string;
   propertyType?: string;
   propertyCategory?: string;
+  offeringType?: string;
   price?: number;
   priceType?: string;
   currency: string;

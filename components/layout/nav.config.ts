@@ -69,6 +69,7 @@ export interface NavGroup {
 }
 
 export const NAV_GROUPS: NavGroup[] = [
+  // ── 1. Dashboard ────────────────────────────────────────────────────────
   {
     id: "dashboard",
     title: "Dashboard",
@@ -80,6 +81,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
     ],
   },
+  // ── 2. Leads ────────────────────────────────────────────────────────────
   {
     id: "leads",
     title: "Leads",
@@ -96,6 +98,32 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Lead Reports", href: "/leads/reports", icon: BarChart2, navAccess: { module: "lead_reports" } },
     ],
   },
+  // ── 3. Follow Up ────────────────────────────────────────────────────────
+  {
+    id: "followup",
+    title: "Follow Up",
+    icon: CalendarClock,
+    moduleKey: "followup",
+    section: "MENU",
+    items: [
+      { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck, navAccess: { module: "followup", page: "todays_followup" } },
+      { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX, navAccess: { module: "followup", page: "missed_followup" } },
+      { label: "Upcoming Follow Ups", href: "/followup/upcoming", icon: CalendarPlus, navAccess: { module: "followup", page: "upcoming_followup" } },
+    ],
+  },
+  // ── 4. Brokers ──────────────────────────────────────────────────────────
+  {
+    id: "brokers",
+    title: "Brokers",
+    icon: Handshake,
+    moduleKey: "brokers",
+    section: "MENU",
+    items: [
+      { label: "All Brokers", href: "/brokers", icon: Handshake, navAccess: { module: "brokers", page: "all_brokers" } },
+      { label: "Create Broker", href: "/brokers/create", icon: UserPlus, navAccess: { module: "brokers", page: "all_brokers", action: "create" } },
+    ],
+  },
+  // ── 5. Properties ───────────────────────────────────────────────────────
   {
     id: "properties",
     title: "Properties",
@@ -109,30 +137,33 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Submissions", href: "/properties/submissions", icon: ClipboardList, masterOnly: true },
     ],
   },
+  // ── 6. Buyer Details (direct link — no dropdown) ─────────────────────────
   {
-    id: "followup",
-    title: "Follow Up",
-    icon: CalendarClock,
-    moduleKey: "followup",
+    id: "client_details",
+    title: "Buyer Details",
+    icon: Contact,
+    href: "/clients",
+    isSingular: true,
+    moduleKey: "client_details",
     section: "MENU",
     items: [
-      { label: "Today's Follow Ups", href: "/followup/today", icon: CalendarCheck, navAccess: { module: "followup", page: "todays_followup" } },
-      { label: "Missed Follow Ups", href: "/followup/missed", icon: CalendarX, navAccess: { module: "followup", page: "missed_followup" } },
-      { label: "Upcoming Follow Ups", href: "/followup/upcoming", icon: CalendarPlus, navAccess: { module: "followup", page: "upcoming_followup" } },
+      { label: "All Buyers", href: "/clients", icon: Contact, navAccess: { module: "client_details", page: "all_clients", action: "view" } },
     ],
   },
+  // ── 7. Tenant Details (direct link — no dropdown) ────────────────────────
   {
-    id: "users",
-    title: "Users",
-    icon: UserCog,
-    moduleKey: "users",
+    id: "tenant_details",
+    title: "Tenant Details",
+    icon: Users2,
+    href: "/tenants",
+    isSingular: true,
+    moduleKey: "tenant_details",
     section: "MENU",
     items: [
-      { label: "All Users", href: "/users", icon: UserCog, navAccess: { module: "users", page: "all_users" } },
-      { label: "Create User", href: "/users/create", icon: UserPlus, navAccess: { module: "users", page: "all_users", action: "create" } },
-      { label: "Teams", href: "/teams", icon: Users2, navAccess: { module: "users", page: "teams" } },
+      { label: "All Tenants", href: "/tenants", icon: Users2, navAccess: { module: "tenant_details", page: "all_tenants", action: "view" } },
     ],
   },
+  // ── 8. Human Resource ───────────────────────────────────────────────────
   {
     id: "hrms",
     title: "Human Resource",
@@ -153,27 +184,20 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "HR Reports", href: "/hrms/reports", icon: PieChart, navAccess: { module: "hrms", page: "login_activity" } },
     ],
   },
+  // ── 9. Users ────────────────────────────────────────────────────────────
   {
-    id: "brokers",
-    title: "Brokers",
-    icon: Handshake,
-    moduleKey: "brokers",
+    id: "users",
+    title: "Users",
+    icon: UserCog,
+    moduleKey: "users",
     section: "MENU",
     items: [
-      { label: "All Brokers", href: "/brokers", icon: Handshake, navAccess: { module: "brokers", page: "all_brokers" } },
-      { label: "Create Broker", href: "/brokers/create", icon: UserPlus, navAccess: { module: "brokers", page: "all_brokers", action: "create" } },
+      { label: "All Users", href: "/users", icon: UserCog, navAccess: { module: "users", page: "all_users" } },
+      { label: "Create User", href: "/users/create", icon: UserPlus, navAccess: { module: "users", page: "all_users", action: "create" } },
+      { label: "Teams", href: "/teams", icon: Users2, navAccess: { module: "users", page: "teams" } },
     ],
   },
-  {
-    id: "client_details",
-    title: "Client Details",
-    icon: Contact,
-    moduleKey: "client_details",
-    section: "MENU",
-    items: [
-      { label: "All Clients", href: "/clients", icon: Contact, navAccess: { module: "client_details", page: "all_clients", action: "view" } },
-    ],
-  },
+  // ── 10. Rest of existing modules (GENERAL section) ───────────────────────
   {
     id: "my-team",
     title: "My Team",

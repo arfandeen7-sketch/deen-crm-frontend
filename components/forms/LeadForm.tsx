@@ -15,17 +15,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBrokerOptions } from "@/hooks/useBrokers";
 import { SERVICE_TYPES } from "@/constants";
 import { toDatetimeLocal } from "@/lib/utils";
-import type { Client, Lead } from "@/types";
+import { getEffectiveServiceType } from "@/lib/leadServiceType";
+import type { Client, Lead, Tenant } from "@/types";
 
 export function LeadForm({
   initial,
   initialClient,
+  initialTenant,
   submitting,
   onSubmit,
   onCancel,
 }: {
   initial?: Lead;
   initialClient?: Client | null;
+  initialTenant?: Tenant | null;
   submitting?: boolean;
   onSubmit: (values: LeadWithClientFormValues) => void;
   onCancel?: () => void;
@@ -68,10 +71,18 @@ export function LeadForm({
     return Array.from(byId.values());
   }, [initial?.assignedUser, user, selfAssign, assigneeLocked, users]);
 
+  // Effective service type — for PF leads, derive from pfOfferingType when
+  // the stored serviceType is the ingestion default "Buy". This makes the
+  // dropdown show "Rent" for rental PF leads instead of the hardcoded "Buy".
+  const effectiveServiceType = initial
+    ? getEffectiveServiceType(initial)
+    : "Buy";
+
   const {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<LeadWithClientFormValues>({
     resolver: zodResolver(leadWithClientSchema),
@@ -83,7 +94,7 @@ export function LeadForm({
       email: initial?.email ?? "",
       source: initial?.source ?? "",
       projectName: initial?.projectName ?? "",
-      serviceType: initial?.serviceType ?? "Buy",
+      serviceType: effectiveServiceType,
       leadStatus: initial?.leadStatus ?? "Fresh",
       leadPriority: initial?.leadPriority ?? "",
       assignedTo: initial?.assignedTo ?? (selfAssign ? user?.id ?? "" : ""),
@@ -97,7 +108,7 @@ export function LeadForm({
       propertySize: initial?.propertySize ?? "",
       configuration: initial?.configuration ?? "",
       comments: initial?.comments ?? "",
-      // Client Detail fields (pre-fill from existing client record on edit)
+      // Client (Buyer) Detail fields — pre-fill from existing client record
       clientFullName:         initialClient?.fullName ?? "",
       clientMobileNumber:     initialClient?.mobileNumber ?? "",
       clientEmail:            initialClient?.email ?? "",
@@ -106,8 +117,28 @@ export function LeadForm({
         : "",
       clientPassportNumber:   initialClient?.passportNumber ?? "",
       clientEmiratesIdNumber: initialClient?.emiratesIdNumber ?? "",
+      // Tenant Detail fields — pre-fill from existing tenant record
+      tenantFullName:           initialTenant?.fullName ?? "",
+      tenantMobileNumber:       initialTenant?.mobileNumber ?? "",
+      tenantEmail:              initialTenant?.email ?? "",
+      tenantDateOfBirth:        initialTenant?.dateOfBirth
+        ? initialTenant.dateOfBirth.slice(0, 10)
+        : "",
+      tenantPassportNumber:     initialTenant?.passportNumber ?? "",
+      tenantEmiratesIdNumber:   initialTenant?.emiratesIdNumber ?? "",
+      tenantAgreementStartDate: initialTenant?.agreementStartDate
+        ? initialTenant.agreementStartDate.slice(0, 10)
+        : "",
+      tenantAgreementEndDate:   initialTenant?.agreementEndDate
+        ? initialTenant.agreementEndDate.slice(0, 10)
+        : "",
     },
   });
+
+  // Watch serviceType in real-time so the Buyer/Tenant section reacts to
+  // dropdown changes without a page reload.
+  const currentServiceType = watch("serviceType");
+  const showTenantFields = currentServiceType?.toLowerCase() === "rent";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -297,36 +328,74 @@ export function LeadForm({
           <Textarea placeholder="Notes about this lead…" {...register("comments")} />
         </Field>
 
-        {/* ── Client Details ─────────────────────────────────────────────── */}
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
-            Client Details
-            <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
-          </h3>
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Client Full Name" error={errors.clientFullName?.message}>
-              <Input placeholder="As per passport / Emirates ID" {...register("clientFullName")} />
-            </Field>
-            <Field label="Client Mobile" error={errors.clientMobileNumber?.message}>
-              <Input placeholder="+9715XXXXXXXX" {...register("clientMobileNumber")} />
-            </Field>
-            <Field label="Client Email" error={errors.clientEmail?.message}>
-              <Input type="email" placeholder="client@example.com" {...register("clientEmail")} />
-            </Field>
-            <Field label="Date of Birth" error={errors.clientDateOfBirth?.message}>
-              <Input type="date" {...register("clientDateOfBirth")} />
-            </Field>
-            <Field label="Passport Number" error={errors.clientPassportNumber?.message}>
-              <Input placeholder="e.g. A12345678" {...register("clientPassportNumber")} />
-            </Field>
-            <Field label="Emirates ID Number" error={errors.clientEmiratesIdNumber?.message}>
-              <Input placeholder="784-XXXX-XXXXXXX-X" {...register("clientEmiratesIdNumber")} />
-            </Field>
-          </section>
-          <p className="mt-2 text-xs text-neutral-400">
-            Passport and Emirates ID documents can be uploaded from the lead detail page after saving.
-          </p>
-        </div>
+        {/* ── Buyer / Tenant Details (conditional on Service Type) ──────────── */}
+        {showTenantFields ? (
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+              Tenant Details
+              <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
+            </h3>
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Field label="Tenant Full Name" error={errors.tenantFullName?.message}>
+                <Input placeholder="As per passport / Emirates ID" {...register("tenantFullName")} />
+              </Field>
+              <Field label="Tenant Mobile" error={errors.tenantMobileNumber?.message}>
+                <Input placeholder="+9715XXXXXXXX" {...register("tenantMobileNumber")} />
+              </Field>
+              <Field label="Tenant Email" error={errors.tenantEmail?.message}>
+                <Input type="email" placeholder="tenant@example.com" {...register("tenantEmail")} />
+              </Field>
+              <Field label="Date of Birth" error={errors.tenantDateOfBirth?.message}>
+                <Input type="date" {...register("tenantDateOfBirth")} />
+              </Field>
+              <Field label="Passport Number" error={errors.tenantPassportNumber?.message}>
+                <Input placeholder="e.g. A12345678" {...register("tenantPassportNumber")} />
+              </Field>
+              <Field label="Emirates ID Number" error={errors.tenantEmiratesIdNumber?.message}>
+                <Input placeholder="784-XXXX-XXXXXXX-X" {...register("tenantEmiratesIdNumber")} />
+              </Field>
+              <Field label="Agreement Start Date" error={errors.tenantAgreementStartDate?.message}>
+                <Input type="date" {...register("tenantAgreementStartDate")} />
+              </Field>
+              <Field label="Agreement End Date" error={errors.tenantAgreementEndDate?.message}>
+                <Input type="date" {...register("tenantAgreementEndDate")} />
+              </Field>
+            </section>
+            <p className="mt-2 text-xs text-neutral-400">
+              Passport, Emirates ID, and Tenant Agreement documents can be uploaded from the lead detail page after saving.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+              Buyer Details
+              <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
+            </h3>
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Field label="Buyer Full Name" error={errors.clientFullName?.message}>
+                <Input placeholder="As per passport / Emirates ID" {...register("clientFullName")} />
+              </Field>
+              <Field label="Buyer Mobile" error={errors.clientMobileNumber?.message}>
+                <Input placeholder="+9715XXXXXXXX" {...register("clientMobileNumber")} />
+              </Field>
+              <Field label="Buyer Email" error={errors.clientEmail?.message}>
+                <Input type="email" placeholder="buyer@example.com" {...register("clientEmail")} />
+              </Field>
+              <Field label="Date of Birth" error={errors.clientDateOfBirth?.message}>
+                <Input type="date" {...register("clientDateOfBirth")} />
+              </Field>
+              <Field label="Passport Number" error={errors.clientPassportNumber?.message}>
+                <Input placeholder="e.g. A12345678" {...register("clientPassportNumber")} />
+              </Field>
+              <Field label="Emirates ID Number" error={errors.clientEmiratesIdNumber?.message}>
+                <Input placeholder="784-XXXX-XXXXXXX-X" {...register("clientEmiratesIdNumber")} />
+              </Field>
+            </section>
+            <p className="mt-2 text-xs text-neutral-400">
+              Passport and Emirates ID documents can be uploaded from the lead detail page after saving.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-4">

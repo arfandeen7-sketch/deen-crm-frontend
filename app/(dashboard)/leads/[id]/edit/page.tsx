@@ -11,6 +11,7 @@ import { LeadForm } from "@/components/forms/LeadForm";
 import { AccessGuard } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useClientByLeadId, useClientMutations } from "@/hooks/useClients";
+import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
 import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormValues } from "@/schemas/lead.schema";
 
@@ -19,22 +20,30 @@ export default function EditLeadPage() {
   const router = useRouter();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: client } = useClientByLeadId(params.id);
+  const { data: tenant } = useTenantByLeadId(params.id);
   const { update } = useLeadMutations();
   const { upsert: upsertClient } = useClientMutations(params.id);
+  const { upsert: upsertTenant } = useTenantMutations(params.id);
 
   async function onSubmit(values: LeadWithClientFormValues) {
     try {
       const parsed = leadWithClientSchema.parse(values);
-      const { leadValues, clientValues } = splitLeadClientValues(parsed);
+      const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
 
-      // Save lead and client in parallel when both have data
-      const leadPromise = update.mutateAsync({ id: params.id, body: leadValues });
+      // Save lead first, then the appropriate detail record (Buyer or Tenant)
+      await update.mutateAsync({ id: params.id, body: leadValues });
+
+      // Save Buyer (client) details when service type is NOT Rent
       const hasClientData = Object.values(clientValues).some((v) => v !== undefined && v !== "");
-      const clientPromise = hasClientData
-        ? upsertClient.mutateAsync(clientValues)
-        : Promise.resolve();
+      if (hasClientData && leadValues.serviceType?.toLowerCase() !== "rent") {
+        await upsertClient.mutateAsync(clientValues);
+      }
 
-      await Promise.all([leadPromise, clientPromise]);
+      // Save Tenant details when service type IS Rent
+      const hasTenantData = Object.values(tenantValues).some((v) => v !== undefined && v !== "");
+      if (hasTenantData && leadValues.serviceType?.toLowerCase() === "rent") {
+        await upsertTenant.mutateAsync(tenantValues);
+      }
 
       toast.success("Lead updated");
       router.push(`/leads/${params.id}`);
@@ -60,7 +69,8 @@ export default function EditLeadPage() {
             <LeadForm
               initial={lead}
               initialClient={client}
-              submitting={update.isPending || upsertClient.isPending}
+              initialTenant={tenant}
+              submitting={update.isPending || upsertClient.isPending || upsertTenant.isPending}
               onSubmit={onSubmit}
               onCancel={() => router.push(`/leads/${params.id}`)}
             />

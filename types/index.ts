@@ -212,6 +212,7 @@ export interface Lead {
   pfPropertyReference?: string | null;
   pfListingId?: string | null;
   pfPropertyCategory?: string | null;
+  pfOfferingType?: string | null;
   pfPropertyType?: string | null;
   pfCurrency?: string | null;
   pfBedrooms?: string | null;
@@ -273,6 +274,59 @@ export interface Client {
   creator?: Pick<User, "id" | "fullName"> | null;
   passportUploader?: Pick<User, "id" | "fullName"> | null;
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Tenant Details ────────────────────────────────────────────────────────────
+
+export interface Tenant {
+  id: string;
+  leadId: string;
+  // Personal info
+  fullName?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  dateOfBirth?: string | null;
+  // Identity document numbers
+  passportNumber?: string | null;
+  emiratesIdNumber?: string | null;
+  // Tenancy agreement
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  // Passport document metadata
+  passportFilePath?: string | null;
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID document metadata
+  emiratesIdFilePath?: string | null;
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
+  // Tenant agreement document metadata
+  agreementFilePath?: string | null;
+  agreementFileName?: string | null;
+  agreementMimeType?: string | null;
+  agreementUploadedAt?: string | null;
+  agreementUploadedBy?: string | null;
+  // Signed download URLs (generated per-request, not stored)
+  passportUrl?: string | null;
+  emiratesIdUrl?: string | null;
+  agreementUrl?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
+  lead?: Pick<Lead, "id" | "leadName" | "leadStatus" | "serviceType" | "projectName"> & {
+    assignedUser?: Pick<User, "id" | "fullName"> | null;
+    creator?: Pick<User, "id" | "fullName"> | null;
+  } | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  passportUploader?: Pick<User, "id" | "fullName"> | null;
+  emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+  agreementUploader?: Pick<User, "id" | "fullName"> | null;
 }
 
 export interface LeadStatusHistory {

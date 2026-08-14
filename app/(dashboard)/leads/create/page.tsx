@@ -12,6 +12,7 @@ import { useLeadMutations } from "@/hooks/useLeads";
 import { getErrorMessage } from "@/services/api/client";
 import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormValues } from "@/schemas/lead.schema";
 import { clientsService } from "@/services/clients/clients.service";
+import { tenantsService } from "@/services/tenants/tenants.service";
 
 export default function CreateLeadPage() {
   const router = useRouter();
@@ -20,18 +21,28 @@ export default function CreateLeadPage() {
   async function onSubmit(values: LeadWithClientFormValues) {
     try {
       const parsed = leadWithClientSchema.parse(values);
-      const { leadValues, clientValues } = splitLeadClientValues(parsed);
+      const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
 
       // 1. Save the lead
       const lead = await create.mutateAsync(leadValues);
 
-      // 2. Save client details if any fields were filled in
-      const hasClientData = Object.values(clientValues).some(Boolean);
-      if (hasClientData) {
-        await clientsService.upsert(lead.id, clientValues).catch(() => {
-          // Client details save failure is non-fatal on create — user can edit later
-          toast.warning("Lead created, but client details could not be saved. You can add them from the lead page.");
-        });
+      // 2. Save Buyer (client) or Tenant details depending on service type
+      const isRent = leadValues.serviceType?.toLowerCase() === "rent";
+
+      if (isRent) {
+        const hasTenantData = Object.values(tenantValues).some(Boolean);
+        if (hasTenantData) {
+          await tenantsService.upsert(lead.id, tenantValues).catch(() => {
+            toast.warning("Lead created, but tenant details could not be saved. You can add them from the lead page.");
+          });
+        }
+      } else {
+        const hasClientData = Object.values(clientValues).some(Boolean);
+        if (hasClientData) {
+          await clientsService.upsert(lead.id, clientValues).catch(() => {
+            toast.warning("Lead created, but buyer details could not be saved. You can add them from the lead page.");
+          });
+        }
       }
 
       toast.success("Lead created");

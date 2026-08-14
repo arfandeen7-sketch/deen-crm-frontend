@@ -41,6 +41,8 @@ import { getErrorMessage } from "@/services/api/client";
 import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection";
 import { ClientDetailsCard } from "@/components/clients/ClientDetailsCard";
+import { TenantDetailsCard } from "@/components/tenants/TenantDetailsCard";
+import { isRentalLead, getEffectiveServiceType } from "@/lib/leadServiceType";
 
 function InfoRow({
   icon: Icon,
@@ -105,7 +107,7 @@ function LeadDetailPageContent() {
 
       <PageHeader
         title={`${displayValue(lead.leadName)}${!isEmptyDisplayValue(lead.lastName) ? ` ${lead.lastName}` : ""}`}
-        subtitle={`${displayValue(lead.source)} · ${displayValue(lead.serviceType)}`}
+        subtitle={`${displayValue(lead.source)} · ${displayValue(getEffectiveServiceType(lead))}`}
         actions={
           <>
             <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>
@@ -165,7 +167,7 @@ function LeadDetailPageContent() {
                   value={lead.price ? Number(lead.price).toLocaleString() : undefined}
                 />
                 <InfoRow icon={Maximize2} label="Property Size" value={lead.propertySize ? `${lead.propertySize} sqft` : undefined} />
-                <InfoRow icon={Home} label="Service Type" value={lead.serviceType} />
+                <InfoRow icon={Home} label="Service Type" value={getEffectiveServiceType(lead)} />
               </CardBody>
             </Card>
           )}
@@ -203,9 +205,15 @@ function LeadDetailPageContent() {
             </CardBody>
           </Card>
 
-          <CanAccess module="client_details" page="all_clients" action="view">
-            <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} />
-          </CanAccess>
+          {isRentalLead(lead) ? (
+            <CanAccess module="tenant_details" page="all_tenants" action="view">
+              <TenantDetailsCard leadId={lead.id} leadName={lead.leadName} />
+            </CanAccess>
+          ) : (
+            <CanAccess module="client_details" page="all_clients" action="view">
+              <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} />
+            </CanAccess>
+          )}
 
           <Card>
             {/* Tab bar */}

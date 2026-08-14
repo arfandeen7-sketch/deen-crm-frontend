@@ -298,6 +298,19 @@ export function PropertyFinderSection({ lead }: Props) {
             <InfoRow icon={Layers} label="Property Type" value={data?.propertyType} />
             <InfoRow icon={Tag} label="Category" value={data?.propertyCategory} />
             <InfoRow
+              icon={Home}
+              label="For Sale / Rent"
+              value={
+                data?.offeringType
+                  ? data.offeringType.toLowerCase() === "sale"
+                    ? "For Sale"
+                    : data.offeringType.toLowerCase() === "rent"
+                    ? "For Rent"
+                    : data.offeringType
+                  : undefined
+              }
+            />
+            <InfoRow
               icon={DollarSign}
               label="Price"
               value={
