@@ -137,6 +137,18 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Submissions", href: "/properties/submissions", icon: ClipboardList, masterOnly: true },
     ],
   },
+  // ── 6. Owners ───────────────────────────────────────────────────────────
+  {
+    id: "owners",
+    title: "Owners",
+    icon: UserCog,
+    moduleKey: "owners",
+    section: "MENU",
+    items: [
+      { label: "All Owners", href: "/owners", icon: UserCog, navAccess: { module: "owners", page: "all_owners" } },
+      { label: "Add Owner", href: "/owners/create", icon: UserPlus, navAccess: { module: "owners", page: "all_owners", action: "create" } },
+    ],
+  },
   // ── 6. Buyer Details (direct link — no dropdown) ─────────────────────────
   {
     id: "client_details",

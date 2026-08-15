@@ -45,6 +45,13 @@ export interface PropertySummary {
   updatedAt: string;
   /** "sold" | "rented" | null — set when a linked lead is Deal Closed. */
   dealStatus: "sold" | "rented" | null;
+  /** Rental agreement details — only present when dealStatus is "rented" and tenant has agreement dates. */
+  rentalAgreement?: {
+    agreementStartDate: string | null;
+    agreementEndDate: string | null;
+    /** Days remaining until agreement end date (negative if expired). */
+    daysRemaining: number | null;
+  } | null;
 }
 
 export interface PropertyDetail extends PropertySummary {

@@ -96,6 +96,12 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/clients": { type: "permission", requirement: { module: "client_details", page: "all_clients", action: "view" } },
   "/clients/[leadId]": { type: "permission", requirement: { module: "client_details", page: "all_clients", action: "view" } },
 
+  // Owners
+  "/owners": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "view" } },
+  "/owners/create": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "create" } },
+  "/owners/[id]": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "view" } },
+  "/owners/[id]/edit": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "edit" } },
+
   // Dynamic Fields
   "/dynamic-fields/[category]": { type: "permission", requirement: { module: "dynamic_fields", page: "manage_fields", action: "view" } },
 
@@ -202,6 +208,10 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
 
   "clients:list":   { module: "client_details", page: "all_clients", action: "view" },
   "clients:detail": { module: "client_details", page: "all_clients", action: "view" },
+
+  "owners:list":   { module: "owners", page: "all_owners", action: "view" },
+  "owners:detail": { module: "owners", page: "all_owners", action: "view" },
+  "owners:lookup": { module: "owners", page: "all_owners", action: "view" },
 };
 
 // ── Mutation / Action Requirements ───────────────────────────────────────────
@@ -255,6 +265,13 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "clients:edit": { module: "client_details", page: "all_clients", action: "edit" },
   "clients:upload-documents": { module: "client_details", page: "all_clients", action: "upload_documents" },
   "clients:export": { module: "client_details", page: "all_clients", action: "export" },
+
+  "owners:create": { module: "owners", page: "all_owners", action: "create" },
+  "owners:edit": { module: "owners", page: "all_owners", action: "edit" },
+  "owners:delete": { module: "owners", page: "all_owners", action: "delete" },
+  "owners:add-property": { module: "owners", page: "all_owners", action: "create" },
+  "owners:edit-property": { module: "owners", page: "all_owners", action: "edit" },
+  "owners:delete-property": { module: "owners", page: "all_owners", action: "delete" },
 
   "integrations:connect": { module: "integrations", page: "all_integrations", action: "connect" },
   "integrations:edit": { module: "integrations", page: "all_integrations", action: "edit" },

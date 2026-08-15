@@ -66,7 +66,8 @@ api.interceptors.response.use(
         pathname.startsWith("/followup") ||
         pathname.startsWith("/activity") ||
         pathname.startsWith("/properties") ||
-        pathname.startsWith("/property-submissions");
+        pathname.startsWith("/property-submissions") ||
+        pathname.startsWith("/owners");
 
       if (isProtectedRoute) {
         window.location.href = "/dashboard/overview";

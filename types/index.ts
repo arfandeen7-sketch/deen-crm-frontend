@@ -1,5 +1,7 @@
 // Domain types mirroring the DEEN CRM backend (Prisma schema + API contracts).
 
+import type { PropertyDetail } from "@/services/properties/properties.service";
+
 export type UserRole = "master" | "hr_manager" | "sales_manager" | "sales_executive";
 
 // ── 3-Level Permission System (Module → Page → Action) ──────────────────────
@@ -962,6 +964,82 @@ export interface ImportResult {
   skipped: number;
   errors: { row: number; reason: string }[];
 }
+
+// ── Owners ───────────────────────────────────────────────────────────────────
+
+export type OwnerPropertyListingStatus =
+  | "available"
+  | "listed"
+  | "sold"
+  | "rented"
+  | "off_market";
+
+export interface OwnerProperty {
+  id: string;
+  ownerId: string;
+  projectName: string;
+  projectType?: string | null;
+  reference?: string | null;
+  category?: string | null;
+  type?: string | null;
+  configuration?: string | null;
+  bedrooms?: string | null;
+  bathrooms?: string | null;
+  size?: string | null;
+  price?: string | null;
+  emirate?: string | null;
+  community?: string | null;
+  building?: string | null;
+  unitNumber?: string | null;
+  floorNumber?: string | null;
+  parkingSlots?: string | null;
+  listingStatus: OwnerPropertyListingStatus;
+  pfListingId?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Full PF listing details — populated by the getById endpoint. */
+  pfListing?: PropertyDetail | null;
+}
+
+export interface Owner {
+  id: string;
+  fullName: string;
+  mobileNumber: string;
+  mobileNormalized: string;
+  alternateMobile?: string | null;
+  email?: string | null;
+  emailNormalized?: string | null;
+  whatsapp?: string | null;
+  emirate?: string | null;
+  city?: string | null;
+  locality?: string | null;
+  notes?: string | null;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  properties?: OwnerProperty[];
+  _count?: { properties: number };
+}
+
+export interface OwnerWithProperties extends Owner {
+  properties: OwnerProperty[];
+}
+
+export interface OwnerQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
+export type OwnerInput = Partial<
+  Omit<Owner, "id" | "mobileNormalized" | "emailNormalized" | "createdById" | "createdAt" | "updatedAt" | "creator" | "properties" | "_count">
+>;
+
+export type OwnerPropertyInput = Partial<
+  Omit<OwnerProperty, "id" | "ownerId" | "createdAt" | "updatedAt">
+>;
 
 /** A system field the user can map a CSV column to. */
 export interface ImportSystemField {
