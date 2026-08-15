@@ -132,8 +132,10 @@ function SubmissionRow({ submission }: { submission: any }) {
   const priceType = payload?.price?.type ?? "";
   const priceAmount = payload?.price?.amounts?.[priceType] as number | undefined;
   const size = payload?.size as number | undefined;
-  const imageUrls: string[] = (payload?.media?.images ?? []).map((img: any) => img?.original?.url).filter(Boolean);
-  const mainImage = imageUrls[0] ?? null;
+  const imageUrls: string[] =
+    (submission.images ?? []).map((img: { url?: string }) => img.url).filter(Boolean) as string[];
+  const payloadImageUrls: string[] = (payload?.media?.images ?? []).map((img: any) => img?.original?.url).filter(Boolean);
+  const mainImage = imageUrls[0] ?? payloadImageUrls[0] ?? null;
 
   return (
     <Link

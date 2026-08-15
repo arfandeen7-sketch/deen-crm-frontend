@@ -13,9 +13,9 @@ export default function CreatePropertyPage() {
   const router = useRouter();
   const { create } = usePropertySubmissionMutations();
 
-  async function onSubmit(payload: Record<string, unknown>) {
+  async function onSubmit(payload: Record<string, unknown>, images: File[]) {
     try {
-      const submission = await create.mutateAsync(payload);
+      const submission = await create.mutateAsync({ payload, images });
       toast.success("Property submitted for approval. The master will be notified to review it.");
       router.push(`/properties/submissions/${submission.id}`);
     } catch (e) {

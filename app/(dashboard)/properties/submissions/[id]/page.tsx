@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Input";
 import { usePropertySubmission, usePropertySubmissionMutations } from "@/hooks/usePropertySubmissions";
 import { useAuth } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/services/api/client";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
 import type { PropertySubmissionStatus } from "@/services/properties/propertySubmissions.service";
 
@@ -70,9 +71,17 @@ export default function PropertySubmissionDetailPage() {
   const priceType = payload?.price?.type ?? "";
   const priceAmount = payload?.price?.amounts?.[priceType] as number | undefined;
   const amenities: string[] = payload?.amenities ?? [];
-  const images: Array<{ original?: { url?: string } }> = payload?.media?.images ?? [];
-  const videoUrl = payload?.media?.videos?.default as string | undefined;
-  const virtualTourUrl = (payload?.media?.virtualTours?.[0]?.url ?? payload?.media?.virtualTour?.url) as string | undefined;
+  const stagedImages: Array<{ url?: string }> = submission.images ?? [];
+  const payloadImages: Array<{ original?: { url?: string } }> = payload?.media?.images ?? [];
+  const images = stagedImages.length > 0
+    ? stagedImages.map((img) => ({ original: { url: img.url } }))
+    : payloadImages;
+  const videoUrl = (payload?.media?.videos?.default ?? payload?.media?.video?.url) as string | undefined;
+  const virtualTourUrl = (
+    payload?.media?.videos?.view360
+    ?? payload?.media?.virtualTours?.[0]?.url
+    ?? payload?.media?.virtualTour?.url
+  ) as string | undefined;
   const floorPlanUrl = payload?.media?.floorPlan?.url as string | undefined;
   const compliance = payload?.compliance;
   const locationId = payload?.location?.id;
@@ -84,8 +93,8 @@ export default function PropertySubmissionDetailPage() {
     try {
       await review.mutateAsync({ id: params.id, status: "approved" });
       toast.success("Property approved and pushed to Property Finder.");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to approve submission");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e));
     }
   }
 
@@ -213,7 +222,7 @@ export default function PropertySubmissionDetailPage() {
               <CardBody>
                 <div className="flex flex-wrap gap-3">
                   {videoUrl && <MediaLink href={videoUrl} label="Video" />}
-                  {virtualTourUrl && <MediaLink href={virtualTourUrl} label="Virtual Tour" />}
+                  {virtualTourUrl && <MediaLink href={virtualTourUrl} label="360 Tour" />}
                   {floorPlanUrl && <MediaLink href={floorPlanUrl} label="Floor Plan" />}
                 </div>
               </CardBody>

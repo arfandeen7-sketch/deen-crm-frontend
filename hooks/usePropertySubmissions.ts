@@ -32,7 +32,8 @@ export function usePropertySubmissionMutations() {
   const queryClient = useQueryClient();
 
   const create = useMutation({
-    mutationFn: (payload: Record<string, unknown>) => propertySubmissionsService.create(payload),
+    mutationFn: ({ payload, images }: { payload: Record<string, unknown>; images: File[] }) =>
+      propertySubmissionsService.create(payload, images),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SUBMISSIONS_KEY] });
     },
@@ -60,5 +61,13 @@ export function usePropertySubmissionMutations() {
     },
   });
 
-  return { create, review, withdraw };
+  const lookupPermit = useMutation({
+    mutationFn: (params: {
+      permitNumber: string;
+      licenseNumber: string;
+      permitType: "rera" | "adrec";
+    }) => propertySubmissionsService.lookupPermit(params),
+  });
+
+  return { create, review, withdraw, lookupPermit };
 }
