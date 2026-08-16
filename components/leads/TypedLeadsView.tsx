@@ -14,6 +14,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Input";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
+import { OfferingTypeBadge } from "@/components/leads/OfferingTypeBadge";
 import { CanAccess } from "@/components/shared/Guards";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
@@ -204,6 +205,11 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
         ) : (
           <Dash />
         ),
+    },
+    {
+      key: "offering",
+      header: "For Sale / Rent",
+      render: (l) => <OfferingTypeBadge lead={l} />,
     },
     {
       key: "price",

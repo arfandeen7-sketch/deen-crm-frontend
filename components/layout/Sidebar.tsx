@@ -22,6 +22,7 @@ const PARENT_EXCLUSIONS: Record<string, string[]> = {
   "/leads": [
     "/leads/untouched",
     "/leads/fresh",
+    "/leads/deal-closed",
     "/leads/imported",
     "/leads/assigned",
     "/leads/unassigned",

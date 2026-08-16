@@ -16,12 +16,33 @@ export const createUserSchema = z.object({
   managerId: optional,
 });
 
-export const updateUserSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  phone: optional,
-  role,
-  managerId: optional,
-});
+export const updateUserSchema = z
+  .object({
+    fullName: z.string().min(1, "Full name is required"),
+    email: z.string().min(1, "Email is required").email("Enter a valid email"),
+    password: optional,
+    confirmPassword: optional,
+    phone: optional,
+    role,
+    managerId: optional,
+  })
+  .superRefine((data, ctx) => {
+    if (!data.password) return;
+    if (data.password.length < 8) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Use at least 8 characters",
+        path: ["password"],
+      });
+    }
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
 
 export type CreateUserValues = z.input<typeof createUserSchema>;
 export type UpdateUserValues = z.input<typeof updateUserSchema>;

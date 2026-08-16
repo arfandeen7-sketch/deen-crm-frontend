@@ -17,6 +17,7 @@ import { LeadFilters } from "@/components/leads/LeadFilters";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
+import { OfferingTypeBadge } from "@/components/leads/OfferingTypeBadge";
 import { AssignmentHistoryModal } from "@/components/leads/AssignmentHistoryModal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
@@ -246,25 +247,7 @@ function LeadsPageContent() {
     {
       key: "offering",
       header: "For Sale / Rent",
-      render: (l) => {
-        const ot = l.pfOfferingType?.toLowerCase();
-        if (!ot) return <Dash />;
-        if (ot === "sale") {
-          return (
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-              For Sale
-            </span>
-          );
-        }
-        if (ot === "rent") {
-          return (
-            <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
-              For Rent
-            </span>
-          );
-        }
-        return <span className="text-sm capitalize text-slate-700">{ot}</span>;
-      },
+      render: (l) => <OfferingTypeBadge lead={l} />,
     },
     {
       key: "price",

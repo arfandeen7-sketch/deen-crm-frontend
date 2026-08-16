@@ -32,6 +32,77 @@ export const PROPERTY_TYPES = Array.from(
 );
 
 /**
+ * UAE amenity allowlists from Property Finder Enterprise API.
+ * Accepted amenities depend on category + property type. Land/farm listings
+ * cannot send amenities at all. Values like electricity/waters/conference-room
+ * are valid only for some commercial or non-UAE listings.
+ */
+export const RESIDENTIAL_AMENITIES = [
+  "balcony",
+  "barbecue-area",
+  "built-in-wardrobes",
+  "central-ac",
+  "childrens-play-area",
+  "childrens-pool",
+  "concierge",
+  "covered-parking",
+  "kitchen-appliances",
+  "lobby-in-building",
+  "maid-service",
+  "maids-room",
+  "pets-allowed",
+  "private-garden",
+  "private-gym",
+  "private-jacuzzi",
+  "private-pool",
+  "security",
+  "shared-gym",
+  "shared-pool",
+  "shared-spa",
+  "study",
+  "vastu-compliant",
+  "view-of-landmark",
+  "view-of-water",
+  "walk-in-closet",
+] as const;
+
+export const COMMERCIAL_AMENITIES = [
+  "conference-room",
+  "covered-parking",
+  "dining-in-building",
+  "lobby-in-building",
+  "networked",
+  "shared-gym",
+  "shared-pool",
+  "vastu-compliant",
+] as const;
+
+const TYPES_WITHOUT_AMENITIES = new Set(["land", "farm"]);
+
+export function getAllowedAmenities(category?: string, type?: string): string[] {
+  if (!category || !type || TYPES_WITHOUT_AMENITIES.has(type)) return [];
+  if (category === "commercial") return [...COMMERCIAL_AMENITIES];
+  if (category === "residential") return [...RESIDENTIAL_AMENITIES];
+  return [];
+}
+
+/** Keep only amenities PF will accept for this listing, in a stable order. */
+export function filterAmenitiesForListing(
+  amenities: unknown,
+  category?: string,
+  type?: string
+): string[] {
+  const allowed = getAllowedAmenities(category, type);
+  if (allowed.length === 0 || !Array.isArray(amenities)) return [];
+  const selected = new Set(
+    amenities.filter((value): value is string => typeof value === "string").map((value) => value.trim())
+  );
+  return allowed.filter((amenity) => selected.has(amenity));
+}
+
+export const AMENITIES = Array.from(new Set([...RESIDENTIAL_AMENITIES, ...COMMERCIAL_AMENITIES]));
+
+/**
  * Schema for the "Add Property to Property Finder" form.
  * Maps to the PF Enterprise API POST /v1/listings request body.
  */
@@ -127,6 +198,31 @@ export const propertySubmissionSchema = z.object({
   minimalRentalPeriod: optionalNumber,
   priceOnRequest: z.boolean().optional().default(false),
 }).superRefine((values, ctx) => {
+  const allowedForCategory = PROPERTY_TYPES_BY_CATEGORY[values.category] ?? [];
+  if (values.type && allowedForCategory.length > 0 && !allowedForCategory.includes(values.type)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["type"],
+      message:
+        values.category === "commercial"
+          ? "This property type is not allowed for commercial listings. Switch category to Residential, or pick a commercial type."
+          : "This property type is not allowed for residential listings. Switch category to Commercial, or pick a residential type.",
+    });
+  }
+
+  const allowedAmenities = getAllowedAmenities(values.category, values.type);
+  const invalidAmenities = (values.amenities ?? []).filter((amenity) => !allowedAmenities.includes(amenity));
+  if (invalidAmenities.length > 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["amenities"],
+      message:
+        allowedAmenities.length === 0
+          ? "Property Finder does not allow amenities for this property type."
+          : `These amenities are not allowed for this ${values.category} ${values.type || "listing"}: ${invalidAmenities.join(", ")}`,
+    });
+  }
+
   if (values.uaeEmirate !== "dubai" && values.uaeEmirate !== "abu_dhabi") return;
 
   if (!values.complianceListingAdvertisementNumber) {
@@ -159,18 +255,6 @@ export const propertySubmissionSchema = z.object({
       code: "custom",
       path: ["complianceListingAdvertisementNumber"],
       message: "This must be the RERA / ADREC permit, not the listing reference",
-    });
-  }
-
-  const allowedForCategory = PROPERTY_TYPES_BY_CATEGORY[values.category] ?? [];
-  if (values.type && allowedForCategory.length > 0 && !allowedForCategory.includes(values.type)) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["type"],
-      message:
-        values.category === "commercial"
-          ? "This property type is not allowed for commercial listings. Switch category to Residential, or pick a commercial type."
-          : "This property type is not allowed for residential listings. Switch category to Commercial, or pick a residential type.",
     });
   }
 });
@@ -243,7 +327,8 @@ export function buildPFPayload(values: PropertySubmissionFormOutput): Record<str
   if (values.hasParkingOnSite) payload.hasParkingOnSite = true;
   if (values.hasGarden) payload.hasGarden = true;
   if (values.hasKitchen) payload.hasKitchen = true;
-  if (values.amenities && values.amenities.length > 0) payload.amenities = values.amenities;
+  const amenities = filterAmenitiesForListing(values.amenities, values.category, values.type);
+  if (amenities.length > 0) payload.amenities = amenities;
 
   // Compliance (required for Dubai/Abu Dhabi)
   if (values.complianceListingAdvertisementNumber || values.complianceType || values.complianceIssuingClientLicenseNumber) {
@@ -260,16 +345,6 @@ export function buildPFPayload(values: PropertySubmissionFormOutput): Record<str
 
   return payload;
 }
-
-export const AMENITIES = [
-  "balcony", "barbecue-area", "built-in-wardrobes", "central-ac", "childrens-play-area",
-  "childrens-pool", "concierge", "conference-room", "covered-parking", "dining-in-building",
-  "electricity", "fibre-optics", "fixed-phone", "flood-drainage", "kitchen-appliances",
-  "lobby-in-building", "maid-service", "maids-room", "networked", "no-services",
-  "pets-allowed", "private-garden", "private-gym", "private-jacuzzi", "private-pool",
-  "sanitation", "security", "shared-gym", "shared-pool", "shared-spa", "study",
-  "vastu-compliant", "view-of-landmark", "view-of-water", "walk-in-closet", "waters",
-];
 
 export const BEDROOM_OPTIONS = [
   "studio", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",

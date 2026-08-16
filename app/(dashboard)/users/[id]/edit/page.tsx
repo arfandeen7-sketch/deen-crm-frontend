@@ -32,7 +32,17 @@ export default function EditUserPage() {
   async function onSubmit(values: UserFormSubmitValues) {
     try {
       const parsed = updateUserSchema.parse(values);
-      await update.mutateAsync({ id: params.id, body: parsed });
+      await update.mutateAsync({
+        id: params.id,
+        body: {
+          fullName: parsed.fullName,
+          email: parsed.email,
+          phone: parsed.phone,
+          role: parsed.role,
+          managerId: parsed.managerId,
+          ...(parsed.password ? { password: parsed.password } : {}),
+        },
+      });
       try {
         await permissionsService.saveUserGrants(params.id, values.grants);
       } catch (grantError) {

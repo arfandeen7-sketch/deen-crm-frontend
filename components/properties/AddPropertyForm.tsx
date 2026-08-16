@@ -19,7 +19,7 @@ import {
   buildPFPayload,
   PROPERTY_TYPES,
   PROPERTY_TYPES_BY_CATEGORY,
-  AMENITIES,
+  getAllowedAmenities,
   BEDROOM_OPTIONS,
   BATHROOM_OPTIONS,
   type PropertySubmissionFormValues,
@@ -40,6 +40,7 @@ export function AddPropertyForm({
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<PropertySubmissionFormValues>({
     resolver: zodResolver(propertySubmissionSchema),
@@ -76,6 +77,15 @@ export function AddPropertyForm({
       setValue("type", "", { shouldValidate: true });
     }
   }, [selectedType, typeOptions, setValue]);
+
+  useEffect(() => {
+    const allowed = new Set(getAllowedAmenities(category, selectedType));
+    const current = watch("amenities") ?? [];
+    const next = current.filter((amenity) => allowed.has(amenity));
+    if (next.length !== current.length) {
+      setValue("amenities", next, { shouldValidate: true });
+    }
+  }, [category, selectedType, setValue, watch]);
 
   function applyDldPrefill(lookup: DldPermitLookup) {
     const form = lookup.form;
@@ -362,9 +372,23 @@ export function AddPropertyForm({
             control={control}
             name="amenities"
             render={({ field }) => (
-              <AmenitiesSelector selected={field.value ?? []} onChange={field.onChange} />
+              <AmenitiesSelector
+                options={getAllowedAmenities(category, selectedType)}
+                selected={field.value ?? []}
+                propertyType={selectedType}
+                onToggle={(amenity) => {
+                  const allowed = getAllowedAmenities(category, selectedType);
+                  const current = new Set(getValues("amenities") ?? []);
+                  if (current.has(amenity)) current.delete(amenity);
+                  else current.add(amenity);
+                  field.onChange(allowed.filter((option) => current.has(option)));
+                }}
+              />
             )}
           />
+          {errors.amenities && (
+            <p className="mt-2 text-xs font-medium text-red-600">{errors.amenities.message as string}</p>
+          )}
         </div>
       </FormSection>
 
@@ -837,39 +861,56 @@ function ImageUploadField({
 }
 
 function AmenitiesSelector({
+  options,
   selected,
-  onChange,
+  onToggle,
+  propertyType,
 }: {
+  options: string[];
   selected: string[];
-  onChange: (value: string[]) => void;
+  onToggle: (amenity: string) => void;
+  propertyType?: string;
 }) {
-  function toggle(amenity: string) {
-    if (selected.includes(amenity)) {
-      onChange(selected.filter((a) => a !== amenity));
-    } else {
-      onChange([...selected, amenity]);
-    }
+  if (!propertyType) {
+    return (
+      <p className="text-sm text-neutral-500">
+        Select a property type to see amenities Property Finder allows for that listing.
+      </p>
+    );
+  }
+
+  if (options.length === 0) {
+    return (
+      <p className="text-sm text-neutral-500">
+        Property Finder does not allow amenities for this property type.
+      </p>
+    );
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {AMENITIES.map((amenity) => {
-        const isSelected = selected.includes(amenity);
-        return (
-          <button
-            key={amenity}
-            type="button"
-            onClick={() => toggle(amenity)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
-              isSelected
-                ? "bg-black text-white"
-                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-            }`}
-          >
-            {amenity.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-          </button>
-        );
-      })}
+    <div className="space-y-2">
+      <p className="text-xs text-neutral-500">
+        Only amenities accepted for this property type are shown. Selection order does not matter.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((amenity) => {
+          const isSelected = selected.includes(amenity);
+          return (
+            <button
+              key={amenity}
+              type="button"
+              onClick={() => onToggle(amenity)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                isSelected
+                  ? "bg-black text-white"
+                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+              }`}
+            >
+              {amenity.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

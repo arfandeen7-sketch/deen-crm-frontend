@@ -12,13 +12,14 @@ const baseField =
 export interface FieldWrapProps {
   label?: string;
   error?: string;
+  success?: string;
   required?: boolean;
   hint?: string;
   className?: string;
   children: React.ReactNode;
 }
 
-export function Field({ label, error, required, hint, className, children }: FieldWrapProps) {
+export function Field({ label, error, success, required, hint, className, children }: FieldWrapProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {label && (
@@ -28,19 +29,26 @@ export function Field({ label, error, required, hint, className, children }: Fie
         </label>
       )}
       {children}
-      {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
       {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+      {success && !error && <p className="text-xs font-medium text-emerald-600">{success}</p>}
+      {hint && !error && !success && <p className="text-xs text-neutral-500">{hint}</p>}
     </div>
   );
 }
 
 export const Input = forwardRef<
   HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }
->(({ className, invalid, ...props }, ref) => (
+  React.InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean; valid?: boolean }
+>(({ className, invalid, valid, ...props }, ref) => (
   <input
     ref={ref}
-    className={cn(baseField, invalid && "border-red-400 focus:border-red-600 focus:ring-red-600", className)}
+    aria-invalid={invalid || undefined}
+    className={cn(
+      baseField,
+      invalid && "border-red-400 focus:border-red-600 focus:ring-red-600",
+      valid && !invalid && "border-emerald-400 focus:border-emerald-600 focus:ring-emerald-600",
+      className,
+    )}
     {...props}
   />
 ));

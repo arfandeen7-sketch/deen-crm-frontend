@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ShieldCheck, RotateCcw } from "lucide-react";
+import { ShieldCheck, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import {
   createUserSchema,
   updateUserSchema,
@@ -16,9 +16,14 @@ import { ROLE_LABELS } from "@/constants";
 import { PermissionMatrixInput } from "@/components/permissions/PermissionMatrixInput";
 import { permissionsService } from "@/services/permissions/permissions.service";
 import { useUsers } from "@/hooks/useUsers";
+import { useAuth } from "@/hooks/useAuth";
 import type { User, GrantEntry, RolePresets, UserRole } from "@/types";
 
-export type UserFormSubmitValues = CreateUserValues & {
+export type UserFormValues = CreateUserValues & {
+  confirmPassword?: string;
+};
+
+export type UserFormSubmitValues = UserFormValues & {
   grants: GrantEntry[];
 };
 
@@ -34,6 +39,8 @@ export function UserForm({
   onCancel?: () => void;
 }) {
   const isEdit = !!initial;
+  const { role } = useAuth();
+  const canChangeCredentials = role === "master" || role === "hr_manager";
   const { data: usersData } = useUsers();
   const [grants, setGrants] = useState<GrantEntry[]>([]);
   const [rolePresets, setRolePresets] = useState<RolePresets | null>(null);
@@ -84,14 +91,15 @@ export function UserForm({
     control,
     reset,
     formState: { errors },
-  } = useForm<CreateUserValues>({
+  } = useForm<UserFormValues>({
     resolver: zodResolver(
       isEdit ? updateUserSchema : createUserSchema,
-    ) as unknown as Resolver<CreateUserValues>,
+    ) as unknown as Resolver<UserFormValues>,
     defaultValues: {
       fullName: initial?.fullName ?? "",
       email: initial?.email ?? "",
       password: "",
+      confirmPassword: "",
       phone: initial?.phone ?? "",
       role: initial?.role ?? "sales_executive",
       managerId: initial?.managerId ?? "",
@@ -106,6 +114,7 @@ export function UserForm({
       fullName: initial.fullName ?? "",
       email: initial.email ?? "",
       password: "",
+      confirmPassword: "",
       phone: initial.phone ?? "",
       role: initial.role ?? "sales_executive",
       managerId: initial.managerId ?? "",
@@ -113,6 +122,14 @@ export function UserForm({
   }, [initial?.id, reset]);
 
   const selectedRole = watch("role");
+  const passwordValue = watch("password") ?? "";
+  const confirmPasswordValue = watch("confirmPassword") ?? "";
+  const passwordsMismatch =
+    confirmPasswordValue.length > 0 && passwordValue !== confirmPasswordValue;
+  const passwordsMatch =
+    passwordValue.length > 0 &&
+    confirmPasswordValue.length > 0 &&
+    passwordValue === confirmPasswordValue;
   const managers =
     usersData?.users.filter((u) => u.role === "sales_manager" && u.isActive) ?? [];
 
@@ -145,7 +162,7 @@ export function UserForm({
     setShowRoleChangeModal(false);
     pendingRoleRef.current = null;
     // Revert role select to previous value
-    reset({ ...watch(), role: previousRoleRef.current } as CreateUserValues);
+    reset({ ...watch(), role: previousRoleRef.current } as UserFormValues);
   }
 
   function handleResetToDefaults() {
@@ -159,7 +176,7 @@ export function UserForm({
     setShowResetModal(false);
   }
 
-  function handleFormSubmit(values: CreateUserValues) {
+  function handleFormSubmit(values: UserFormValues) {
     onSubmit({ ...values, grants });
   }
 
@@ -172,7 +189,8 @@ export function UserForm({
         <Field label="Email" required error={errors.email?.message}>
           <Input
             type="email"
-            disabled={isEdit}
+            autoComplete="email"
+            disabled={isEdit && !canChangeCredentials}
             invalid={!!errors.email}
             {...register("email")}
           />
@@ -181,10 +199,61 @@ export function UserForm({
           <Field label="Password" required error={errors.password?.message}>
             <Input
               type="password"
+              autoComplete="new-password"
               invalid={!!errors.password}
               {...register("password")}
             />
           </Field>
+        )}
+        {isEdit && canChangeCredentials && (
+          <>
+            <Field
+              label="New Password"
+              error={errors.password?.message}
+              hint="Leave blank to keep the current password. The current password is never shown."
+            >
+              <Input
+                type="password"
+                autoComplete="new-password"
+                placeholder="Leave blank to keep current password"
+                invalid={!!errors.password}
+                {...register("password")}
+              />
+            </Field>
+            <Field
+              label="Confirm New Password"
+              error={
+                passwordsMismatch
+                  ? "Passwords do not match"
+                  : errors.confirmPassword?.message
+              }
+              success={passwordsMatch ? "Passwords match" : undefined}
+            >
+              <div className="relative">
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Re-enter new password"
+                  className="pr-9"
+                  invalid={passwordsMismatch || !!errors.confirmPassword}
+                  valid={passwordsMatch}
+                  {...register("confirmPassword")}
+                />
+                {passwordsMatch && (
+                  <CheckCircle2
+                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500"
+                    aria-hidden
+                  />
+                )}
+                {passwordsMismatch && (
+                  <XCircle
+                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-500"
+                    aria-hidden
+                  />
+                )}
+              </div>
+            </Field>
+          </>
         )}
         <Field label="Phone" error={errors.phone?.message}>
           <Input {...register("phone")} />
@@ -303,7 +372,7 @@ export function UserForm({
             Cancel
           </Button>
         )}
-        <Button type="submit" loading={submitting}>
+        <Button type="submit" loading={submitting} disabled={passwordsMismatch}>
           {isEdit ? "Save Changes" : "Create User"}
         </Button>
       </div>

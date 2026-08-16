@@ -29,3 +29,26 @@ export function getEffectiveServiceType(lead: Pick<Lead, "serviceType" | "pfOffe
   if (isRentalLead(lead)) return "Rent";
   return lead.serviceType ?? "Buy";
 }
+
+/**
+ * Returns the listing offering type for the For Sale / For Rent column.
+ *
+ * Prefers the PF-derived `pfOfferingType`. Falls back to an explicit
+ * `serviceType` of Rent / Sell so manually created leads still show a value.
+ * Does not map the PF ingestion default "Buy" to sale — that would mislabel
+ * rental listings whose offering type was never stored.
+ */
+export function getLeadOfferingType(
+  lead: Pick<Lead, "serviceType" | "pfOfferingType">,
+): "sale" | "rent" | null {
+  const ot = lead.pfOfferingType?.trim().toLowerCase();
+  if (ot === "sale") return "sale";
+  if (ot === "rent" || ot === "yearly" || ot === "monthly" || ot === "weekly" || ot === "daily") {
+    return "rent";
+  }
+
+  const st = lead.serviceType?.trim().toLowerCase();
+  if (st === "rent") return "rent";
+  if (st === "sell") return "sale";
+  return null;
+}
