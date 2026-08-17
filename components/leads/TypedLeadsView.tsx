@@ -10,14 +10,16 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
-import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Input";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
 import { OfferingTypeBadge } from "@/components/leads/OfferingTypeBadge";
+import { LeadTableToolbar, useVisibleLeadColumns } from "@/components/leads/LeadTableToolbar";
 import { CanAccess } from "@/components/shared/Guards";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
+import { useLeadCustomFields } from "@/hooks/useCustomFields";
+import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
 import { useAssignableUsers } from "@/hooks/useUsers";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,6 +59,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data, isLoading, isError, refetch } = useLeadsList(params);
+  const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
   const { users } = useAssignableUsers();
   const sources = useFieldOptions("source");
@@ -321,18 +324,27 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
       ),
     },
   ];
+  const customCols = buildCustomFieldColumns(customFieldDefs);
+  const actionCol = columns[columns.length - 1];
+  const allColumns = [...columns.slice(0, -1), ...customCols, actionCol];
+  const displayColumns = useVisibleLeadColumns(allColumns);
   const allowRowSelection = enableBulk && (canAction("leads", "all_leads", "bulk_assign") || canAction("leads", "all_leads", "bulk_status"));
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <LeadTableToolbar
+        search={params.search ?? ""}
+        onSearch={(v) => setParam("search", v || undefined)}
+        columns={allColumns}
+        actions={
+          canAction("leads", pageKey, "export") ? (
+            <Button variant="outline" onClick={handleExport} loading={exporting}>
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          ) : undefined
+        }
+      >
         <div className="flex flex-wrap items-center gap-2">
-          <SearchInput
-            value={params.search ?? ""}
-            onChange={(v) => setParam("search", v || undefined)}
-            placeholder="Search name, mobile, project…"
-            className="w-full sm:w-64"
-          />
           {category !== "imported" && (
             <Select
               value={params.status ?? ""}
@@ -381,19 +393,14 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
             className="h-10 rounded-lg border border-slate-300 px-2 text-sm text-slate-700"
           />
         </div>
-        {canAction("leads", pageKey, "export") && (
-          <Button variant="outline" onClick={handleExport} loading={exporting}>
-            <Download className="h-4 w-4" /> Export
-          </Button>
-        )}
-      </div>
+      </LeadTableToolbar>
 
       {enableBulk && (
         <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
       )}
 
       <DataTable
-        columns={columns}
+        columns={displayColumns}
         rows={rows}
         rowKey={(l) => l.id}
         loading={isLoading}

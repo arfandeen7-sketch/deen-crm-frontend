@@ -14,6 +14,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { LeadFilters } from "@/components/leads/LeadFilters";
+import { LeadTableToolbar, useVisibleLeadColumns } from "@/components/leads/LeadTableToolbar";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
 import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
@@ -22,6 +23,8 @@ import { AssignmentHistoryModal } from "@/components/leads/AssignmentHistoryModa
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
+import { useLeadCustomFields } from "@/hooks/useCustomFields";
+import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
 import { useAuth } from "@/hooks/useAuth";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
@@ -42,6 +45,7 @@ function LeadsPageContent() {
   const { canAction } = useAuth();
   const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
   const { data, isLoading, isError, refetch } = useLeadsList(filters);
+  const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
 
   useEffect(() => {
@@ -360,6 +364,11 @@ function LeadsPageContent() {
     },
   ];
 
+  const customCols = buildCustomFieldColumns(customFieldDefs);
+  const actionCol = columns[columns.length - 1];
+  const allColumns = [...columns.slice(0, -1), ...customCols, actionCol];
+  const displayColumns = useVisibleLeadColumns(allColumns);
+
   return (
     <div className="space-y-5">
       <LeadTabs />
@@ -388,13 +397,19 @@ function LeadsPageContent() {
       />
 
       <Card className="p-4">
-        <LeadFilters filters={filters} onChange={setFilter} onReset={resetFilters} />
+        <LeadTableToolbar
+          search={filters.search ?? ""}
+          onSearch={(v) => setFilter("search", v || undefined)}
+          columns={allColumns}
+        >
+          <LeadFilters filters={filters} onChange={setFilter} onReset={resetFilters} />
+        </LeadTableToolbar>
       </Card>
 
       <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
 
       <DataTable
-        columns={columns}
+        columns={displayColumns}
         rows={rows}
         rowKey={(l) => l.id}
         loading={isLoading}

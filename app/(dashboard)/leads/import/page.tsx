@@ -12,24 +12,33 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Input";
+import { Field, Input, Select } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
 import { useLeadMutations } from "@/hooks/useLeads";
+import { useCreateCustomField } from "@/hooks/useCustomFields";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob, displayValue } from "@/lib/utils";
 import { autoMatchColumns, dedupeMapping } from "@/lib/import-mapping";
+import { isCustomMappingKey, toCustomMappingKey } from "@/lib/custom-fields";
 import { AccessGuard } from "@/components/shared/Guards";
 import type {
   ImportMapping,
   ImportParseResult,
   ImportResult,
+  ImportSystemField,
 } from "@/types";
 
 type Step = "upload" | "map" | "result";
+
+function mappableFields(parseResult: ImportParseResult): ImportSystemField[] {
+  return [...parseResult.systemFields, ...(parseResult.customFields ?? [])];
+}
 
 export default function ImportLeadsPage() {
   const { importLeads, parseImport } = useLeadMutations();
@@ -55,7 +64,7 @@ export default function ImportLeadsPage() {
     try {
       const parsed = await parseImport.mutateAsync(file);
       setParseResult(parsed);
-      setMapping(autoMatchColumns(parsed.headers, parsed.systemFields));
+      setMapping(autoMatchColumns(parsed.headers, mappableFields(parsed)));
       setStep("map");
     } catch (e) {
       toast.error(getErrorMessage(e));
@@ -86,6 +95,29 @@ export default function ImportLeadsPage() {
       toast.success(`Imported ${res.imported} lead(s)`);
     } catch (e) {
       toast.error(getErrorMessage(e));
+    }
+  }
+
+  function handleCustomFieldAdded(field: ImportSystemField, csvHeader?: string) {
+    setParseResult((prev) => {
+      if (!prev) return prev;
+      const exists = (prev.customFields ?? []).some((f) => f.key === field.key);
+      return {
+        ...prev,
+        customFields: exists
+          ? prev.customFields
+          : [...(prev.customFields ?? []), field],
+      };
+    });
+    if (csvHeader) {
+      setMapping((prev) => {
+        const next = { ...prev };
+        for (const [h, k] of Object.entries(next)) {
+          if (k === field.key) delete next[h];
+        }
+        next[csvHeader] = field.key;
+        return next;
+      });
     }
   }
 
@@ -143,6 +175,7 @@ export default function ImportLeadsPage() {
             parseResult={parseResult}
             mapping={mapping}
             onMappingChange={setMapping}
+            onCustomFieldAdded={handleCustomFieldAdded}
             onBack={() => setStep("upload")}
             onImport={handleImport}
             importing={importLeads.isPending}
@@ -279,6 +312,7 @@ function MapStep({
   parseResult,
   mapping,
   onMappingChange,
+  onCustomFieldAdded,
   onBack,
   onImport,
   importing,
@@ -286,11 +320,17 @@ function MapStep({
   parseResult: ImportParseResult;
   mapping: ImportMapping;
   onMappingChange: (m: ImportMapping) => void;
+  onCustomFieldAdded: (field: ImportSystemField, csvHeader?: string) => void;
   onBack: () => void;
   onImport: () => void;
   importing: boolean;
 }) {
-  const { headers, previewRows, systemFields } = parseResult;
+  const { headers, previewRows } = parseResult;
+  const fields = mappableFields(parseResult);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addLabel, setAddLabel] = useState("");
+  const [addCsvHeader, setAddCsvHeader] = useState<string | undefined>(undefined);
+  const createField = useCreateCustomField();
 
   function setMappingFor(csvHeader: string, systemKey: string) {
     const next = { ...mapping };
@@ -318,6 +358,37 @@ function MapStep({
     return "";
   }
 
+  function openAddField(csvHeader?: string) {
+    setAddCsvHeader(csvHeader);
+    setAddLabel(csvHeader ?? "");
+    setAddOpen(true);
+  }
+
+  async function handleCreateField() {
+    const label = addLabel.trim();
+    if (!label) {
+      toast.error("Enter a field name");
+      return;
+    }
+    try {
+      const created = await createField.mutateAsync(label);
+      onCustomFieldAdded(
+        {
+          key: toCustomMappingKey(created.key),
+          label: created.label,
+          required: created.required,
+        },
+        addCsvHeader,
+      );
+      setAddOpen(false);
+      setAddLabel("");
+      setAddCsvHeader(undefined);
+      toast.success(`Added field "${created.label}"`);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
   return (
     <div className="space-y-4">
       <Card>
@@ -342,13 +413,21 @@ function MapStep({
                 </tr>
               </thead>
               <tbody>
-                {systemFields.map((field) => {
+                {fields.map((field) => {
                   const mappedHeader = headerForSystem(field.key);
+                  const custom = isCustomMappingKey(field.key);
                   return (
                     <tr key={field.key} className="border-b border-border last:border-b-0">
                       <td className="whitespace-nowrap border-b border-border px-4 py-3 text-sm font-medium text-foreground">
-                        {field.label}
-                        {field.required && <span className="ml-1 text-red-500">*</span>}
+                        <span className="inline-flex items-center gap-2">
+                          {field.label}
+                          {field.required && <span className="text-red-500">*</span>}
+                          {custom && (
+                            <span className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-600">
+                              Custom
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td className="border-b border-border px-4 py-3">
                         <Select
@@ -391,14 +470,23 @@ function MapStep({
             </table>
           </div>
 
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openAddField()}
+            disabled={importing || createField.isPending}
+          >
+            <Plus className="h-4 w-4" /> Add new field
+          </Button>
+
           <UnmappedHeaders
             headers={headers}
             mapping={mapping}
+            adding={createField.isPending}
             onAutoMatch={() =>
-              onMappingChange(
-                autoMatchColumns(headers, systemFields),
-              )
+              onMappingChange(autoMatchColumns(headers, fields))
             }
+            onAddAsField={(header) => openAddField(header)}
           />
 
           <div className="flex justify-between gap-2">
@@ -413,6 +501,44 @@ function MapStep({
       </Card>
 
       <PreviewTable parseResult={parseResult} mapping={mapping} />
+
+      <Modal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Add new field"
+        description="This field will be saved on every lead and can be mapped to a CSV column."
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setAddOpen(false)} disabled={createField.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateField} loading={createField.isPending}>
+              Add field
+            </Button>
+          </>
+        }
+      >
+        <Field label="Field name" required hint="Shown as a column on the leads table.">
+          <Input
+            autoFocus
+            placeholder="e.g. Nationality"
+            value={addLabel}
+            onChange={(e) => setAddLabel(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleCreateField();
+              }
+            }}
+          />
+        </Field>
+        {addCsvHeader && (
+          <p className="mt-3 text-xs text-slate-500">
+            Will be mapped from CSV column <span className="font-medium">{addCsvHeader}</span>.
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }
@@ -420,28 +546,48 @@ function MapStep({
 function UnmappedHeaders({
   headers,
   mapping,
+  adding,
   onAutoMatch,
+  onAddAsField,
 }: {
   headers: string[];
   mapping: ImportMapping;
+  adding: boolean;
   onAutoMatch: () => void;
+  onAddAsField: (header: string) => void;
 }) {
   const unmapped = headers.filter((h) => !mapping[h]);
   if (unmapped.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 px-4 py-3 text-xs text-amber-800">
-      <AlertCircle className="h-4 w-4 shrink-0" />
-      <span>
-        {unmapped.length} column(s) not mapped:{" "}
-        <span className="font-medium">{unmapped.join(", ")}</span>
-      </span>
-      <button
-        type="button"
-        onClick={onAutoMatch}
-        className="ml-auto rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100"
-      >
-        Re-run auto-match
-      </button>
+    <div className="space-y-2 rounded-lg bg-amber-50 px-4 py-3 text-xs text-amber-800">
+      <div className="flex flex-wrap items-center gap-2">
+        <AlertCircle className="h-4 w-4 shrink-0" />
+        <span>
+          {unmapped.length} column(s) not mapped
+        </span>
+        <button
+          type="button"
+          onClick={onAutoMatch}
+          className="ml-auto rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100"
+        >
+          Re-run auto-match
+        </button>
+      </div>
+      <ul className="space-y-1.5">
+        {unmapped.map((h) => (
+          <li key={h} className="flex items-center justify-between gap-2">
+            <span className="font-medium">{h}</span>
+            <button
+              type="button"
+              disabled={adding}
+              onClick={() => onAddAsField(h)}
+              className="rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+            >
+              Add as field
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -453,14 +599,15 @@ function PreviewTable({
   parseResult: ImportParseResult;
   mapping: ImportMapping;
 }) {
-  const { previewRows, systemFields } = parseResult;
+  const { previewRows } = parseResult;
+  const fields = mappableFields(parseResult);
   // Build the system-key -> csvHeader reverse lookup (first match wins,
   // matching the Select UI and backend applyMapping preference).
   const reverse: Record<string, string> = {};
   for (const [csvHeader, systemKey] of Object.entries(mapping)) {
     if (systemKey && !(systemKey in reverse)) reverse[systemKey] = csvHeader;
   }
-  const mappedFields = systemFields.filter((f) => reverse[f.key]);
+  const mappedFields = fields.filter((f) => reverse[f.key]);
 
   if (mappedFields.length === 0) return null;
 

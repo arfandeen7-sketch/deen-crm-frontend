@@ -1,7 +1,6 @@
 "use client";
 
 import { SlidersHorizontal, X } from "lucide-react";
-import { SearchInput } from "@/components/ui/SearchInput";
 import { Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
@@ -52,8 +51,7 @@ export function LeadFilters({
   ).sort((a, b) => a.localeCompare(b));
 
   const hasFilters = Boolean(
-    filters.search ||
-      filters.status ||
+    filters.status ||
       filters.source ||
       filters.assignedTo ||
       filters.category ||
@@ -74,12 +72,6 @@ export function LeadFilters({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <SearchInput
-          value={filters.search ?? ""}
-          onChange={(v) => onChange("search", v)}
-          placeholder="Search name, mobile, project…"
-          className="w-full sm:w-72"
-        />
         <Select
           value={filters.status ?? ""}
           onChange={(e) => onChange("status", e.target.value || undefined)}

@@ -64,6 +64,9 @@ function findExactMatch(
   const normHeader = normalize(header);
   for (const f of systemFields) {
     if (normalize(f.key) === normHeader) return f.key;
+    if (normalize(f.label) === normHeader) return f.key;
+    const unprefixed = f.key.startsWith("custom:") ? f.key.slice("custom:".length) : f.key;
+    if (normalize(unprefixed) === normHeader) return f.key;
   }
   for (const f of systemFields) {
     const aliases = ALIASES[f.key] ?? [];
@@ -81,7 +84,8 @@ function findFuzzyMatch(
   let best: { key: string; score: number } | null = null;
   for (const f of systemFields) {
     if (usedKeys.has(f.key)) continue;
-    const candidates = [f.key, ...(ALIASES[f.key] ?? [])];
+    const unprefixed = f.key.startsWith("custom:") ? f.key.slice("custom:".length) : f.key;
+    const candidates = [f.key, f.label, unprefixed, ...(ALIASES[f.key] ?? [])];
     for (const candidate of candidates) {
       const score = diceCoefficient(header, candidate);
       if (!best || score > best.score) best = { key: f.key, score };

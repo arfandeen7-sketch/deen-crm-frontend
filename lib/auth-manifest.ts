@@ -212,6 +212,8 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "owners:list":   { module: "owners", page: "all_owners", action: "view" },
   "owners:detail": { module: "owners", page: "all_owners", action: "view" },
   "owners:lookup": { module: "owners", page: "all_owners", action: "view" },
+
+  "custom-fields:list": { module: "leads" },
 };
 
 // ── Mutation / Action Requirements ───────────────────────────────────────────
@@ -221,6 +223,7 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "leads:edit": { module: "leads", page: "all_leads", action: "edit" },
   "leads:delete": { module: "leads", page: "all_leads", action: "delete" },
   "leads:import": { module: "leads", page: "all_leads", action: "import" },
+  "custom-fields:create": { module: "leads", page: "all_leads", action: "import" },
   "leads:export": { module: "leads", page: "all_leads", action: "export" },
   "leads:assign": { module: "leads", page: "all_leads", action: "assign" },
   "leads:bulk-assign": { module: "leads", page: "all_leads", action: "bulk_assign" },

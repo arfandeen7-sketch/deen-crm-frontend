@@ -55,6 +55,7 @@ export const leadSchema = z.object({
   propertySize: optionalString,
   configuration: optionalString,
   comments: optionalString,
+  customFields: z.record(z.string(), z.string()).optional(),
 });
 
 export type LeadFormValues = z.input<typeof leadSchema>;

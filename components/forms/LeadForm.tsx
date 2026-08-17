@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
+import { useLeadCustomFields } from "@/hooks/useCustomFields";
 import { useAssignableUsers } from "@/hooks/useUsers";
 import { useAuth } from "@/hooks/useAuth";
 import { useBrokerOptions } from "@/hooks/useBrokers";
@@ -40,6 +41,7 @@ export function LeadForm({
   const priorities = useFieldOptions("lead_priority");
   const projects = useFieldOptions("project_name");
   const configurations = useFieldOptions("configuration");
+  const { data: customFieldDefs = [] } = useLeadCustomFields();
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
   const { user, role } = useAuth();
@@ -83,6 +85,7 @@ export function LeadForm({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<LeadWithClientFormValues>({
     resolver: zodResolver(leadWithClientSchema),
@@ -108,6 +111,7 @@ export function LeadForm({
       propertySize: initial?.propertySize ?? "",
       configuration: initial?.configuration ?? "",
       comments: initial?.comments ?? "",
+      customFields: initial?.customFields ?? {},
       // Client (Buyer) Detail fields — pre-fill from existing client record
       clientFullName:         initialClient?.fullName ?? "",
       clientMobileNumber:     initialClient?.mobileNumber ?? "",
@@ -139,6 +143,12 @@ export function LeadForm({
   // dropdown changes without a page reload.
   const currentServiceType = watch("serviceType");
   const showTenantFields = currentServiceType?.toLowerCase() === "rent";
+
+  useEffect(() => {
+    for (const d of customFieldDefs) {
+      setValue(`customFields.${d.key}`, initial?.customFields?.[d.key] ?? "");
+    }
+  }, [customFieldDefs, initial?.customFields, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -327,6 +337,24 @@ export function LeadForm({
         <Field label="Comments" error={errors.comments?.message}>
           <Textarea placeholder="Notes about this lead…" {...register("comments")} />
         </Field>
+
+        {customFieldDefs.length > 0 && (
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+              Custom Fields
+            </h3>
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {customFieldDefs.map((d) => (
+                <Field key={d.key} label={d.label} required={d.required}>
+                  <Input
+                    placeholder={d.label}
+                    {...register(`customFields.${d.key}`)}
+                  />
+                </Field>
+              ))}
+            </section>
+          </div>
+        )}
 
         {/* ── Buyer / Tenant Details (conditional on Service Type) ──────────── */}
         {showTenantFields ? (

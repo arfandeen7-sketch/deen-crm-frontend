@@ -233,6 +233,8 @@ export interface Lead {
   pfEntityType?: string | null;
   pfPublicProfileId?: string | null;
   pfTags?: string | null;
+  /** User-defined field values, keyed by CustomField.key. */
+  customFields?: Record<string, string> | null;
 }
 
 // ── Client Details ────────────────────────────────────────────────────────────
@@ -1048,11 +1050,28 @@ export interface ImportSystemField {
   required: boolean;
 }
 
+export type CustomFieldEntity = "lead";
+export type CustomFieldType = "text";
+
+export interface CustomFieldDefinition {
+  id: string;
+  entity: CustomFieldEntity;
+  key: string;
+  label: string;
+  type: CustomFieldType;
+  required: boolean;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Response from POST /leads/import/parse — step 1 of the mapping wizard. */
 export interface ImportParseResult {
   headers: string[];
   previewRows: Record<string, string>[];
   systemFields: ImportSystemField[];
+  customFields?: ImportSystemField[];
 }
 
 /** Mapping of CSV header name -> system field key (or "" for unmapped). */

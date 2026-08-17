@@ -36,6 +36,7 @@ import { StatusBadge, PriorityBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
+import { useLeadCustomFields } from "@/hooks/useCustomFields";
 import { useLeadActivity, useFollowupHistory } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
 import { formatDate, formatDateTime, humanize, timeAgo, formatCurrency, displayValue, isEmptyDisplayValue } from "@/lib/utils";
@@ -80,6 +81,7 @@ function LeadDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
+  const { data: customFieldDefs = [] } = useLeadCustomFields();
   const { remove } = useLeadMutations();
   const { data: activityData } = useLeadActivity(params.id);
   const { data: followupHistory } = useFollowupHistory(params.id);
@@ -204,6 +206,22 @@ function LeadDetailPageContent() {
               </p>
             </CardBody>
           </Card>
+
+          {customFieldDefs.length > 0 && (
+            <Card>
+              <CardHeader title="Custom Fields" />
+              <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+                {customFieldDefs.map((d) => (
+                  <InfoRow
+                    key={d.key}
+                    icon={Layers}
+                    label={d.label}
+                    value={lead.customFields?.[d.key]}
+                  />
+                ))}
+              </CardBody>
+            </Card>
+          )}
 
           {isRentalLead(lead) ? (
             <CanAccess module="tenant_details" page="all_tenants" action="view">
