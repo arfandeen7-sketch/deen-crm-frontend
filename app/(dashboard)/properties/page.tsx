@@ -2,23 +2,23 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Building2, Search, SlidersHorizontal, Plus, ClipboardList } from "lucide-react";
+import { Building2, SlidersHorizontal, Plus, ClipboardList } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
-import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
+import { ErrorState, EmptyState } from "@/components/ui/States";
 import { PropertyCard } from "@/components/properties/PropertyCard";
 import { usePropertiesList } from "@/hooks/useProperties";
 import { usePropertySubmissionsList } from "@/hooks/usePropertySubmissions";
 import { useAuth } from "@/hooks/useAuth";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Button } from "@/components/ui/Button";
-import { displayValue } from "@/lib/utils";
-
-const PAGE_SIZE = 12;
+import { DEFAULT_PAGE_SIZE } from "@/constants";
 
 export default function PropertiesPage() {
   const { isMaster } = useAuth();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState("");
   const [offeringType, setOfferingType] = useState("");
   const [category, setCategory] = useState("");
@@ -34,14 +34,14 @@ export default function PropertiesPage() {
   const params = useMemo(
     () => ({
       page,
-      perPage: PAGE_SIZE,
+      perPage: pageSize,
       ...(search && { search }),
       ...(offeringType && { offeringType }),
       ...(category && { category }),
       ...(furnishingType && { furnishingType }),
       orderBy: "-createdAt",
     }),
-    [page, search, offeringType, category, furnishingType],
+    [page, pageSize, search, offeringType, category, furnishingType],
   );
 
   const { data, isLoading, isError, refetch } = usePropertiesList(params);
@@ -91,18 +91,15 @@ export default function PropertiesPage() {
 
       {/* Search + Filter bar */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-          <Input
-            placeholder="Search by title, reference, or location..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Search by title, reference, or location..."
+          className="flex-1"
+        />
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
@@ -236,15 +233,18 @@ export default function PropertiesPage() {
             ))}
           </div>
 
-          {meta && meta.totalPages > 1 && (
+          {meta && meta.total > 0 && (
             <div className="mt-6 overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-2xs">
               <Pagination
                 page={page}
-                pageSize={meta.perPage}
+                pageSize={pageSize}
                 total={meta.total}
                 totalPages={meta.totalPages}
                 onPageChange={setPage}
-                onPageSizeChange={() => {}}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
               />
             </div>
           )}

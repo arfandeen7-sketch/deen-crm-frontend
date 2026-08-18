@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { UserCheck, Tag, X } from "lucide-react";
+import { UserCheck, Tag, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Field, Select } from "@/components/ui/Input";
 import { useLeadMutations } from "@/hooks/useLeads";
 import { useAssignableUsers } from "@/hooks/useUsers";
@@ -19,19 +19,21 @@ export function BulkActions({
   selectedIds: string[];
   onClear: () => void;
 }) {
-  const { bulkAssign, bulkStatus } = useLeadMutations();
+  const { bulkAssign, bulkStatus, bulkDelete } = useLeadMutations();
   const { users } = useAssignableUsers();
   const statuses = useFieldOptions("lead_status");
   const { canAction } = useAuth();
   const canAssign = canAction("leads", "all_leads", "bulk_assign");
   const canBulkStatus = canAction("leads", "all_leads", "bulk_status");
+  const canDelete = canAction("leads", "all_leads", "delete");
   const [assignOpen, setAssignOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [assignTo, setAssignTo] = useState("");
   const [status, setStatus] = useState("");
 
   if (selectedIds.length === 0) return null;
-  if (!canAssign && !canBulkStatus) return null;
+  if (!canAssign && !canBulkStatus && !canDelete) return null;
 
   async function doAssign() {
     if (!assignTo) return toast.error("Select a user");
@@ -51,6 +53,17 @@ export function BulkActions({
       const res = await bulkStatus.mutateAsync({ ids: selectedIds, leadStatus: status });
       toast.success(`Updated ${res.updated} lead(s)`);
       setStatusOpen(false);
+      onClear();
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  async function doDelete() {
+    try {
+      const res = await bulkDelete.mutateAsync(selectedIds);
+      toast.success(`Deleted ${res.deleted} lead(s)`);
+      setDeleteOpen(false);
       onClear();
     } catch (e) {
       toast.error(getErrorMessage(e));
@@ -79,6 +92,14 @@ export function BulkActions({
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
             >
               <Tag className="h-4 w-4" /> Update Status
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => setDeleteOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-400 transition-colors hover:bg-zinc-800 hover:text-rose-300"
+            >
+              <Trash2 className="h-4 w-4" /> Delete
             </button>
           )}
           <button
@@ -136,6 +157,18 @@ export function BulkActions({
             </Select>
           </Field>
         </Modal>
+      )}
+
+      {canDelete && (
+        <ConfirmModal
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onConfirm={doDelete}
+          title="Delete selected leads?"
+          message={`This will permanently remove ${selectedIds.length} lead(s) and their history.`}
+          confirmLabel="Delete"
+          loading={bulkDelete.isPending}
+        />
       )}
     </>
   );

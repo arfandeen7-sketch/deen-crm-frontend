@@ -73,6 +73,49 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+type DropdownPos = {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+  flip: boolean;
+};
+
+function optionLabel(children: React.ReactNode, fallback = ""): string {
+  if (children == null || children === false) return fallback;
+  if (typeof children === "string" || typeof children === "number") return String(children);
+  if (Array.isArray(children)) return children.map((c) => optionLabel(c)).join("");
+  if (React.isValidElement(children)) {
+    return optionLabel((children as React.ReactElement<{ children?: React.ReactNode }>).props.children, fallback);
+  }
+  return fallback;
+}
+
+function computeDropdownPos(trigger: DOMRect): DropdownPos {
+  const gap = 4;
+  const maxH = 280;
+  const spaceBelow = window.innerHeight - trigger.bottom - 8;
+  const spaceAbove = trigger.top - 8;
+  const flip = spaceBelow < Math.min(maxH, 160) && spaceAbove > spaceBelow;
+  if (flip) {
+    return {
+      bottom: window.innerHeight - trigger.top + gap,
+      left: trigger.left,
+      width: Math.max(trigger.width, 160),
+      maxHeight: Math.min(maxH, spaceAbove),
+      flip: true,
+    };
+  }
+  return {
+    top: trigger.bottom + gap,
+    left: trigger.left,
+    width: Math.max(trigger.width, 160),
+    maxHeight: Math.min(maxH, spaceBelow),
+    flip: false,
+  };
+}
+
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, invalid, children, value, defaultValue, onChange, placeholder, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +124,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const nativeSelectRef = useRef<HTMLSelectElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
+    const [dropdownPos, setDropdownPos] = useState<DropdownPos | null>(null);
 
     // Expose the native select ref so external libraries like react-hook-form work perfectly
     useImperativeHandle(ref, () => nativeSelectRef.current as HTMLSelectElement);
@@ -91,44 +134,25 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       setSearchQuery("");
     };
 
+    const updateDropdownPos = () => {
+      if (!containerRef.current) return;
+      setDropdownPos(computeDropdownPos(containerRef.current.getBoundingClientRect()));
+    };
+
     // Calculate dropdown position when opened (uses fixed positioning via portal to escape overflow clipping)
     useLayoutEffect(() => {
-      if (!isOpen || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom - 8;
-      const spaceAbove = rect.top - 8;
-      const maxH = 280;
-      const flip = spaceBelow < Math.min(maxH, 160) && spaceAbove > spaceBelow;
-      setDropdownPos({
-        top: flip ? Math.max(8, rect.top - Math.min(maxH, spaceAbove) - 4) : rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-        maxHeight: flip ? Math.min(maxH, spaceAbove) : Math.min(maxH, spaceBelow),
-      });
+      if (!isOpen) return;
+      updateDropdownPos();
     }, [isOpen]);
 
     // Reposition on scroll or resize while open
     useEffect(() => {
       if (!isOpen) return;
-      function update() {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom - 8;
-        const spaceAbove = rect.top - 8;
-        const maxH = 280;
-        const flip = spaceBelow < Math.min(maxH, 160) && spaceAbove > spaceBelow;
-        setDropdownPos({
-          top: flip ? Math.max(8, rect.top - Math.min(maxH, spaceAbove) - 4) : rect.bottom + 4,
-          left: rect.left,
-          width: rect.width,
-          maxHeight: flip ? Math.min(maxH, spaceAbove) : Math.min(maxH, spaceBelow),
-        });
-      }
-      window.addEventListener("scroll", update, true);
-      window.addEventListener("resize", update);
+      window.addEventListener("scroll", updateDropdownPos, true);
+      window.addEventListener("resize", updateDropdownPos);
       return () => {
-        window.removeEventListener("scroll", update, true);
-        window.removeEventListener("resize", update);
+        window.removeEventListener("scroll", updateDropdownPos, true);
+        window.removeEventListener("resize", updateDropdownPos);
       };
     }, [isOpen]);
 
@@ -196,7 +220,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           if (el.type === "option") {
             options.push({
               value: String(el.props.value ?? ""),
-              label: String(el.props.children ?? el.props.label ?? ""),
+              label: optionLabel(el.props.children, String(el.props.label ?? "")),
               disabled: el.props.disabled,
             });
           } else if (el.type === React.Fragment || el.props.children) {
@@ -288,8 +312,19 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {isOpen && !props.disabled && dropdownPos && createPortal(
           <div
             ref={dropdownRef}
-            style={{ position: "fixed", top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, maxHeight: dropdownPos.maxHeight, zIndex: 9999 }}
-            className="flex flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-lg shadow-black/5 animate-in fade-in slide-in-from-top-1 duration-150"
+            style={{
+              position: "fixed",
+              top: dropdownPos.top,
+              bottom: dropdownPos.bottom,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              maxHeight: dropdownPos.maxHeight,
+              zIndex: 9999,
+            }}
+            className={cn(
+              "flex flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-lg shadow-black/5 animate-in fade-in duration-150",
+              dropdownPos.flip ? "slide-in-from-bottom-1" : "slide-in-from-top-1",
+            )}
           >
             <div className="shrink-0 border-b border-slate-100 p-1.5">
               <div className="relative">
