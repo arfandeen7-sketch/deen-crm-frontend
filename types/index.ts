@@ -863,6 +863,13 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+  /** Nested meta object — same data as the top-level fields above. */
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }
 
 export interface ApiError {
@@ -979,6 +986,7 @@ export type OwnerPropertyListingStatus =
 export interface OwnerProperty {
   id: string;
   ownerId: string;
+  propertySource?: "property_finder" | "pocket_listing";
   projectName: string;
   projectType?: string | null;
   reference?: string | null;
@@ -997,11 +1005,14 @@ export interface OwnerProperty {
   parkingSlots?: string | null;
   listingStatus: OwnerPropertyListingStatus;
   pfListingId?: string | null;
+  pocketListingId?: string | null;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
   /** Full PF listing details — populated by the getById endpoint. */
   pfListing?: PropertyDetail | null;
+  /** Full Pocket Listing details — populated by the getById endpoint. */
+  pocketListing?: PocketListing | null;
 }
 
 export interface Owner {
@@ -1041,6 +1052,100 @@ export type OwnerInput = Partial<
 
 export type OwnerPropertyInput = Partial<
   Omit<OwnerProperty, "id" | "ownerId" | "createdAt" | "updatedAt">
+>;
+
+// ── Pocket Listings ────────────────────────────────────────────────────────────
+
+export type PocketListingStatus = "available" | "sold" | "rented" | "off_market";
+
+export interface PocketListingImage {
+  id: string;
+  pocketListingId: string;
+  sortOrder: number;
+  mimeType: string;
+  filename: string;
+  url: string;
+}
+
+export interface PocketListing {
+  id: string;
+  reference: string;
+  title: string;
+  description?: string | null;
+  category: string;
+  type: string;
+  offeringType: string;
+  furnishingType?: string | null;
+  completionStatus?: string | null;
+  developer?: string | null;
+  emirate: string;
+  city?: string | null;
+  community?: string | null;
+  building?: string | null;
+  locationHierarchy?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  unitNumber?: string | null;
+  floorNumber?: string | null;
+  parkingSlots?: number | null;
+  bedrooms?: string | null;
+  bathrooms?: string | null;
+  size?: number | null;
+  builtUpArea?: number | null;
+  price?: number | null;
+  currency: string;
+  priceType?: string | null;
+  priceOnRequest: boolean;
+  numberOfCheques?: number | null;
+  amenities: string[];
+  listingStatus: PocketListingStatus;
+  availableFrom?: string | null;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalAgreement?: {
+    agreementStartDate: string | null;
+    agreementEndDate: string | null;
+    daysRemaining: number | null;
+  } | null;
+  videoUrl?: string | null;
+  virtualTourUrl?: string | null;
+  floorPlanUrl?: string | null;
+  notes?: string | null;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  // Enriched
+  mainImage?: string | null;
+  imageCount: number;
+  images: PocketListingImage[];
+  createdBy?: Pick<User, "id" | "fullName" | "email" | "role"> | null;
+  source?: "pocket_listing";
+}
+
+export interface PocketListingQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: string;
+  category?: string;
+  type?: string;
+  emirate?: string;
+  offeringType?: string;
+  createdById?: string;
+}
+
+export type PocketListingInput = Omit<
+  PocketListing,
+  | "id"
+  | "reference"
+  | "createdAt"
+  | "updatedAt"
+  | "createdBy"
+  | "images"
+  | "mainImage"
+  | "imageCount"
+  | "rentalAgreement"
+  | "source"
 >;
 
 /** A system field the user can map a CSV column to. */

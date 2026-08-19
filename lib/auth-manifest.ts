@@ -102,6 +102,12 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/owners/[id]": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "view" } },
   "/owners/[id]/edit": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "edit" } },
 
+  // Pocket Listings
+  "/pocket-listings": { type: "permission", requirement: { module: "pocket_listings", page: "all_pocket_listings", action: "view" } },
+  "/pocket-listings/create": { type: "permission", requirement: { module: "pocket_listings", page: "all_pocket_listings", action: "create" } },
+  "/pocket-listings/[id]": { type: "permission", requirement: { module: "pocket_listings", page: "all_pocket_listings", action: "view" } },
+  "/pocket-listings/[id]/edit": { type: "permission", requirement: { module: "pocket_listings", page: "all_pocket_listings", action: "edit" } },
+
   // Dynamic Fields
   "/dynamic-fields/[category]": { type: "permission", requirement: { module: "dynamic_fields", page: "manage_fields", action: "view" } },
 
@@ -213,6 +219,9 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "owners:detail": { module: "owners", page: "all_owners", action: "view" },
   "owners:lookup": { module: "owners", page: "all_owners", action: "view" },
 
+  "pocket-listings:list":   { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
+  "pocket-listings:detail": { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
+
   "custom-fields:list": { module: "leads" },
 };
 
@@ -275,6 +284,10 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "owners:add-property": { module: "owners", page: "all_owners", action: "create" },
   "owners:edit-property": { module: "owners", page: "all_owners", action: "edit" },
   "owners:delete-property": { module: "owners", page: "all_owners", action: "delete" },
+
+  "pocket-listings:create": { module: "pocket_listings", page: "all_pocket_listings", action: "create" },
+  "pocket-listings:edit": { module: "pocket_listings", page: "all_pocket_listings", action: "edit" },
+  "pocket-listings:delete": { module: "pocket_listings", page: "all_pocket_listings", action: "delete" },
 
   "integrations:connect": { module: "integrations", page: "all_integrations", action: "connect" },
   "integrations:edit": { module: "integrations", page: "all_integrations", action: "edit" },

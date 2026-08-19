@@ -361,28 +361,34 @@ function PropertyRow({
   onDelete: () => void;
 }) {
   const pf = property.pfListing;
-  const mainImage = pf?.mainImage ?? null;
-  const title = pf?.title || property.reference || `Unit ${property.unitNumber ?? "—"}`;
-  const price = pf?.price ?? (property.price ? Number(property.price) : null);
-  const size = pf?.size ?? (property.size ? Number(property.size) : 0);
-  const bedrooms = pf?.bedrooms ?? property.bedrooms ?? "";
-  const bathrooms = pf?.bathrooms ?? property.bathrooms ?? "";
-  const community = pf?.community ?? property.community ?? null;
-  const building = pf?.building ?? property.building ?? null;
-  const emirate = pf?.emirate ?? property.emirate ?? null;
-  const furnishingType = pf?.furnishingType ?? "";
-  const offeringType = pf?.offeringType ?? "";
-  const reference = pf?.reference ?? property.reference ?? "";
-  const imageCount = pf?.imageCount ?? 0;
-  const hasVideo = pf?.hasVideo ?? false;
-  const hasFloorPlan = pf?.hasFloorPlan ?? false;
-  const hasVirtualTour = pf?.hasVirtualTour ?? false;
-  const amenities = pf?.amenities ?? [];
+  const pl = property.pocketListing;
+
+  // Derive display values from either the PF listing or the Pocket listing.
+  // PF listing takes precedence; pocket listing is the fallback.
+  const mainImage = pf?.mainImage ?? pl?.mainImage ?? null;
+  const title =
+    pf?.title ?? pl?.title ?? property.reference ?? `Unit ${property.unitNumber ?? "—"}`;
+  const price = pf?.price ?? pl?.price ?? (property.price ? Number(property.price) : null);
+  const size = pf?.size ?? pl?.size ?? (property.size ? Number(property.size) : 0);
+  const bedrooms = pf?.bedrooms ?? pl?.bedrooms ?? property.bedrooms ?? "";
+  const bathrooms = pf?.bathrooms ?? pl?.bathrooms ?? property.bathrooms ?? "";
+  const community = pf?.community ?? pl?.community ?? property.community ?? null;
+  const building = pf?.building ?? pl?.building ?? property.building ?? null;
+  const emirate = pf?.emirate ?? pl?.emirate ?? property.emirate ?? null;
+  const furnishingType = pf?.furnishingType ?? pl?.furnishingType ?? "";
+  const offeringType = pf?.offeringType ?? pl?.offeringType ?? "";
+  const reference = pf?.reference ?? pl?.reference ?? property.reference ?? "";
+  const imageCount = pf?.imageCount ?? pl?.imageCount ?? 0;
+  const hasVideo = pf?.hasVideo ?? !!pl?.videoUrl;
+  const hasFloorPlan = pf?.hasFloorPlan ?? !!pl?.floorPlanUrl;
+  const hasVirtualTour = pf?.hasVirtualTour ?? !!pl?.virtualTourUrl;
+  const amenities = pf?.amenities ?? pl?.amenities ?? [];
   const agentName = pf?.agentName ?? null;
   const agencyName = pf?.agencyName ?? null;
 
-  // Deal status — same logic as the Properties module
-  const dealStatus = pf?.dealStatus ?? null;
+  // Deal status — PF uses dealStatus from linked leads; pocket listings use
+  // listingStatus (sold/rented) directly on the listing.
+  const dealStatus = pf?.dealStatus ?? (pl?.listingStatus === "sold" || pl?.listingStatus === "rented" ? pl.listingStatus : null);
   const isClosed = dealStatus === "sold" || dealStatus === "rented";
   const dealBadge =
     dealStatus === "sold"
@@ -390,7 +396,7 @@ function PropertyRow({
       : dealStatus === "rented"
         ? "Rented Out"
         : null;
-  const rental = pf?.rentalAgreement ?? null;
+  const rental = pf?.rentalAgreement ?? pl?.rentalAgreement ?? null;
 
   const offeringLabel =
     offeringType?.toLowerCase() === "sale"
@@ -544,6 +550,15 @@ function PropertyRow({
                   onClick={(e) => e.stopPropagation()}
                 >
                   View in Properties <ExternalLink className="h-3 w-3" />
+                </Link>
+              )}
+              {pl && (
+                <Link
+                  href={`/pocket-listings/${pl.id}`}
+                  className="flex items-center gap-1 text-[10px] font-medium text-purple-600 hover:text-purple-800"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  View in Pocket Listings <ExternalLink className="h-3 w-3" />
                 </Link>
               )}
             </div>

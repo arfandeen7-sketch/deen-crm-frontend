@@ -1,6 +1,9 @@
 import { getData, api } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 
+const PUBLIC_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
 export interface PropertySummary {
   id: string;
   reference: string;
@@ -106,5 +109,27 @@ export const propertiesService = {
 
   get(id: string): Promise<PropertyDetail> {
     return getData<PropertyDetail>(`/properties/${id}`);
+  },
+
+  /**
+   * Downloads the branded DEEN Properties brochure PDF for a property.
+   * Returns a Blob ready to be saved via `downloadBlob`.
+   */
+  async downloadPdf(id: string): Promise<Blob> {
+    const res = await api.get(`/properties/${id}/pdf`, {
+      responseType: "blob",
+    });
+    return res.data as Blob;
+  },
+
+  /**
+   * Fetches full property details from the public (unauthenticated)
+   * endpoint. Used by the shareable property microsite page.
+   */
+  async getPublic(id: string): Promise<PropertyDetail> {
+    const res = await fetch(`${PUBLIC_BASE_URL}/api/public/properties/${id}`);
+    if (!res.ok) throw new Error(`Failed to load property (status ${res.status})`);
+    const body = await res.json();
+    return body.data as PropertyDetail;
   },
 };

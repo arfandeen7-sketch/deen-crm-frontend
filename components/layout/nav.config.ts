@@ -33,6 +33,7 @@ import {
   Building2,
   Plus,
   ClipboardList,
+  Package,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -147,6 +148,28 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Owners", href: "/owners", icon: UserCog, navAccess: { module: "owners", page: "all_owners" } },
       { label: "Add Owner", href: "/owners/create", icon: UserPlus, navAccess: { module: "owners", page: "all_owners", action: "create" } },
+    ],
+  },
+  // ── 6b. Pocket Listings ─────────────────────────────────────────────────
+  {
+    id: "pocket-listings",
+    title: "Pocket Listings",
+    icon: Package,
+    moduleKey: "pocket_listings",
+    section: "MENU",
+    items: [
+      {
+        label: "All Pocket Listings",
+        href: "/pocket-listings",
+        icon: Package,
+        navAccess: { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
+      },
+      {
+        label: "Add Pocket Listing",
+        href: "/pocket-listings/create",
+        icon: Plus,
+        navAccess: { module: "pocket_listings", page: "all_pocket_listings", action: "create" },
+      },
     ],
   },
   // ── 6. Buyer Details (direct link — no dropdown) ─────────────────────────

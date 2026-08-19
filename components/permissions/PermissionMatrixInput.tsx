@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { permissionsService } from "@/services/permissions/permissions.service";
@@ -83,13 +83,15 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
   const [openPages, setOpenPages] = useState<Set<string>>(new Set());
   const presetGrantsRef = useRef<typeof presetGrants>(null);
 
-  // Notify parent whenever selection changes
-  const notifyParent = useCallback(
-    (sel: PermissionSelection) => {
-      onChange(buildGrantsFromSelection(sel));
-    },
-    [onChange],
-  );
+  // Notify parent whenever selection changes.
+  // This is done in a useEffect (NOT inside setSelection updaters) to
+  // avoid calling the parent's setState during our render phase, which
+  // triggers React's "Cannot update a component while rendering a
+  // different component" warning.
+  useEffect(() => {
+    if (loading) return; // Don't notify until initial load is done
+    onChange(buildGrantsFromSelection(selection));
+  }, [selection, loading, onChange]);
 
   // Fetch registry + optional initial grants
   useEffect(() => {
@@ -107,7 +109,6 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
         // Auto-expand modules that have any grants
         const expanded = new Set(Object.keys(initialSel));
         setOpenModules(expanded);
-        notifyParent(initialSel);
       } catch {
         // ignore
       } finally {
@@ -116,7 +117,7 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
     }
     load();
     return () => { cancelled = true; };
-  }, [userId, notifyParent]);
+  }, [userId]);
 
   // Apply preset grants when the parent passes new ones.
   // Uses a ref to track the last applied preset array so the same
@@ -130,8 +131,7 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
     const expanded = new Set(Object.keys(presetSel));
     setOpenModules(expanded);
     setOpenPages(new Set());
-    notifyParent(presetSel);
-  }, [presetGrants, notifyParent]);
+  }, [presetGrants]);
 
   // ── Toggle logic ─────────────────────────────────────────────────────────
 
@@ -146,7 +146,6 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
       } else {
         delete next[mod.key];
       }
-      notifyParent(next);
       return next;
     });
   }
@@ -168,7 +167,6 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
           }
         }
       }
-      notifyParent(next);
       return next;
     });
   }
@@ -198,7 +196,6 @@ export function PermissionMatrixInput({ userId, onChange, presetGrants }: Permis
           }
         }
       }
-      notifyParent(next);
       return next;
     });
   }

@@ -14,10 +14,14 @@ export const notificationsService = {
     // We need to flatten this to match our Paginated<T> type
     return api.get<{ data: AppNotification[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } }>(
       `/notifications${buildQuery(params)}`
-    ).then((res: { data: { data: AppNotification[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } } }) => ({
-      data: res.data.data,
-      ...res.data.pagination,
-    }));
+    ).then((res: { data: { data: AppNotification[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } } }) => {
+      const p = res.data.pagination;
+      return {
+        data: res.data.data,
+        ...p,
+        meta: { total: p.total, page: p.page, pageSize: p.pageSize, totalPages: p.totalPages },
+      };
+    });
   },
 
   unreadCount(): Promise<{ count: number }> {

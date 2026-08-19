@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { PropertyGallery } from "@/components/properties/PropertyGallery";
+import { PropertyActions } from "@/components/properties/PropertyActions";
 import { useProperty } from "@/hooks/useProperties";
 import { formatCurrency, formatDate, formatDateTime, displayValue } from "@/lib/utils";
 
@@ -106,12 +107,19 @@ export default function PropertyDetailPage() {
             .join(" · ")
         }
         actions={
-          dealBadge ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {dealBadge}
-            </span>
-          ) : undefined
+          <div className="flex items-center gap-2">
+            <PropertyActions
+              propertyId={property.id}
+              propertyTitle={property.title}
+              dealClosed={isClosed}
+            />
+            {dealBadge && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {dealBadge}
+              </span>
+            )}
+          </div>
         }
       />
 

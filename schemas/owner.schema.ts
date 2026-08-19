@@ -29,9 +29,9 @@ export type OwnerFormValues = z.input<typeof ownerSchema>;
 export type OwnerFormOutput = z.output<typeof ownerSchema>;
 
 export const ownerPropertySchema = z.object({
-  // pfListingId is required — a property must be selected from the
-  // Properties module before it can be linked to an owner.
-  pfListingId: z.string().min(1, "A property must be selected from the Properties module"),
+  // Either pfListingId (Property Finder) or pocketListingId (Pocket Listing) must be set.
+  pfListingId: optionalString,
+  pocketListingId: optionalString,
   projectName: z.string().min(1, "Project name is required"),
   projectType: optionalString,
   reference: optionalString,
