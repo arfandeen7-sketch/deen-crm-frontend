@@ -132,7 +132,12 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
       key: "contact",
       header: "Contact",
       render: (l) => (
-        <span className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</span>
+        <div>
+          <p className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</p>
+          {!isEmptyDisplayValue(l.alternateMobile) && (
+            <p className="text-xs text-slate-400">{displayValue(l.alternateMobile)}</p>
+          )}
+        </div>
       ),
     },
     {
@@ -328,7 +333,11 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const actionCol = columns[columns.length - 1];
   const allColumns = [...columns.slice(0, -1), ...customCols, actionCol];
   const displayColumns = useVisibleLeadColumns(allColumns);
-  const allowRowSelection = enableBulk && (canAction("leads", "all_leads", "bulk_assign") || canAction("leads", "all_leads", "bulk_status"));
+  const allowRowSelection = enableBulk && (
+    canAction("leads", "all_leads", "bulk_assign") ||
+    canAction("leads", "all_leads", "bulk_status") ||
+    canAction("leads", "all_leads", "delete")
+  );
 
   return (
     <div className="space-y-4">

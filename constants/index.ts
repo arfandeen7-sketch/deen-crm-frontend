@@ -8,7 +8,7 @@ export const POLL_SLOW = 60_000;  // 60 s — reference data: users, brokers, em
 
 export const TOKEN_STORAGE_KEY = "deen_crm_token";
 
-export const PAGE_SIZES = [10, 25, 50, 100] as const;
+export const PAGE_SIZES = [25, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = 25;
 
 export const ROLE_LABELS: Record<UserRole, string> = {

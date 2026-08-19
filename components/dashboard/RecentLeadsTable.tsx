@@ -7,7 +7,7 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { useRecentLeads } from "@/hooks/useDashboard";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
@@ -32,7 +32,14 @@ const columns: Column<Lead>[] = [
   {
     key: "contact",
     header: "Contact",
-    render: (l) => <span className="text-sm text-slate-700">{l.mobileNumber}</span>,
+    render: (l) => (
+      <div>
+        <p className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</p>
+        {!isEmptyDisplayValue(l.alternateMobile) && (
+          <p className="text-xs text-slate-400">{displayValue(l.alternateMobile)}</p>
+        )}
+      </div>
+    ),
   },
   {
     key: "source",

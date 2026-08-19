@@ -237,6 +237,7 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "leads:assign": { module: "leads", page: "all_leads", action: "assign" },
   "leads:bulk-assign": { module: "leads", page: "all_leads", action: "bulk_assign" },
   "leads:bulk-status": { module: "leads", page: "all_leads", action: "bulk_status" },
+  "leads:bulk-delete": { module: "leads", page: "all_leads", action: "delete" },
 
   "brokers:create": { module: "brokers", page: "all_brokers", action: "create" },
   "brokers:edit": { module: "brokers", page: "all_brokers", action: "edit" },

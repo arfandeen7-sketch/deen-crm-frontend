@@ -118,7 +118,12 @@ function LeadsPageContent() {
       key: "contact",
       header: "Contact",
       render: (l) => (
-        <span className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</span>
+        <div>
+          <p className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</p>
+          {!isEmptyDisplayValue(l.alternateMobile) && (
+            <p className="text-xs text-slate-400">{displayValue(l.alternateMobile)}</p>
+          )}
+        </div>
       ),
     },
     {
@@ -418,7 +423,11 @@ function LeadsPageContent() {
         emptyTitle="No leads found"
         emptyMessage="Try adjusting your filters or create a new lead."
         onRowClick={(l) => router.push(`/leads/${l.id}`)}
-        selectable={canAction("leads", "all_leads", "bulk_assign") || canAction("leads", "all_leads", "bulk_status")}
+        selectable={
+          canAction("leads", "all_leads", "bulk_assign") ||
+          canAction("leads", "all_leads", "bulk_status") ||
+          canAction("leads", "all_leads", "delete")
+        }
         selectedIds={selected}
         onToggleRow={toggleRow}
         onToggleAll={toggleAll}
