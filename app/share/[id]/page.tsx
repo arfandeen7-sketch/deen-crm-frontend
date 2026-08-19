@@ -130,6 +130,7 @@ function ShareShell({ children }: { children: React.ReactNode }) {
               height={58}
               className="h-12 w-auto brightness-0 invert"
               priority
+              loading="eager"
             />
           </div>
 
@@ -343,9 +344,9 @@ function ShareContent({ property }: { property: PropertyDetail }) {
 
   const dealBadge =
     property.dealStatus === "sold"
-      ? "Sold"
+      ? "Sold Out"
       : property.dealStatus === "rented"
-        ? "Rented"
+        ? "Rented Out"
         : null;
 
   const locationParts = [

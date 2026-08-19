@@ -80,7 +80,7 @@ export default function PropertyDetailPage() {
     property.dealStatus === "sold"
       ? "Sold Out"
       : property.dealStatus === "rented"
-        ? "Rented"
+        ? "Rented Out"
         : null;
   const isClosed = dealBadge !== null;
 

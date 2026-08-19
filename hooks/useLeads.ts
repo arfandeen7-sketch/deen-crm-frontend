@@ -74,6 +74,9 @@ export function useLeadMutations() {
     qc.invalidateQueries({ queryKey: ["followup-history"] });
     qc.invalidateQueries({ queryKey: ["lead-activity"] });
     qc.invalidateQueries({ queryKey: ["custom-fields"] });
+    qc.invalidateQueries({ queryKey: ["properties"] });
+    qc.invalidateQueries({ queryKey: ["owners"] });
+    qc.invalidateQueries({ queryKey: ["deal-closed"] });
   };
 
   const create = useMutation({

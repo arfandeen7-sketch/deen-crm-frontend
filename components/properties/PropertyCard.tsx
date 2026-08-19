@@ -35,7 +35,7 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
     property.dealStatus === "sold"
       ? "Sold Out"
       : property.dealStatus === "rented"
-        ? "Rented"
+        ? "Rented Out"
         : null;
 
   const shareUrl =
@@ -135,17 +135,19 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
             )}
             PDF
           </button>
-          <a
-            href={shareUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(shareUrl, "_blank", "noopener,noreferrer");
+            }}
             title="Open microsite"
             className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-neutral-900 shadow-sm transition-colors hover:bg-white cursor-pointer"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Microsite
-          </a>
+          </button>
         </div>
       </div>
 

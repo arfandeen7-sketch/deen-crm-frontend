@@ -130,6 +130,7 @@ function ShareShell({ children }: { children: React.ReactNode }) {
               height={58}
               className="h-12 w-auto brightness-0 invert"
               priority
+              loading="eager"
             />
           </div>
 

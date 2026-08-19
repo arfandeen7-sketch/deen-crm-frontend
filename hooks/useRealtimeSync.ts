@@ -119,6 +119,9 @@ export function useRealtimeSync() {
           qc.invalidateQueries({ queryKey: ["leads"] });
           qc.invalidateQueries({ queryKey: ["dashboard"] });
           qc.invalidateQueries({ queryKey: ["followup"] });
+          qc.invalidateQueries({ queryKey: ["properties"] });
+          qc.invalidateQueries({ queryKey: ["owners"] });
+          qc.invalidateQueries({ queryKey: ["deal-closed"] });
           break;
 
         case "followup_updated":
