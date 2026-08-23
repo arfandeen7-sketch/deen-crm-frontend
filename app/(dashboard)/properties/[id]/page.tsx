@@ -30,11 +30,13 @@ import { LoadingState, ErrorState } from "@/components/ui/States";
 import { PropertyGallery } from "@/components/properties/PropertyGallery";
 import { PropertyActions } from "@/components/properties/PropertyActions";
 import { useProperty } from "@/hooks/useProperties";
+import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency, formatDate, formatDateTime, displayValue } from "@/lib/utils";
 
 export default function PropertyDetailPage() {
   const params = useParams<{ id: string }>();
   const { data: property, isLoading, isError, refetch } = useProperty(params.id);
+  const { isMaster } = useAuth();
 
   if (isLoading) {
     return (
@@ -166,8 +168,12 @@ export default function PropertyDetailPage() {
                 <DetailRow icon={Building} label="Category" value={displayValue(property.category)} />
                 <DetailRow icon={Sparkles} label="Furnishing" value={displayValue(property.furnishingType)} />
                 <DetailRow icon={Layers} label="Completion" value={displayValue(property.completionStatus)} />
-                <DetailRow icon={Hash} label="Unit Number" value={displayValue(property.unitNumber)} />
-                <DetailRow icon={Layers} label="Floor Number" value={displayValue(property.floorNumber)} />
+                {isMaster && (
+                  <DetailRow icon={Hash} label="Unit Number" value={displayValue(property.unitNumber)} />
+                )}
+                {isMaster && (
+                  <DetailRow icon={Layers} label="Floor Number" value={displayValue(property.floorNumber)} />
+                )}
                 <DetailRow icon={Calendar} label="Available From" value={formatDate(property.availableFrom)} />
                 <DetailRow icon={ShieldCheck} label="Permit Number" value={displayValue(property.permitNumber)} />
                 <DetailRow icon={Hash} label="Reference" value={displayValue(property.reference)} />

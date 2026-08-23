@@ -378,8 +378,12 @@ function PocketListingDetailContent() {
                 <DetailRow icon={MapPin} label="City" value={displayValue(listing.city)} />
                 <DetailRow icon={MapPin} label="Community" value={displayValue(listing.community)} />
                 <DetailRow icon={Building} label="Building" value={displayValue(listing.building)} />
-                <DetailRow icon={Hash} label="Unit" value={displayValue(listing.unitNumber)} />
-                <DetailRow icon={Layers} label="Floor" value={displayValue(listing.floorNumber)} />
+                {isMaster && (
+                  <DetailRow icon={Hash} label="Unit" value={displayValue(listing.unitNumber)} />
+                )}
+                {isMaster && (
+                  <DetailRow icon={Layers} label="Floor" value={displayValue(listing.floorNumber)} />
+                )}
               </div>
             </CardBody>
           </Card>
