@@ -43,7 +43,7 @@ function PocketListingEditContent() {
     return (
       <div>
         <BackLink id={params.id} />
-        <LoadingState label="Loading pocket listing…" />
+        <LoadingState label="Loading off-market listing…" />
       </div>
     );
   }
@@ -53,7 +53,7 @@ function PocketListingEditContent() {
       <div>
         <BackLink id={params.id} />
         <ErrorState
-          message="Failed to load pocket listing. Please try again."
+          message="Failed to load off-market listing. Please try again."
           onRetry={() => refetch()}
         />
       </div>
@@ -66,7 +66,7 @@ function PocketListingEditContent() {
     return (
       <div>
         <BackLink id={params.id} />
-        <ErrorState message="You can only edit pocket listings that you created." />
+        <ErrorState message="You can only edit off-market listings that you created." />
       </div>
     );
   }
@@ -121,7 +121,7 @@ function PocketListingEditContent() {
   async function handleSubmit(formData: FormData) {
     try {
       await update.mutateAsync({ id: listingId, formData });
-      toast.success("Pocket listing updated successfully.");
+      toast.success("Off-market listing updated successfully.");
       router.push(`/pocket-listings/${listingId}`);
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to update listing.");
@@ -148,7 +148,7 @@ function PocketListingEditContent() {
       <BackLink id={listingId} />
 
       <PageHeader
-        title="Edit Pocket Listing"
+        title="Edit Off-Market Listing"
         subtitle={listing.title}
       />
 

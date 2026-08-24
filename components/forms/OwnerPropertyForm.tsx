@@ -249,7 +249,7 @@ export function OwnerPropertyForm({
               )}
             >
               <Package className="h-4 w-4" />
-              Pocket Listing
+              Off-Market Listing
             </button>
           </div>
 
@@ -284,7 +284,7 @@ export function OwnerPropertyForm({
             </>
           )}
 
-          {/* Pocket Listing selector */}
+          {/* Off-Market Listing selector */}
           {source === "pocket_listing" && (
             <>
               {selectedPocketListing ? (
@@ -304,13 +304,13 @@ export function OwnerPropertyForm({
                 />
               ) : (
                 <PickerButton
-                  label="Select a Pocket Listing"
-                  hint="Click to browse available (unlinked) pocket listings"
+                  label="Select an Off-Market Listing"
+                  hint="Click to browse available (unlinked) off-market listings"
                   icon={<Package className="h-6 w-6 text-neutral-400" />}
                   onClick={() => setShowPickerModal(true)}
                 />
               )}
-              <InfoBanner message="Only pocket listings not yet linked to any owner can be selected." />
+              <InfoBanner message="Only off-market listings not yet linked to any owner can be selected." />
             </>
           )}
         </div>

@@ -558,7 +558,7 @@ function PropertyRow({
                   className="flex items-center gap-1 text-[10px] font-medium text-purple-600 hover:text-purple-800"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  View in Pocket Listings <ExternalLink className="h-3 w-3" />
+                  View in Off-Market Listings <ExternalLink className="h-3 w-3" />
                 </Link>
               )}
             </div>

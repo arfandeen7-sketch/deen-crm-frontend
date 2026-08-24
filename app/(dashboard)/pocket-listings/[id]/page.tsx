@@ -96,7 +96,7 @@ function PocketListingDetailContent() {
     return (
       <div>
         <BackLink />
-        <LoadingState label="Loading pocket listing…" />
+        <LoadingState label="Loading off-market listing…" />
       </div>
     );
   }
@@ -106,7 +106,7 @@ function PocketListingDetailContent() {
       <div>
         <BackLink />
         <ErrorState
-          message="Failed to load pocket listing details."
+          message="Failed to load off-market listing details."
           onRetry={() => refetch()}
         />
       </div>
@@ -150,7 +150,7 @@ function PocketListingDetailContent() {
     setDeleting(true);
     try {
       await remove.mutateAsync(listingId);
-      toast.success("Pocket listing deleted successfully.");
+      toast.success("Off-market listing deleted successfully.");
       router.push("/pocket-listings");
     } catch {
       toast.error("Failed to delete listing. Please try again.");
@@ -168,7 +168,7 @@ function PocketListingDetailContent() {
         href="/pocket-listings"
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to Pocket Listings
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Off-Market Listings
       </Link>
 
       {/* Page header */}
@@ -564,10 +564,10 @@ function PocketListingDetailContent() {
         {/* Right: Sticky price & status panel */}
         <div className="space-y-4">
           <Card className="lg:sticky lg:top-6">
-            {/* Purple "Pocket Listing" banner */}
+            {/* Purple "Off-Market Listing" banner */}
             <div className="rounded-t-xl bg-purple-600 px-5 py-2.5 text-center">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white">
-                Pocket Listing
+                Off-Market Listing
               </span>
             </div>
 
@@ -641,7 +641,7 @@ function BackLink() {
       href="/pocket-listings"
       className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800"
     >
-      <ArrowLeft className="h-3.5 w-3.5" /> Back to Pocket Listings
+      <ArrowLeft className="h-3.5 w-3.5" /> Back to Off-Market Listings
     </Link>
   );
 }

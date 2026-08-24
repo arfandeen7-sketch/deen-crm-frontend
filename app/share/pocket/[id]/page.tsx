@@ -312,7 +312,7 @@ function NotFoundState({ message }: { message?: string | null }) {
         Listing Unavailable
       </h1>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#6B6B6B]">
-        {message ?? "This pocket listing is no longer available for viewing."}
+        {message ?? "This off-market listing is no longer available for viewing."}
       </p>
     </div>
   );
@@ -372,7 +372,7 @@ function ShareContent({ listing }: { listing: PocketListing }) {
                   </span>
                 )}
                 <span className="inline-flex items-center rounded-full bg-[#6D28D9] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-white">
-                  Pocket Listing
+                  Off-Market Listing
                 </span>
               </div>
               <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#0A0A0A] sm:text-4xl lg:text-5xl">
@@ -605,10 +605,10 @@ function BrochureButton({
       );
       if (!res.ok) throw new Error("Failed to generate PDF");
       const blob = await res.blob();
-      const safeTitle = (title || "Pocket Listing")
+      const safeTitle = (title || "Off-Market Listing")
         .replace(/[^a-z0-9]+/gi, "-")
         .replace(/^-+|-+$/g, "")
-        .slice(0, 60) || "Pocket Listing";
+        .slice(0, 60) || "Off-Market Listing";
       downloadBlob(blob, `DEEN-Properties-${safeTitle}.pdf`);
       toast.success("Brochure downloaded");
     } catch {
@@ -778,7 +778,7 @@ function ShareHero({
             </span>
           ) : null}
           <span className="rounded-full bg-[#6D28D9] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-white shadow-lg">
-            Pocket Listing
+            Off-Market Listing
           </span>
         </div>
 

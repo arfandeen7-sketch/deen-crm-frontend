@@ -426,6 +426,7 @@ function LeadsPageContent() {
         selectable={
           canAction("leads", "all_leads", "bulk_assign") ||
           canAction("leads", "all_leads", "bulk_status") ||
+          canAction("leads", "all_leads", "bulk_update") ||
           canAction("leads", "all_leads", "delete")
         }
         selectedIds={selected}

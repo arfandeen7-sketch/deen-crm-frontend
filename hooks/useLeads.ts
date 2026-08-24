@@ -112,6 +112,19 @@ export function useLeadMutations() {
     onSuccess: invalidate,
   });
 
+  const bulkUpdate = useMutation({
+    mutationFn: ({
+      ids,
+      field,
+      value,
+    }: {
+      ids: string[];
+      field: string;
+      value: string | null;
+    }) => leadsService.bulkUpdate(ids, field, value),
+    onSuccess: invalidate,
+  });
+
   const importLeads = useMutation({
     mutationFn: ({ file, mapping }: { file: File; mapping?: ImportMapping }) =>
       leadsService.import(file, mapping),
@@ -122,5 +135,5 @@ export function useLeadMutations() {
     mutationFn: (file: File) => leadsService.parseImport(file),
   });
 
-  return { create, update, remove, bulkAssign, bulkStatus, bulkDelete, importLeads, parseImport };
+  return { create, update, remove, bulkAssign, bulkStatus, bulkDelete, bulkUpdate, importLeads, parseImport };
 }

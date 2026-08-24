@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { UserCheck, Tag, Trash2, X } from "lucide-react";
+import { UserCheck, Tag, Trash2, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Field, Select } from "@/components/ui/Input";
@@ -11,6 +11,7 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
+import { MassUpdateModal } from "@/components/leads/MassUpdateModal";
 
 export function BulkActions({
   selectedIds,
@@ -25,15 +26,17 @@ export function BulkActions({
   const { canAction } = useAuth();
   const canAssign = canAction("leads", "all_leads", "bulk_assign");
   const canBulkStatus = canAction("leads", "all_leads", "bulk_status");
+  const canMassUpdate = canAction("leads", "all_leads", "bulk_update");
   const canDelete = canAction("leads", "all_leads", "delete");
   const [assignOpen, setAssignOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [massUpdateOpen, setMassUpdateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [assignTo, setAssignTo] = useState("");
   const [status, setStatus] = useState("");
 
   if (selectedIds.length === 0) return null;
-  if (!canAssign && !canBulkStatus && !canDelete) return null;
+  if (!canAssign && !canBulkStatus && !canMassUpdate && !canDelete) return null;
 
   async function doAssign() {
     if (!assignTo) return toast.error("Select a user");
@@ -92,6 +95,14 @@ export function BulkActions({
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
             >
               <Tag className="h-4 w-4" /> Update Status
+            </button>
+          )}
+          {canMassUpdate && (
+            <button
+              onClick={() => setMassUpdateOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+            >
+              <Pencil className="h-4 w-4" /> Mass Update
             </button>
           )}
           {canDelete && (
@@ -157,6 +168,15 @@ export function BulkActions({
             </Select>
           </Field>
         </Modal>
+      )}
+
+      {canMassUpdate && (
+        <MassUpdateModal
+          open={massUpdateOpen}
+          onClose={() => setMassUpdateOpen(false)}
+          selectedIds={selectedIds}
+          onSuccess={onClear}
+        />
       )}
 
       {canDelete && (

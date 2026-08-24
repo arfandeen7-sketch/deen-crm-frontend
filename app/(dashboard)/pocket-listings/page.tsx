@@ -60,14 +60,14 @@ function PocketListingsContent() {
   return (
     <div>
       <PageHeader
-        title="Pocket Listings"
+        title="Off-Market Listings"
         subtitle="Private off-market properties managed internally"
         actions={
           <CanAccess module="pocket_listings" page="all_pocket_listings" action="create">
             <Link href="/pocket-listings/create">
               <Button variant="primary" size="md">
                 <Plus className="h-3.5 w-3.5" />
-                Add Pocket Listing
+                Add Off-Market Listing
               </Button>
             </Link>
           </CanAccess>
@@ -184,12 +184,12 @@ function PocketListingsContent() {
         </div>
       ) : isError ? (
         <ErrorState
-          message="Failed to load pocket listings. Please try again."
+          message="Failed to load off-market listings. Please try again."
           onRetry={() => refetch()}
         />
       ) : listings.length === 0 ? (
         <EmptyState
-          title="No pocket listings found"
+          title="No off-market listings found"
           message={
             hasActiveFilters
               ? "Try adjusting your search or filters."
@@ -213,7 +213,7 @@ function PocketListingsContent() {
             <span className="font-semibold text-neutral-800">
               {meta?.total ?? listings.length}
             </span>{" "}
-            pocket listings
+            off-market listings
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

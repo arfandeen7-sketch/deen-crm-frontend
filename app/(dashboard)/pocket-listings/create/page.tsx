@@ -34,7 +34,7 @@ function PocketListingCreateContent() {
   async function handleSubmit(formData: FormData) {
     try {
       const listing = await create.mutateAsync(formData);
-      toast.success("Pocket listing created successfully.");
+      toast.success("Off-market listing created successfully.");
       router.push(`/pocket-listings/${listing.id}`);
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to create listing.");
@@ -50,11 +50,11 @@ function PocketListingCreateContent() {
         href="/pocket-listings"
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to Pocket Listings
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Off-Market Listings
       </Link>
 
       <PageHeader
-        title="Add Pocket Listing"
+        title="Add Off-Market Listing"
         subtitle="Create a new off-market property listing"
       />
 

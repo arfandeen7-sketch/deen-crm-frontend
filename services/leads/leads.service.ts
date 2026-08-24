@@ -51,6 +51,18 @@ export const leadsService = {
     return postData<{ deleted: number }>("/leads/bulk-delete", { leadIds });
   },
 
+  bulkUpdate(
+    leadIds: string[],
+    field: string,
+    value: string | null,
+  ): Promise<{ matched: number; updated: number }> {
+    return postData<{ matched: number; updated: number }>("/leads/bulk-update", {
+      leadIds,
+      field,
+      value,
+    });
+  },
+
   async import(file: File, mapping?: ImportMapping): Promise<ImportResult> {
     const form = new FormData();
     form.append("file", file);

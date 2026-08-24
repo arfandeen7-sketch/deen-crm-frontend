@@ -89,10 +89,10 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
     setDownloading(true);
     try {
       const blob = await pocketListingsService.downloadPdf(listing.id);
-      const safeTitle = (listing.title || "Pocket Listing")
+      const safeTitle = (listing.title || "Off-Market Listing")
         .replace(/[^a-z0-9]+/gi, "-")
         .replace(/^-+|-+$/g, "")
-        .slice(0, 60) || "Pocket Listing";
+        .slice(0, 60) || "Off-Market Listing";
       downloadBlob(blob, `DEEN-Properties-${safeTitle}.pdf`);
       toast.success("Listing brochure downloaded");
     } catch {
@@ -116,7 +116,7 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
         {listing.mainImage ? (
           <img
             src={listing.mainImage}
-            alt={listing.title || "Pocket Listing"}
+            alt={listing.title || "Off-Market Listing"}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
@@ -125,9 +125,9 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
           </div>
         )}
 
-        {/* Purple "Pocket Listing" badge — top-left (distinguishes from PF cards) */}
+        {/* Purple "Off-Market Listing" badge — top-left (distinguishes from PF cards) */}
         <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
-          Pocket Listing
+          Off-Market Listing
         </span>
 
         {/* Deal Closed / offering badge — bottom-left */}

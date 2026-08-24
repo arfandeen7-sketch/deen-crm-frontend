@@ -138,37 +138,34 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Submissions", href: "/properties/submissions", icon: ClipboardList, masterOnly: true },
     ],
   },
-  // ── 6. Owners ───────────────────────────────────────────────────────────
+  // ── 6. Owners (direct link — no dropdown) ────────────────────────────────
   {
     id: "owners",
     title: "Owners",
     icon: UserCog,
+    href: "/owners",
+    isSingular: true,
     moduleKey: "owners",
     section: "MENU",
     items: [
       { label: "All Owners", href: "/owners", icon: UserCog, navAccess: { module: "owners", page: "all_owners" } },
-      { label: "Add Owner", href: "/owners/create", icon: UserPlus, navAccess: { module: "owners", page: "all_owners", action: "create" } },
     ],
   },
-  // ── 6b. Pocket Listings ─────────────────────────────────────────────────
+  // ── 6b. Off-Market Listings (direct link — no dropdown) ──────────────────
   {
     id: "pocket-listings",
-    title: "Pocket Listings",
+    title: "Off-Market Listing",
     icon: Package,
+    href: "/pocket-listings",
+    isSingular: true,
     moduleKey: "pocket_listings",
     section: "MENU",
     items: [
       {
-        label: "All Pocket Listings",
+        label: "All Off-Market Listings",
         href: "/pocket-listings",
         icon: Package,
         navAccess: { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
-      },
-      {
-        label: "Add Pocket Listing",
-        href: "/pocket-listings/create",
-        icon: Plus,
-        navAccess: { module: "pocket_listings", page: "all_pocket_listings", action: "create" },
       },
     ],
   },

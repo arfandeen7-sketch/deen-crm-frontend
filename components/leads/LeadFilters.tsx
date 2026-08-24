@@ -24,18 +24,19 @@ export function LeadFilters({
   const priorities = useFieldOptions("lead_priority");
   const projectTypes = useFieldOptions("project_type");
   const configurations = useFieldOptions("configuration");
-  const dynProjectNames = useFieldOptions("project_name");
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
   const { canPage } = useAuth();
   const { data: leadOptions } = useLeadOptions();
 
-  // Merge dynamic_fields project names with actual lead data project names (deduped, sorted)
+  // Project Name filter shows ONLY values that actually exist on leads
+  // (from GET /api/leads/options — distinct projectName + pfBuildingName).
+  // We intentionally do NOT merge in dynamic_fields project_name entries,
+  // because that table is a create-form suggestion list, not a record of
+  // what's in use.  After a Mass Update the leads table changes, this query
+  // is invalidated, and stale values disappear from the filter automatically.
   const allProjectNames = Array.from(
-    new Set([
-      ...(leadOptions?.projectNames ?? []),
-      ...dynProjectNames,
-    ]),
+    new Set(leadOptions?.projectNames ?? []),
   ).sort((a, b) => a.localeCompare(b));
 
   const allCities = Array.from(

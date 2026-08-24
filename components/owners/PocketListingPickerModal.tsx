@@ -77,8 +77,8 @@ export function PocketListingPickerModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="Select a Pocket Listing"
-      description="Only pocket listings not yet linked to any owner are shown."
+      title="Select an Off-Market Listing"
+      description="Only off-market listings not yet linked to any owner are shown."
       size="xl"
       footer={
         <>
@@ -86,7 +86,7 @@ export function PocketListingPickerModal({
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedId}>
-            {selectedId ? "Add Selected Pocket Listing" : "Select a pocket listing"}
+            {selectedId ? "Add Selected Off-Market Listing" : "Select an off-market listing"}
           </Button>
         </>
       }
@@ -105,7 +105,7 @@ export function PocketListingPickerModal({
 
         {isLoading ? (
           <div className="flex min-h-[300px] items-center justify-center">
-            <LoadingState label="Loading pocket listings…" />
+            <LoadingState label="Loading off-market listings…" />
           </div>
         ) : isError ? (
           <div className="flex min-h-[300px] items-center justify-center">
@@ -114,11 +114,11 @@ export function PocketListingPickerModal({
         ) : listings.length === 0 ? (
           <div className="flex min-h-[300px] items-center justify-center">
             <EmptyState
-              title={search ? "No pocket listings found" : "No available pocket listings"}
+              title={search ? "No off-market listings found" : "No available off-market listings"}
               message={
                 search
                   ? "Try a different search term."
-                  : "All pocket listings are already linked to owners, or none have been created yet."
+                  : "All off-market listings are already linked to owners, or none have been created yet."
               }
             />
           </div>
@@ -165,7 +165,7 @@ export function PocketListingPickerModal({
   );
 }
 
-// ── Selectable Pocket Listing Card ───────────────────────────────────────────
+// ── Selectable Off-Market Listing Card ───────────────────────────────────────
 
 function PocketListingSelectCard({
   listing,
@@ -213,13 +213,13 @@ function PocketListingSelectCard({
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-neutral-300">
             <Package className="h-8 w-8" />
-            <span className="text-[10px] font-medium">Pocket Listing</span>
+            <span className="text-[10px] font-medium">Off-Market Listing</span>
           </div>
         )}
 
-        {/* Pocket Listing badge */}
+        {/* Off-Market Listing badge */}
         <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
-          Pocket
+          Off-Market
         </span>
 
         {/* Status badge */}
