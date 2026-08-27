@@ -1,12 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { useAuth } from "@/hooks/useAuth";
+import { useInactivityTimer } from "@/hooks/useInactivityTimer";
+import { InactivityModal } from "@/components/shared/InactivityModal";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [inactivityModalOpen, setInactivityModalOpen] = useState(false);
+
+  const { isAuthenticated, logout } = useAuth();
+
+  // Show the inactivity popup after 30 minutes of no activity.
+  const handleTimeout = useCallback(() => {
+    setInactivityModalOpen(true);
+  }, []);
+
+  const { resetTimer } = useInactivityTimer(handleTimeout, isAuthenticated);
+
+  // "Stay" — close the modal and restart the 30-minute clock.
+  const handleStay = useCallback(() => {
+    setInactivityModalOpen(false);
+    resetTimer();
+  }, [resetTimer]);
+
+  // "Leave" — close the modal and log the user out via the normal logout path.
+  const handleLeave = useCallback(() => {
+    setInactivityModalOpen(false);
+    logout();
+  }, [logout]);
 
   return (
     <div className="flex min-h-screen">
@@ -47,6 +72,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
       </div>
+
+      {/* Inactivity warning — rendered via portal above all other content */}
+      <InactivityModal
+        open={inactivityModalOpen}
+        onStay={handleStay}
+        onLeave={handleLeave}
+      />
     </div>
   );
 }
