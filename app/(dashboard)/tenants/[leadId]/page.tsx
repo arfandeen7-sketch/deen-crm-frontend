@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,15 +14,23 @@ import {
   ExternalLink,
   CalendarClock,
   Home,
+  Building2,
+  User,
+  DollarSign,
+  Receipt,
+  ChevronRight,
+  Pencil,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Badge";
 import { LoadingState, ErrorState } from "@/components/ui/States";
-import { AccessGuard } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
+import { TenantEditForm } from "@/components/tenants/TenantEditForm";
 import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
-import { displayValue, formatDate, formatDateTime } from "@/lib/utils";
+import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
 function InfoRow({
   icon: Icon,
@@ -69,6 +78,7 @@ function TenantDetailPageContent() {
     uploadEmiratesId, deleteEmiratesId,
     uploadAgreement, deleteAgreement,
   } = useTenantMutations(params.leadId);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   if (isLoading) return <LoadingState />;
   if (isError) return <ErrorState onRetry={refetch} />;
@@ -112,14 +122,24 @@ function TenantDetailPageContent() {
         title={displayValue(tenant.fullName) ?? "Tenant Profile"}
         subtitle={lead?.leadName ? `Lead: ${lead.leadName}` : ""}
         actions={
-          lead && (
-            <Link
-              href={`/leads/${params.leadId}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <ExternalLink className="h-3.5 w-3.5" /> View Lead
-            </Link>
-          )
+          <div className="flex items-center gap-2">
+            <CanAccess module="tenant_details" page="all_tenants" action="edit">
+              <Button
+                size="sm"
+                onClick={() => setShowEditModal(true)}
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </Button>
+            </CanAccess>
+            {lead && (
+              <Link
+                href={`/leads/${params.leadId}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> View Lead
+              </Link>
+            )}
+          </div>
         }
       />
 
@@ -134,6 +154,7 @@ function TenantDetailPageContent() {
               <InfoRow icon={Phone}       label="Phone Number"  value={tenant.mobileNumber} />
               <InfoRow icon={Mail}        label="Email"         value={tenant.email} />
               <InfoRow icon={Calendar}    label="Date of Birth" value={formatDate(tenant.dateOfBirth)} />
+              <InfoRow icon={UserCircle2} label="Nationality"   value={tenant.tenantNationality} />
             </CardBody>
           </Card>
 
@@ -143,6 +164,119 @@ function TenantDetailPageContent() {
             <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
               <InfoRow icon={FileText}   label="Passport Number"   value={tenant.passportNumber} />
               <InfoRow icon={CreditCard} label="Emirates ID Number" value={tenant.emiratesIdNumber} />
+            </CardBody>
+          </Card>
+
+          {/* Owner & Property */}
+          <Card>
+            <CardHeader title="Owner & Property" subtitle="Linked owner and rented property" />
+            <CardBody className="space-y-4">
+              {/* Owner */}
+              {tenant.owner ? (
+                <Link
+                  href={`/owners/${tenant.owner.id}`}
+                  className="block rounded-lg border border-blue-200 bg-blue-50/50 p-3 transition-colors hover:bg-blue-50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Owner</p>
+                        <p className="text-sm font-medium text-slate-900">{tenant.owner.fullName}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-3 pl-10 text-xs text-slate-600">
+                    {tenant.owner.mobileNumber && (
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3 w-3 text-slate-400" /> {tenant.owner.mobileNumber}
+                      </span>
+                    )}
+                    {tenant.owner.email && (
+                      <span className="flex items-center gap-1">
+                        <Mail className="h-3 w-3 text-slate-400" /> {tenant.owner.email}
+                      </span>
+                    )}
+                    {tenant.owner.nationality && (
+                      <span className="flex items-center gap-1">
+                        <UserCircle2 className="h-3 w-3 text-slate-400" /> {tenant.owner.nationality}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ) : (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-center">
+                  <User className="mx-auto h-6 w-6 text-neutral-300" />
+                  <p className="mt-1 text-xs text-neutral-500">No owner linked to this tenant</p>
+                </div>
+              )}
+
+              {/* Property */}
+              {tenant.ownerManualProperty ? (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Property (Manual)</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {displayValue(tenant.ownerManualProperty.buildingName)}
+                        {tenant.ownerManualProperty.unitNumber && ` — Unit ${tenant.ownerManualProperty.unitNumber}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-3 pl-10 text-xs text-slate-600">
+                    {tenant.ownerManualProperty.community && (
+                      <span>{tenant.ownerManualProperty.community}</span>
+                    )}
+                    {tenant.ownerManualProperty.emirate && (
+                      <span>· {tenant.ownerManualProperty.emirate}</span>
+                    )}
+                    {tenant.ownerManualProperty.type && (
+                      <span>· {tenant.ownerManualProperty.type}</span>
+                    )}
+                    {tenant.ownerManualProperty.bedrooms && (
+                      <span>· {tenant.ownerManualProperty.bedrooms} BR</span>
+                    )}
+                    {tenant.ownerManualProperty.floorNumber && (
+                      <span>· Floor {tenant.ownerManualProperty.floorNumber}</span>
+                    )}
+                    {tenant.ownerManualProperty.unitSize && (
+                      <span>· {tenant.ownerManualProperty.unitSize} sqm</span>
+                    )}
+                  </div>
+                </div>
+              ) : tenant.ownerProperty ? (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Property (PF/Pocket)</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {displayValue(tenant.ownerProperty.building ?? tenant.ownerProperty.projectName)}
+                        {tenant.ownerProperty.unitNumber && ` — Unit ${tenant.ownerProperty.unitNumber}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-3 pl-10 text-xs text-slate-600">
+                    {tenant.ownerProperty.community && <span>{tenant.ownerProperty.community}</span>}
+                    {tenant.ownerProperty.emirate && <span>· {tenant.ownerProperty.emirate}</span>}
+                    {tenant.ownerProperty.type && <span>· {tenant.ownerProperty.type}</span>}
+                    {tenant.ownerProperty.bedrooms && <span>· {tenant.ownerProperty.bedrooms} BR</span>}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-center">
+                  <Building2 className="mx-auto h-6 w-6 text-neutral-300" />
+                  <p className="mt-1 text-xs text-neutral-500">No property linked to this tenant</p>
+                </div>
+              )}
             </CardBody>
           </Card>
 
@@ -161,8 +295,65 @@ function TenantDetailPageContent() {
             <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
               <InfoRow icon={CalendarClock} label="Agreement Start Date" value={formatDate(tenant.agreementStartDate)} />
               <InfoRow icon={CalendarClock} label="Agreement End Date"   value={formatDate(tenant.agreementEndDate)} />
+              <InfoRow icon={CalendarClock} label="Date of Notice"       value={formatDate(tenant.dateOfNotice)} />
             </CardBody>
           </Card>
+
+          {/* Rental Financials */}
+          <Card>
+            <CardHeader title="Rental Financials" subtitle="Rent, deposit, commission, and payment terms" />
+            <CardBody className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+              <InfoRow icon={DollarSign} label="Annual Rent"        value={tenant.annualRent != null ? formatCurrency(Number(tenant.annualRent)) : null} />
+              <InfoRow icon={DollarSign} label="Security Deposit"   value={tenant.securityDeposit != null ? formatCurrency(Number(tenant.securityDeposit)) : null} />
+              <InfoRow icon={DollarSign} label="Admin Fee"          value={tenant.adminFee != null ? formatCurrency(Number(tenant.adminFee)) : null} />
+              <InfoRow icon={DollarSign} label="Commission"         value={tenant.commission != null ? formatCurrency(Number(tenant.commission)) : null} />
+              <InfoRow icon={Receipt}    label="Mode of Payment"    value={tenant.modeOfPayment} />
+              <InfoRow icon={Receipt}    label="Number of Cheques"  value={tenant.numberOfCheques != null ? String(tenant.numberOfCheques) : null} />
+              <InfoRow icon={DollarSign} label="Currency"           value={tenant.currency} />
+            </CardBody>
+          </Card>
+
+          {/* Cheque Schedule */}
+          {tenant.cheques && tenant.cheques.length > 0 && (
+            <Card>
+              <CardHeader
+                title="Cheque Schedule"
+                subtitle={`${tenant.cheques.length} cheque${tenant.cheques.length > 1 ? "s" : ""}`}
+              />
+              <CardBody className="!p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-neutral-100 bg-neutral-50">
+                        <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">#</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Cheque Date</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Amount</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tenant.cheques.map((cheque) => (
+                        <tr key={cheque.id} className="border-b border-neutral-50 last:border-0">
+                          <td className="px-4 py-2.5 text-slate-700">{cheque.chequeNumber}</td>
+                          <td className="px-4 py-2.5 text-slate-700">{formatDate(cheque.chequeDate)}</td>
+                          <td className="px-4 py-2.5 text-slate-700">
+                            {cheque.amount != null ? formatCurrency(Number(cheque.amount)) : "—"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {cheque.status ? (
+                              <StatusBadge status={cheque.status} />
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardBody>
+            </Card>
+          )}
 
           {/* Identity & Agreement Documents (PDFs) */}
           <Card>
@@ -255,6 +446,14 @@ function TenantDetailPageContent() {
           </Card>
         </div>
       </div>
+
+      {/* ── Edit Modal ─────────────────────────────────────────────────── */}
+      <TenantEditForm
+        leadId={params.leadId}
+        tenant={tenant}
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+      />
     </div>
   );
 }

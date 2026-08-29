@@ -282,6 +282,66 @@ export interface Client {
 
 // ── Tenant Details ────────────────────────────────────────────────────────────
 
+/** Lightweight tenant summary embedded in owner property records. */
+export interface PropertyTenantSummary {
+  id: string;
+  leadId: string;
+  fullName?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+  tenantNationality?: string | null;
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  annualRent?: number | null;
+  securityDeposit?: number | null;
+  commission?: number | null;
+  modeOfPayment?: string | null;
+  numberOfCheques?: number | null;
+  currency?: string | null;
+  dateOfNotice?: string | null;
+  externalZohoId?: string | null;
+}
+
+export interface TenantCheque {
+  id: string;
+  chequeNumber: number;
+  chequeDate?: string | null;
+  amount?: number | null;
+  status?: string | null;
+}
+
+export interface TenantOwnerSummary {
+  id: string;
+  fullName: string;
+  mobileNumber: string;
+  email?: string | null;
+  nationality?: string | null;
+}
+
+export interface TenantOwnerPropertySummary {
+  id: string;
+  projectName?: string | null;
+  building?: string | null;
+  unitNumber?: string | null;
+  community?: string | null;
+  emirate?: string | null;
+  configuration?: string | null;
+  bedrooms?: string | null;
+  type?: string | null;
+}
+
+export interface TenantOwnerManualPropertySummary {
+  id: string;
+  buildingName?: string | null;
+  unitNumber?: string | null;
+  community?: string | null;
+  emirate?: string | null;
+  type?: string | null;
+  bedrooms?: string | null;
+  floorNumber?: string | null;
+  unitSize?: string | null;
+}
+
 export interface Tenant {
   id: string;
   leadId: string;
@@ -290,12 +350,28 @@ export interface Tenant {
   mobileNumber?: string | null;
   email?: string | null;
   dateOfBirth?: string | null;
+  tenantNationality?: string | null;
   // Identity document numbers
   passportNumber?: string | null;
   emiratesIdNumber?: string | null;
   // Tenancy agreement
   agreementStartDate?: string | null;
   agreementEndDate?: string | null;
+  // Owner & property links
+  ownerId?: string | null;
+  ownerPropertyId?: string | null;
+  ownerManualPropertyId?: string | null;
+  // Rental financials
+  annualRent?: number | null;
+  securityDeposit?: number | null;
+  adminFee?: number | null;
+  commission?: number | null;
+  currency?: string | null;
+  modeOfPayment?: string | null;
+  numberOfCheques?: number | null;
+  dateOfNotice?: string | null;
+  // Migration traceability
+  externalZohoId?: string | null;
   // Passport document metadata
   passportFilePath?: string | null;
   passportFileName?: string | null;
@@ -324,6 +400,7 @@ export interface Tenant {
   updatedAt: string;
   // Relations
   lead?: Pick<Lead, "id" | "leadName" | "leadStatus" | "serviceType" | "projectName"> & {
+    isImported?: boolean;
     assignedUser?: Pick<User, "id" | "fullName"> | null;
     creator?: Pick<User, "id" | "fullName"> | null;
   } | null;
@@ -331,6 +408,12 @@ export interface Tenant {
   passportUploader?: Pick<User, "id" | "fullName"> | null;
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
   agreementUploader?: Pick<User, "id" | "fullName"> | null;
+  // Owner & property relations
+  owner?: TenantOwnerSummary | null;
+  ownerProperty?: TenantOwnerPropertySummary | null;
+  ownerManualProperty?: TenantOwnerManualPropertySummary | null;
+  // Cheque schedule
+  cheques?: TenantCheque[];
 }
 
 export interface LeadStatusHistory {
@@ -1013,6 +1096,8 @@ export interface OwnerProperty {
   pfListing?: PropertyDetail | null;
   /** Full Pocket Listing details — populated by the getById endpoint. */
   pocketListing?: PocketListing | null;
+  /** Tenants linked to this property (direct relation). */
+  tenants?: PropertyTenantSummary[];
 }
 
 export interface Owner {
@@ -1100,6 +1185,8 @@ export interface ManualProperty {
   images?: ManualPropertyImage[];
   mainImage?: string | null;
   imageCount?: number;
+  /** Tenants linked to this property (direct relation). */
+  tenants?: PropertyTenantSummary[];
 }
 
 export type ManualPropertyInput = Partial<
@@ -1128,6 +1215,53 @@ export interface OwnerImportResult {
   propertiesSkipped: number;
   skipped: number;
   errors: { row: number; reason: string }[];
+}
+
+// ── Tenant Import ─────────────────────────────────────────────────────────────
+
+export interface TenantImportSystemField {
+  key: string;
+  label: string;
+  required: boolean;
+  section: "tenant" | "owner" | "property" | "rental" | "cheque" | "system";
+}
+
+export interface TenantImportPreviewResult {
+  headers: string[];
+  previewRows: Record<string, string>[];
+  systemFields: TenantImportSystemField[];
+  /** Server-computed alias-aware mapping suggestion (csvHeader → systemKey). */
+  suggestedMapping: Record<string, string>;
+}
+
+export interface TenantImportResult {
+  ownersCreated: number;
+  ownersUpdated: number;
+  propertiesCreated: number;
+  propertiesSkipped: number;
+  tenantsCreated: number;
+  tenantsUpdated: number;
+  chequesCreated: number;
+  skipped: number;
+  errors: { row: number; reason: string }[];
+}
+
+// ── Tenant bulk delete imported data ──────────────────────────────────────────
+
+export interface TenantBulkDeletePreview {
+  tenantsCount: number;
+  leadsCount: number;
+  propertiesCount: number;
+  ownersToDeleteCount: number;
+  ownersToKeepCount: number;
+  tenantsPreview: { id: string; fullName: string | null; externalZohoId: string | null }[];
+}
+
+export interface TenantBulkDeleteResult {
+  tenantsDeleted: number;
+  leadsDeleted: number;
+  propertiesDeleted: number;
+  ownersDeleted: number;
 }
 
 // ── Bulk delete imported data ─────────────────────────────────────────────────

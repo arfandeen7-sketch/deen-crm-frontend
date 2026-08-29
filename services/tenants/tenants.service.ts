@@ -1,6 +1,13 @@
-import { api, getData, putData } from "@/services/api/client";
+import { api, getData, putData, deleteData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
-import type { Tenant, Paginated } from "@/types";
+import type {
+  Tenant,
+  Paginated,
+  TenantImportPreviewResult,
+  TenantImportResult,
+  TenantBulkDeletePreview,
+  TenantBulkDeleteResult,
+} from "@/types";
 import type { TenantFormOutput } from "@/schemas/tenant.schema";
 
 export interface TenantQueryParams {
@@ -72,5 +79,44 @@ export const tenantsService = {
   /** DELETE /api/tenants/:leadId/documents/agreement */
   async deleteAgreement(leadId: string): Promise<void> {
     await api.delete(`/tenants/${leadId}/documents/agreement`);
+  },
+
+  // ── Import ───────────────────────────────────────────────────────────────────
+
+  /** POST /api/tenants/import/preview — parse file and return headers + suggested mapping */
+  async importPreview(file: File): Promise<TenantImportPreviewResult> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await api.post<{ data: TenantImportPreviewResult }>(
+      "/tenants/import/preview",
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data.data;
+  },
+
+  /** POST /api/tenants/import — execute import with confirmed column mapping */
+  async importTenants(file: File, mapping: Record<string, string>): Promise<TenantImportResult> {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("mapping", JSON.stringify(mapping));
+    const res = await api.post<{ data: TenantImportResult }>(
+      "/tenants/import",
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data.data;
+  },
+
+  // ── Bulk Delete Imported Data ────────────────────────────────────────────────
+
+  /** GET /api/tenants/import/all/preview — preview what would be deleted */
+  bulkDeletePreview(): Promise<TenantBulkDeletePreview> {
+    return getData<TenantBulkDeletePreview>("/tenants/import/all/preview");
+  },
+
+  /** DELETE /api/tenants/import/all — delete all imported tenant data */
+  bulkDelete(): Promise<TenantBulkDeleteResult> {
+    return deleteData<TenantBulkDeleteResult>("/tenants/import/all");
   },
 };

@@ -16,7 +16,7 @@ import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
 import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
 import { tenantSchema, type TenantFormValues } from "@/schemas/tenant.schema";
-import { formatDate, displayValue } from "@/lib/utils";
+import { formatDate, displayValue, formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
 interface TenantDetailsCardProps {
@@ -66,10 +66,19 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
       mobileNumber:         tenant?.mobileNumber ?? "",
       email:                tenant?.email ?? "",
       dateOfBirth:          tenant?.dateOfBirth ? tenant.dateOfBirth.slice(0, 10) : "",
+      tenantNationality:    tenant?.tenantNationality ?? "",
       passportNumber:       tenant?.passportNumber ?? "",
       emiratesIdNumber:     tenant?.emiratesIdNumber ?? "",
       agreementStartDate:   tenant?.agreementStartDate ? tenant.agreementStartDate.slice(0, 10) : "",
       agreementEndDate:     tenant?.agreementEndDate ? tenant.agreementEndDate.slice(0, 10) : "",
+      dateOfNotice:         tenant?.dateOfNotice ? tenant.dateOfNotice.slice(0, 10) : "",
+      annualRent:           tenant?.annualRent != null ? String(tenant.annualRent) : "",
+      securityDeposit:      tenant?.securityDeposit != null ? String(tenant.securityDeposit) : "",
+      adminFee:             tenant?.adminFee != null ? String(tenant.adminFee) : "",
+      commission:           tenant?.commission != null ? String(tenant.commission) : "",
+      currency:             tenant?.currency ?? "",
+      modeOfPayment:        tenant?.modeOfPayment ?? "",
+      numberOfCheques:      tenant?.numberOfCheques != null ? String(tenant.numberOfCheques) : "",
     },
   });
 
@@ -80,10 +89,19 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
       mobileNumber:         tenant?.mobileNumber ?? "",
       email:                tenant?.email ?? "",
       dateOfBirth:          tenant?.dateOfBirth ? tenant.dateOfBirth.slice(0, 10) : "",
+      tenantNationality:    tenant?.tenantNationality ?? "",
       passportNumber:       tenant?.passportNumber ?? "",
       emiratesIdNumber:     tenant?.emiratesIdNumber ?? "",
       agreementStartDate:   tenant?.agreementStartDate ? tenant.agreementStartDate.slice(0, 10) : "",
       agreementEndDate:     tenant?.agreementEndDate ? tenant.agreementEndDate.slice(0, 10) : "",
+      dateOfNotice:         tenant?.dateOfNotice ? tenant.dateOfNotice.slice(0, 10) : "",
+      annualRent:           tenant?.annualRent != null ? String(tenant.annualRent) : "",
+      securityDeposit:      tenant?.securityDeposit != null ? String(tenant.securityDeposit) : "",
+      adminFee:             tenant?.adminFee != null ? String(tenant.adminFee) : "",
+      commission:           tenant?.commission != null ? String(tenant.commission) : "",
+      currency:             tenant?.currency ?? "",
+      modeOfPayment:        tenant?.modeOfPayment ?? "",
+      numberOfCheques:      tenant?.numberOfCheques != null ? String(tenant.numberOfCheques) : "",
     });
     setEditing(true);
   };
@@ -145,6 +163,9 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
               <Field label="Date of Birth" error={errors.dateOfBirth?.message}>
                 <Input type="date" {...register("dateOfBirth")} />
               </Field>
+              <Field label="Nationality" error={errors.tenantNationality?.message}>
+                <Input placeholder="e.g. Indian, British" {...register("tenantNationality")} />
+              </Field>
               <Field label="Passport Number" error={errors.passportNumber?.message}>
                 <Input placeholder="e.g. A12345678" {...register("passportNumber")} />
               </Field>
@@ -156,6 +177,21 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
               </Field>
               <Field label="Agreement End Date" error={errors.agreementEndDate?.message}>
                 <Input type="date" {...register("agreementEndDate")} />
+              </Field>
+              <Field label="Date of Notice" error={errors.dateOfNotice?.message}>
+                <Input type="date" {...register("dateOfNotice")} />
+              </Field>
+              <Field label="Annual Rent" error={errors.annualRent?.message}>
+                <Input type="number" step="0.01" placeholder="e.g. 85000" {...register("annualRent")} />
+              </Field>
+              <Field label="Security Deposit" error={errors.securityDeposit?.message}>
+                <Input type="number" step="0.01" placeholder="e.g. 5000" {...register("securityDeposit")} />
+              </Field>
+              <Field label="Commission" error={errors.commission?.message}>
+                <Input type="number" step="0.01" placeholder="e.g. 4250" {...register("commission")} />
+              </Field>
+              <Field label="Mode of Payment" error={errors.modeOfPayment?.message}>
+                <Input placeholder="e.g. 4 cheques" {...register("modeOfPayment")} />
               </Field>
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -175,6 +211,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
               <InfoRow icon={Phone}        label="Phone Number"       value={tenant.mobileNumber} />
               <InfoRow icon={Mail}         label="Email"              value={tenant.email} />
               <InfoRow icon={Calendar}     label="Date of Birth"      value={formatDate(tenant.dateOfBirth)} />
+              <InfoRow icon={UserCircle2}  label="Nationality"        value={tenant.tenantNationality} />
               <InfoRow icon={FileText}     label="Passport Number"    value={tenant.passportNumber} />
               <InfoRow icon={CreditCard}   label="Emirates ID"        value={tenant.emiratesIdNumber} />
             </div>
@@ -183,7 +220,24 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
             <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 pt-2 border-t border-neutral-100">
               <InfoRow icon={CalendarClock} label="Agreement Start Date" value={formatDate(tenant.agreementStartDate)} />
               <InfoRow icon={CalendarClock} label="Agreement End Date"   value={formatDate(tenant.agreementEndDate)} />
+              <InfoRow icon={CalendarClock} label="Date of Notice"       value={formatDate(tenant.dateOfNotice)} />
             </div>
+
+            {/* Rental financials */}
+            {(tenant.annualRent != null || tenant.securityDeposit != null || tenant.commission != null || tenant.modeOfPayment) && (
+              <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 pt-2 border-t border-neutral-100">
+                {tenant.annualRent != null && (
+                  <InfoRow icon={CreditCard} label="Annual Rent" value={formatCurrency(Number(tenant.annualRent))} />
+                )}
+                {tenant.securityDeposit != null && (
+                  <InfoRow icon={CreditCard} label="Security Deposit" value={formatCurrency(Number(tenant.securityDeposit))} />
+                )}
+                {tenant.commission != null && (
+                  <InfoRow icon={CreditCard} label="Commission" value={formatCurrency(Number(tenant.commission))} />
+                )}
+                <InfoRow icon={CreditCard} label="Mode of Payment" value={tenant.modeOfPayment} />
+              </div>
+            )}
 
             {/* Document uploads */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2 border-t border-neutral-100">

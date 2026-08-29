@@ -28,6 +28,7 @@ import {
   ExternalLink,
   CreditCard,
   FileKey,
+  UserCircle2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -47,7 +48,42 @@ import {
   LISTING_STATUS_COLORS,
   type OwnerPropertyFormValues,
 } from "@/schemas/owner.schema";
-import type { OwnerProperty } from "@/types";
+import type { OwnerProperty, PropertyTenantSummary } from "@/types";
+
+// ── Tenant helpers ────────────────────────────────────────────────────────────
+
+/** Whole-day difference between an end date and now (negative if expired). */
+function tenantRemainingDays(endDate?: string | null): number | null {
+  if (!endDate) return null;
+  const end = new Date(endDate);
+  if (isNaN(end.getTime())) return null;
+  const now = new Date();
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((endDay.getTime() - todayDay.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * Returns the "active" tenant for a property — the most recent tenant whose
+ * agreement has not yet expired (or has no end date). Returns null if the
+ * property is vacant (no tenants, or all tenants' agreements have expired).
+ */
+function getActiveTenant(tenants?: PropertyTenantSummary[]): PropertyTenantSummary | null {
+  if (!tenants || tenants.length === 0) return null;
+  const now = new Date();
+  // Find tenants whose agreementEndDate is null or in the future
+  const active = tenants.filter((t) => {
+    if (!t.agreementEndDate) return true; // no end date = active
+    return new Date(t.agreementEndDate) >= now;
+  });
+  // Return the one with the latest start date (most recent)
+  if (active.length === 0) return null;
+  return active.sort((a, b) => {
+    const aStart = a.agreementStartDate ? new Date(a.agreementStartDate).getTime() : 0;
+    const bStart = b.agreementStartDate ? new Date(b.agreementStartDate).getTime() : 0;
+    return bStart - aStart;
+  })[0];
+}
 
 export default function OwnerDetailPage() {
   return (
@@ -449,9 +485,17 @@ function PropertyRow({
     (pl?.listingStatus === "sold" || pl?.listingStatus === "rented"
       ? pl.listingStatus
       : null);
-  const isClosed = dealStatus === "sold" || dealStatus === "rented";
+
+  // ── Direct tenant link takes precedence for "Rented" status ──────────────
+  // If a tenant is directly linked to this property with an active agreement,
+  // the property is "Rented" regardless of the indirect deal-status logic.
+  const activeTenant = getActiveTenant(property.tenants);
+  const isRentedByTenant = !!activeTenant;
+  const isClosed = dealStatus === "sold" || dealStatus === "rented" || isRentedByTenant;
   const dealBadge =
-    dealStatus === "sold" ? "Sold Out" : dealStatus === "rented" ? "Rented Out" : null;
+    dealStatus === "sold" ? "Sold Out"
+    : dealStatus === "rented" || isRentedByTenant ? "Rented Out"
+    : null;
   const rental = pf?.rentalAgreement ?? pl?.rentalAgreement ?? null;
 
   const offeringLabel =
@@ -678,6 +722,123 @@ function PropertyRow({
                   </div>
                 </div>
               )}
+
+            {/* ── Current Tenant card (from direct Tenant link) ─────────────── */}
+            {activeTenant && (
+              <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                    Current Tenant
+                  </p>
+                  <Link
+                    href={`/tenants/${activeTenant.leadId}`}
+                    className="flex items-center gap-1 text-[10px] font-medium text-emerald-700 hover:text-emerald-900"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View Profile <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                    <UserCircle2 className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-emerald-900">
+                      {activeTenant.fullName ?? "Unknown Tenant"}
+                      {activeTenant.tenantNationality && (
+                        <span className="ml-1.5 font-normal text-emerald-600">
+                          · {activeTenant.tenantNationality}
+                        </span>
+                      )}
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-emerald-700">
+                      {activeTenant.mobileNumber && (
+                        <span className="flex items-center gap-0.5">
+                          <Phone className="h-2.5 w-2.5" /> {activeTenant.mobileNumber}
+                        </span>
+                      )}
+                      {activeTenant.email && (
+                        <span className="flex items-center gap-0.5">
+                          <Mail className="h-2.5 w-2.5" /> {activeTenant.email}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-4">
+                  <div>
+                    <p className="text-[10px] text-emerald-500">Start Date</p>
+                    <p className="text-xs font-medium text-emerald-900">
+                      {activeTenant.agreementStartDate
+                        ? new Date(activeTenant.agreementStartDate).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-emerald-500">End Date</p>
+                    <p className="text-xs font-medium text-emerald-900">
+                      {activeTenant.agreementEndDate
+                        ? new Date(activeTenant.agreementEndDate).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-emerald-500">Days Remaining</p>
+                    {(() => {
+                      const days = tenantRemainingDays(activeTenant.agreementEndDate);
+                      return (
+                        <p
+                          className={
+                            days == null
+                              ? "text-xs font-medium text-emerald-900"
+                              : days < 0
+                                ? "text-xs font-bold text-red-600"
+                                : days <= 30
+                                  ? "text-xs font-bold text-amber-600"
+                                  : "text-xs font-bold text-emerald-600"
+                          }
+                        >
+                          {days == null
+                            ? "—"
+                            : days < 0
+                              ? `Expired ${Math.abs(days)}d ago`
+                              : `${days}d`}
+                        </p>
+                      );
+                    })()}
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-emerald-500">Annual Rent</p>
+                    <p className="text-xs font-medium text-emerald-900">
+                      {activeTenant.annualRent != null
+                        ? formatCurrency(Number(activeTenant.annualRent))
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                {(activeTenant.modeOfPayment || activeTenant.numberOfCheques) && (
+                  <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-emerald-600">
+                    {activeTenant.modeOfPayment && (
+                      <span>Payment: {activeTenant.modeOfPayment}</span>
+                    )}
+                    {activeTenant.numberOfCheques != null && (
+                      <span>· {activeTenant.numberOfCheques} cheque(s)</span>
+                    )}
+                    {activeTenant.commission != null && (
+                      <span>· Commission: {formatCurrency(Number(activeTenant.commission))}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {property.notes && (
               <div className="mt-2 rounded-lg bg-amber-50/60 border border-amber-100 px-3 py-1.5">

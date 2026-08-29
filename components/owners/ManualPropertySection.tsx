@@ -12,7 +12,12 @@ import {
   Plus,
   Import,
   Hash,
+  UserCircle2,
+  Phone,
+  Mail,
+  ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -27,7 +32,35 @@ import {
   useOwnerManualProperties,
 } from "@/hooks/useOwners";
 import { getErrorMessage } from "@/services/api/client";
-import type { ManualProperty, ManualPropertyImage } from "@/types";
+import { formatCurrency } from "@/lib/utils";
+import type { ManualProperty, ManualPropertyImage, PropertyTenantSummary } from "@/types";
+
+// ── Tenant helpers ────────────────────────────────────────────────────────────
+
+function tenantRemainingDays(endDate?: string | null): number | null {
+  if (!endDate) return null;
+  const end = new Date(endDate);
+  if (isNaN(end.getTime())) return null;
+  const now = new Date();
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((endDay.getTime() - todayDay.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+function getActiveTenant(tenants?: PropertyTenantSummary[]): PropertyTenantSummary | null {
+  if (!tenants || tenants.length === 0) return null;
+  const now = new Date();
+  const active = tenants.filter((t) => {
+    if (!t.agreementEndDate) return true;
+    return new Date(t.agreementEndDate) >= now;
+  });
+  if (active.length === 0) return null;
+  return active.sort((a, b) => {
+    const aStart = a.agreementStartDate ? new Date(a.agreementStartDate).getTime() : 0;
+    const bStart = b.agreementStartDate ? new Date(b.agreementStartDate).getTime() : 0;
+    return bStart - aStart;
+  })[0];
+}
 
 interface Props {
   ownerId: string;
@@ -198,6 +231,7 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Floor</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Parking</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Price (AED)</th>
+                  <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Tenant</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Status</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Source</th>
                   {isMaster && (
@@ -207,8 +241,16 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
               </thead>
               <tbody className="divide-y divide-neutral-100">
                 {properties.map((p) => {
+                  const activeTenant = getActiveTenant(p.tenants);
+                  const isRented = !!activeTenant;
+                  // Tenant link takes precedence: if rented by a linked tenant,
+                  // override the listing status to "rented"
+                  const effectiveStatus = isRented ? "rented" : p.listingStatus;
                   const statusClass =
-                    LISTING_STATUS_COLORS[p.listingStatus] ?? "bg-slate-100 text-slate-600";
+                    LISTING_STATUS_COLORS[effectiveStatus] ?? "bg-slate-100 text-slate-600";
+                  const daysLeft = activeTenant
+                    ? tenantRemainingDays(activeTenant.agreementEndDate)
+                    : null;
                   return (
                     <tr key={p.id} className="group bg-white hover:bg-neutral-50/80 transition-colors">
                       <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
@@ -258,8 +300,53 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
                         {p.price ? Number(p.price).toLocaleString() : "—"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
+                        {activeTenant ? (
+                          <div className="space-y-0.5">
+                            <Link
+                              href={`/tenants/${activeTenant.leadId}`}
+                              className="flex items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-900"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <UserCircle2 className="h-3 w-3 text-emerald-500" />
+                              {activeTenant.fullName ?? "Unknown"}
+                            </Link>
+                            {activeTenant.mobileNumber && (
+                              <span className="flex items-center gap-0.5 text-[10px] text-slate-500">
+                                <Phone className="h-2.5 w-2.5 text-slate-400" /> {activeTenant.mobileNumber}
+                              </span>
+                            )}
+                            {activeTenant.agreementEndDate && (
+                              <span
+                                className={`text-[10px] font-medium ${
+                                  daysLeft == null
+                                    ? "text-slate-500"
+                                    : daysLeft < 0
+                                      ? "text-red-600"
+                                      : daysLeft <= 30
+                                        ? "text-amber-600"
+                                        : "text-emerald-600"
+                                }`}
+                              >
+                                {daysLeft == null
+                                  ? "—"
+                                  : daysLeft < 0
+                                    ? `Expired ${Math.abs(daysLeft)}d ago`
+                                    : `${daysLeft}d left`}
+                              </span>
+                            )}
+                            {activeTenant.annualRent != null && (
+                              <span className="text-[10px] text-slate-500">
+                                {formatCurrency(Number(activeTenant.annualRent))}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusClass}`}>
-                          {LISTING_STATUS_LABELS[p.listingStatus] ?? p.listingStatus}
+                          {LISTING_STATUS_LABELS[effectiveStatus] ?? effectiveStatus}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
