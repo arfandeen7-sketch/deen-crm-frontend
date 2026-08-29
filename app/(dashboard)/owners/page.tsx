@@ -147,6 +147,15 @@ function OwnersPageContent() {
         );
       },
     },
+    ...(isMaster
+      ? [
+          {
+            key: "createdBy",
+            header: "Created by",
+            render: (o: Owner) => o.creator?.fullName ?? "—",
+          } satisfies Column<Owner>,
+        ]
+      : []),
     {
       key: "actions",
       header: "",
@@ -186,7 +195,15 @@ function OwnersPageContent() {
     <div className="space-y-5">
       <PageHeader
         title="Owners"
-        subtitle={data ? `${data.total} owners` : "Manage property owners and their portfolios"}
+        subtitle={
+          data
+            ? isMaster
+              ? `${data.total} owners`
+              : `${data.total} owner${data.total === 1 ? "" : "s"} created by you`
+            : isMaster
+              ? "Manage all property owners and their portfolios"
+              : "Manage property owners you created"
+        }
         actions={
           <>
             {isMaster && (
@@ -229,7 +246,11 @@ function OwnersPageContent() {
         error={isError}
         onRetry={refetch}
         emptyTitle="No owners yet"
-        emptyMessage="Add your first property owner to get started."
+        emptyMessage={
+          isMaster
+            ? "Add your first property owner to get started."
+            : "Owners you create will appear here."
+        }
         onRowClick={(o) => router.push(`/owners/${o.id}`)}
       />
 
