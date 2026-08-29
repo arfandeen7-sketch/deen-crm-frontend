@@ -31,11 +31,14 @@ export function OwnerForm({
       mobileNumber: initial?.mobileNumber ?? "",
       alternateMobile: initial?.alternateMobile ?? "",
       email: initial?.email ?? "",
+      secondaryEmail: initial?.secondaryEmail ?? "",
       whatsapp: initial?.whatsapp ?? "",
       emirate: initial?.emirate ?? "",
       city: initial?.city ?? "",
       locality: initial?.locality ?? "",
       notes: initial?.notes ?? "",
+      passportNumber: initial?.passportNumber ?? "",
+      emiratesIdNumber: initial?.emiratesIdNumber ?? "",
     },
   });
 
@@ -91,6 +94,22 @@ export function OwnerForm({
 
         <Field label="Locality" error={errors.locality?.message}>
           <Input placeholder="e.g. Marina" {...register("locality")} />
+        </Field>
+
+        <Field label="Passport Number" error={errors.passportNumber?.message}>
+          <Input placeholder="e.g. A12345678" {...register("passportNumber")} />
+        </Field>
+
+        <Field label="Emirates ID Number" error={errors.emiratesIdNumber?.message}>
+          <Input placeholder="e.g. 784-1990-1234567-1" {...register("emiratesIdNumber")} />
+        </Field>
+
+        <Field label="Secondary Email" error={errors.secondaryEmail?.message}>
+          <Input
+            type="email"
+            placeholder="Optional secondary email"
+            {...register("secondaryEmail")}
+          />
         </Field>
       </div>
 

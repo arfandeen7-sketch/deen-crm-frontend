@@ -1023,17 +1023,132 @@ export interface Owner {
   alternateMobile?: string | null;
   email?: string | null;
   emailNormalized?: string | null;
+  secondaryEmail?: string | null;
   whatsapp?: string | null;
   emirate?: string | null;
   city?: string | null;
   locality?: string | null;
   notes?: string | null;
+  // Identity documents
+  passportNumber?: string | null;
+  emiratesIdNumber?: string | null;
+  // Passport file metadata (no file data — fetched via dedicated endpoint)
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID file metadata
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;
   creator?: Pick<User, "id" | "fullName"> | null;
   properties?: OwnerProperty[];
+  manualProperties?: ManualProperty[];
   _count?: { properties: number };
+}
+
+// ── Owner Manual Properties ───────────────────────────────────────────────────
+
+export interface ManualPropertyImage {
+  id: string;
+  propertyId: string;
+  sortOrder: number;
+  filename: string;
+  mimeType: string;
+  url: string; // served by /api/public/owner-manual-property-images/:id
+  createdAt: string;
+}
+
+export type ManualPropertyListingStatus =
+  | "available"
+  | "listed"
+  | "sold"
+  | "rented"
+  | "off_market";
+
+export interface ManualProperty {
+  id: string;
+  ownerId: string;
+  buildingName?: string | null;
+  unitNumber?: string | null;
+  unitSize?: string | null;
+  projectName?: string | null;
+  community?: string | null;
+  emirate?: string | null;
+  city?: string | null;
+  category?: string | null;
+  type?: string | null;
+  configuration?: string | null;
+  bedrooms?: string | null;
+  bathrooms?: string | null;
+  floorNumber?: string | null;
+  parkingSlots?: string | null;
+  price?: string | null;
+  reference?: string | null;
+  listingStatus: ManualPropertyListingStatus;
+  isImported: boolean;
+  importSource?: string | null;
+  notes?: string | null;
+  remarks?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  images?: ManualPropertyImage[];
+  mainImage?: string | null;
+  imageCount?: number;
+}
+
+export type ManualPropertyInput = Partial<
+  Omit<ManualProperty, "id" | "ownerId" | "isImported" | "importSource" | "createdAt" | "updatedAt" | "creator" | "images" | "mainImage" | "imageCount">
+>;
+
+export interface OwnerImportSystemField {
+  key: string;
+  label: string;
+  required: boolean;
+  section: "owner" | "property";
+}
+
+export interface OwnerImportPreviewResult {
+  headers: string[];
+  previewRows: Record<string, string>[];
+  systemFields: OwnerImportSystemField[];
+  /** Server-computed alias-aware mapping suggestion (csvHeader → systemKey). */
+  suggestedMapping: Record<string, string>;
+}
+
+export interface OwnerImportResult {
+  ownersCreated: number;
+  ownersUpdated: number;
+  propertiesCreated: number;
+  propertiesSkipped: number;
+  skipped: number;
+  errors: { row: number; reason: string }[];
+}
+
+// ── Bulk delete imported data ─────────────────────────────────────────────────
+
+export interface BulkDeleteImportedPreview {
+  importedPropertiesCount: number;
+  ownersToDeleteCount: number;
+  ownersToKeepCount: number;
+  ownersToDeletePreview: {
+    id: string;
+    fullName: string;
+    mobileNumber: string;
+    email: string | null;
+    _count: { manualProperties: number };
+  }[];
+}
+
+export interface BulkDeleteImportedResult {
+  propertiesDeleted: number;
+  ownersDeleted: number;
+  ownersKept: number;
 }
 
 export interface OwnerWithProperties extends Owner {

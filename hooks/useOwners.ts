@@ -9,7 +9,8 @@ import {
   ownersService,
   type OwnerCreateResult,
 } from "@/services/owners/owners.service";
-import type { OwnerInput, OwnerPropertyInput, OwnerQueryParams } from "@/types";
+import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
+import type { OwnerInput, OwnerPropertyInput, OwnerQueryParams, ManualPropertyInput } from "@/types";
 import { POLL_FAST } from "@/constants";
 import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
 import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
@@ -133,6 +134,94 @@ export function useOwnerPropertyMutations() {
   });
 
   return { createProperty, updateProperty, removeProperty };
+}
+
+// ── Manual Property Hooks ─────────────────────────────────────────────────────
+
+export function useOwnerManualProperties(ownerId: string | undefined) {
+  const enabled = !!ownerId;
+  return useQuery({
+    queryKey: [KEY, "manual-properties", ownerId],
+    queryFn: () => ownerManualPropertiesService.list(ownerId as string),
+    enabled,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useOwnerManualPropertyMutations() {
+  const qc = useQueryClient();
+  const invalidate = (ownerId?: string) => {
+    qc.invalidateQueries({ queryKey: [KEY] });
+    if (ownerId) {
+      qc.invalidateQueries({ queryKey: [KEY, "manual-properties", ownerId] });
+      qc.invalidateQueries({ queryKey: [KEY, "detail", ownerId] });
+    }
+  };
+
+  const create = useMutation({
+    mutationFn: ({ ownerId, body }: { ownerId: string; body: ManualPropertyInput }) =>
+      ownerManualPropertiesService.create(ownerId, body),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const update = useMutation({
+    mutationFn: ({ ownerId, propId, body }: { ownerId: string; propId: string; body: ManualPropertyInput }) =>
+      ownerManualPropertiesService.update(ownerId, propId, body),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const remove = useMutation({
+    mutationFn: ({ ownerId, propId }: { ownerId: string; propId: string }) =>
+      ownerManualPropertiesService.remove(ownerId, propId),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const addImages = useMutation({
+    mutationFn: ({ ownerId, propId, files }: { ownerId: string; propId: string; files: File[] }) =>
+      ownerManualPropertiesService.addImages(ownerId, propId, files),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const removeImage = useMutation({
+    mutationFn: ({ ownerId, propId, imageId }: { ownerId: string; propId: string; imageId: string }) =>
+      ownerManualPropertiesService.removeImage(ownerId, propId, imageId),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  return { create, update, remove, addImages, removeImage };
+}
+
+// ── Owner Document Hooks ──────────────────────────────────────────────────────
+
+export function useOwnerDocumentMutations() {
+  const qc = useQueryClient();
+  const invalidate = (ownerId: string) => {
+    qc.invalidateQueries({ queryKey: [KEY, "detail", ownerId] });
+  };
+
+  const uploadPassport = useMutation({
+    mutationFn: ({ ownerId, file }: { ownerId: string; file: File }) =>
+      ownerManualPropertiesService.uploadPassport(ownerId, file),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const removePassport = useMutation({
+    mutationFn: (ownerId: string) => ownerManualPropertiesService.removePassport(ownerId),
+    onSuccess: (_data, ownerId) => invalidate(ownerId),
+  });
+
+  const uploadEmiratesId = useMutation({
+    mutationFn: ({ ownerId, file }: { ownerId: string; file: File }) =>
+      ownerManualPropertiesService.uploadEmiratesId(ownerId, file),
+    onSuccess: (_data, vars) => invalidate(vars.ownerId),
+  });
+
+  const removeEmiratesId = useMutation({
+    mutationFn: (ownerId: string) => ownerManualPropertiesService.removeEmiratesId(ownerId),
+    onSuccess: (_data, ownerId) => invalidate(ownerId),
+  });
+
+  return { uploadPassport, removePassport, uploadEmiratesId, removeEmiratesId };
 }
 
 export type { OwnerCreateResult };

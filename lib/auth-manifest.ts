@@ -99,6 +99,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // Owners
   "/owners": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "view" } },
   "/owners/create": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "create" } },
+  "/owners/import": { type: "master" },
   "/owners/[id]": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "view" } },
   "/owners/[id]/edit": { type: "permission", requirement: { module: "owners", page: "all_owners", action: "edit" } },
 

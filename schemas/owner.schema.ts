@@ -18,11 +18,20 @@ export const ownerSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((v) => (v === "" ? undefined : v)),
+  secondaryEmail: z
+    .string()
+    .email("Enter a valid secondary email")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
   whatsapp: optionalString,
   emirate: optionalString,
   city: optionalString,
   locality: optionalString,
   notes: optionalString,
+  // Identity documents
+  passportNumber: optionalString,
+  emiratesIdNumber: optionalString,
 });
 
 export type OwnerFormValues = z.input<typeof ownerSchema>;
@@ -72,3 +81,32 @@ export const LISTING_STATUS_COLORS: Record<string, string> = {
   rented: "bg-amber-100 text-amber-700",
   off_market: "bg-slate-100 text-slate-600",
 };
+
+// ── Manual Property Schema ────────────────────────────────────────────────────
+
+export const manualPropertySchema = z.object({
+  buildingName: optionalString,
+  unitNumber: optionalString,
+  unitSize: optionalString,
+  projectName: optionalString,
+  community: optionalString,
+  emirate: optionalString,
+  city: optionalString,
+  category: optionalString,
+  type: optionalString,
+  configuration: optionalString,
+  bedrooms: optionalString,
+  bathrooms: optionalString,
+  floorNumber: optionalString,
+  parkingSlots: optionalString,
+  price: optionalString,
+  reference: optionalString,
+  listingStatus: z
+    .enum(["available", "listed", "sold", "rented", "off_market"])
+    .optional(),
+  notes: optionalString,
+  remarks: optionalString,
+});
+
+export type ManualPropertyFormValues = z.input<typeof manualPropertySchema>;
+export type ManualPropertyFormOutput = z.output<typeof manualPropertySchema>;
