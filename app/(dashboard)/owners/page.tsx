@@ -15,7 +15,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useOwnersList, useOwnerMutations } from "@/hooks/useOwners";
-import { useIsMaster } from "@/hooks/useIsMaster";
+import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
@@ -31,7 +31,7 @@ export default function OwnersPage() {
 
 function OwnersPageContent() {
   const router = useRouter();
-  const isMaster = useIsMaster();
+  const isMaster = useOwnerTenantFullAccess();
   const [params, setParams] = useState({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,

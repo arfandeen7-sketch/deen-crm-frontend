@@ -14,6 +14,7 @@ export const createUserSchema = z.object({
   phone: optional,
   role,
   managerId: optional,
+  fullOwnerTenantAccess: z.boolean().optional().default(false),
 });
 
 export const updateUserSchema = z
@@ -25,6 +26,7 @@ export const updateUserSchema = z
     phone: optional,
     role,
     managerId: optional,
+    fullOwnerTenantAccess: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.password) return;

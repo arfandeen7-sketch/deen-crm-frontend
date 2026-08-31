@@ -8,6 +8,7 @@ export interface CreateUserInput {
   phone?: string | null;
   role: UserRole;
   managerId?: string | null;
+  fullOwnerTenantAccess?: boolean;
 }
 
 export interface UpdateUserInput {
@@ -17,6 +18,7 @@ export interface UpdateUserInput {
   phone?: string | null;
   role?: UserRole;
   managerId?: string | null;
+  fullOwnerTenantAccess?: boolean;
 }
 
 export interface AssignableUser {

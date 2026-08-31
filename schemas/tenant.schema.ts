@@ -5,6 +5,15 @@ const optionalString = z
   .optional()
   .transform((v) => (v === "" ? undefined : v));
 
+// A single cheque entry in the editable cheque schedule.
+// Dates / amounts are sent as strings; the backend coerces them.
+export const chequeSchema = z.object({
+  chequeNumber: z.number(),
+  chequeDate:   z.string().optional(),
+  amount:       z.string().optional(),
+  status:       z.string().optional(),
+});
+
 export const tenantSchema = z.object({
   // Personal info
   fullName:             optionalString,
@@ -35,7 +44,10 @@ export const tenantSchema = z.object({
   currency:             optionalString,
   modeOfPayment:        optionalString,
   numberOfCheques:      optionalString,
+  // Cheque schedule — full array; replaces existing cheques on save
+  cheques: z.array(chequeSchema).optional(),
 });
 
+export type ChequeFormValues = z.input<typeof chequeSchema>;
 export type TenantFormValues = z.input<typeof tenantSchema>;
 export type TenantFormOutput  = z.output<typeof tenantSchema>;

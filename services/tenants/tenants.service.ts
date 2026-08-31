@@ -1,4 +1,4 @@
-import { api, getData, putData, deleteData } from "@/services/api/client";
+import { api, getData, putData, patchData, deleteData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
   Tenant,
@@ -8,7 +8,7 @@ import type {
   TenantBulkDeletePreview,
   TenantBulkDeleteResult,
 } from "@/types";
-import type { TenantFormOutput } from "@/schemas/tenant.schema";
+import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
 
 export interface TenantQueryParams {
   page?: number;
@@ -31,6 +31,17 @@ export const tenantsService = {
   /** PUT /api/tenants/:leadId — upsert text fields */
   upsert(leadId: string, body: Partial<TenantFormOutput>): Promise<Tenant> {
     return putData<Tenant>(`/tenants/${leadId}`, body);
+  },
+
+  /** POST /api/tenants/from-property — create tenant from owner's manual property */
+  async createFromProperty(body: TenantFormValues & { ownerId: string; ownerManualPropertyId: string }): Promise<Tenant> {
+    const res = await api.post<{ data: Tenant }>("/tenants/from-property", body);
+    return res.data.data;
+  },
+
+  /** PATCH /api/tenants/:leadId/end-contract — end tenant contract early */
+  async endContract(leadId: string, actualEndDate: string): Promise<Tenant> {
+    return patchData<Tenant>(`/tenants/${leadId}/end-contract`, { actualEndDate });
   },
 
   /** POST /api/tenants/:leadId/documents/passport — upload / replace passport PDF */

@@ -106,6 +106,9 @@ export interface User {
   modules?: string[];
   moduleAccess?: string[] | null;
   moduleAccessOverridden?: boolean;
+  // Custom module access: when true, user has Master-level access
+  // to the Owner and Tenant modules (view, add, edit, delete, import).
+  fullOwnerTenantAccess?: boolean;
   // Team hierarchy fields
   managerId?: string | null;
   manager?: Pick<User, "id" | "fullName"> | null;

@@ -40,6 +40,7 @@ export default function EditUserPage() {
           phone: parsed.phone,
           role: parsed.role,
           managerId: parsed.managerId,
+          fullOwnerTenantAccess: parsed.fullOwnerTenantAccess,
           ...(parsed.password ? { password: parsed.password } : {}),
         },
       });

@@ -103,6 +103,7 @@ export function UserForm({
       phone: initial?.phone ?? "",
       role: initial?.role ?? "sales_executive",
       managerId: initial?.managerId ?? "",
+      fullOwnerTenantAccess: initial?.fullOwnerTenantAccess ?? false,
     },
   });
 
@@ -118,6 +119,7 @@ export function UserForm({
       phone: initial.phone ?? "",
       role: initial.role ?? "sales_executive",
       managerId: initial.managerId ?? "",
+      fullOwnerTenantAccess: initial.fullOwnerTenantAccess ?? false,
     });
   }, [initial?.id, reset]);
 
@@ -303,6 +305,35 @@ export function UserForm({
           </Field>
         )}
       </div>
+
+      {/* ── Custom Module Access ────────────────────────────────────────── */}
+      {selectedRole !== "master" && (
+        <div className="space-y-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-800">Custom Module Access</p>
+            <p className="mt-0.5 text-xs text-amber-600">
+              Grant Master-level access to specific modules for this user.
+            </p>
+          </div>
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200 bg-white px-4 py-3 hover:bg-amber-50/50 transition-colors">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-amber-300 text-amber-700 accent-amber-700 cursor-pointer"
+              {...register("fullOwnerTenantAccess")}
+            />
+            <div>
+              <span className="text-sm font-semibold text-amber-900">
+                Full Owner &amp; Tenant Access
+              </span>
+              <p className="mt-0.5 text-xs text-amber-600">
+                When enabled, this user can view, add, edit, delete, and import
+                data in the Owner and Tenant modules — same as a Master user.
+                This is independent of the permission grants below.
+              </p>
+            </div>
+          </label>
+        </div>
+      )}
 
       {/* ── Permission Section ───────────────────────────────────────────── */}
       <div className="space-y-3 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4">

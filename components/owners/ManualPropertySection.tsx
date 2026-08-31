@@ -16,12 +16,16 @@ import {
   Phone,
   Mail,
   ExternalLink,
+  UserPlus,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { ManualPropertyForm } from "@/components/forms/ManualPropertyForm";
+import { AddTenantForm } from "@/components/tenants/AddTenantForm";
+import { EndContractModal } from "@/components/tenants/EndContractModal";
 import {
   LISTING_STATUS_LABELS,
   LISTING_STATUS_COLORS,
@@ -80,6 +84,10 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Tenant management state ────────────────────────────────────────────────
+  const [addTenantProp, setAddTenantProp] = useState<ManualProperty | null>(null);
+  const [endContractTenant, setEndContractTenant] = useState<PropertyTenantSummary | null>(null);
 
   const properties: ManualProperty[] = data?.data ?? [];
   const importedCount = properties.filter((p) => p.isImported).length;
@@ -363,6 +371,26 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
                       {isMaster && (
                         <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
                           <div className="flex items-center gap-1">
+                            {/* Add Tenant — only for available (non-rented) properties */}
+                            {!isRented && (
+                              <button
+                                onClick={() => setAddTenantProp(p)}
+                                className="rounded p-1.5 text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                                title="Add tenant"
+                              >
+                                <UserPlus className="h-4 w-4" />
+                              </button>
+                            )}
+                            {/* End Contract — only for properties with an active tenant */}
+                            {activeTenant && (
+                              <button
+                                onClick={() => setEndContractTenant(activeTenant)}
+                                className="rounded p-1.5 text-amber-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                                title="End tenant contract"
+                              >
+                                <LogOut className="h-4 w-4" />
+                              </button>
+                            )}
                             <button
                               onClick={() => setEditingProp(p)}
                               className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
@@ -474,6 +502,25 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
             loading={removeImage.isPending}
           />
         </>
+      )}
+
+      {/* ── Add Tenant Modal ─────────────────────────────────────────────── */}
+      {addTenantProp && (
+        <AddTenantForm
+          ownerId={ownerId}
+          property={addTenantProp}
+          open={!!addTenantProp}
+          onClose={() => setAddTenantProp(null)}
+        />
+      )}
+
+      {/* ── End Contract Modal ───────────────────────────────────────────── */}
+      {endContractTenant && (
+        <EndContractModal
+          tenant={endContractTenant}
+          open={!!endContractTenant}
+          onClose={() => setEndContractTenant(null)}
+        />
       )}
     </Card>
   );

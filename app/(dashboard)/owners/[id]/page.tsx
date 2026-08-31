@@ -37,7 +37,7 @@ import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useOwner, useOwnerManualProperties, useOwnerPropertyMutations } from "@/hooks/useOwners";
-import { useIsMaster } from "@/hooks/useIsMaster";
+import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { formatCurrency, displayValue } from "@/lib/utils";
 import { OwnerPropertyForm } from "@/components/forms/OwnerPropertyForm";
@@ -99,7 +99,7 @@ function OwnerDetailContent() {
   const { data: owner, isLoading } = useOwner(params.id);
   const { createProperty, updateProperty, removeProperty } =
     useOwnerPropertyMutations();
-  const isMaster = useIsMaster();
+  const isMaster = useOwnerTenantFullAccess();
   // Pre-fetch manual properties count for the subtitle (shared cache with ManualPropertySection)
   const { data: manualPropsData } = useOwnerManualProperties(params.id);
 

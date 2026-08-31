@@ -3,9 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { tenantsService, type TenantQueryParams } from "@/services/tenants/tenants.service";
 import { retrySkipAuth } from "@/lib/query-gate";
-import type { TenantFormOutput } from "@/schemas/tenant.schema";
+import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
 
 const KEY = "tenants";
+const OWNERS_KEY = "owners";
 
 /** Paginated list of all tenants visible to the current user. */
 export function useTenantsList(params: TenantQueryParams = {}) {
@@ -83,4 +84,33 @@ export function useTenantMutations(leadId: string) {
     uploadAgreement,
     deleteAgreement,
   };
+}
+
+/**
+ * Standalone mutations for creating a tenant from an owner's manual property
+ * and ending a tenant contract early. These invalidate both the tenants and
+ * owners query caches so the Owner Details page reflects the updated
+ * property status (rented ↔ available) immediately.
+ */
+export function useTenantPropertyMutations() {
+  const qc = useQueryClient();
+
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: [KEY] });
+    qc.invalidateQueries({ queryKey: [OWNERS_KEY] });
+  };
+
+  const createFromProperty = useMutation({
+    mutationFn: (body: TenantFormValues & { ownerId: string; ownerManualPropertyId: string }) =>
+      tenantsService.createFromProperty(body),
+    onSuccess: invalidateAll,
+  });
+
+  const endContract = useMutation({
+    mutationFn: ({ leadId, actualEndDate }: { leadId: string; actualEndDate: string }) =>
+      tenantsService.endContract(leadId, actualEndDate),
+    onSuccess: invalidateAll,
+  });
+
+  return { createFromProperty, endContract };
 }

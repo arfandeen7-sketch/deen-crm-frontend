@@ -8,26 +8,22 @@ import { Check, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Input";
-import { useTenantMutations } from "@/hooks/useTenants";
-import { useOwner } from "@/hooks/useOwners";
+import { useTenantPropertyMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
 import { tenantSchema, type TenantFormValues } from "@/schemas/tenant.schema";
-import type { Tenant } from "@/types";
+import type { ManualProperty } from "@/types";
 
-interface TenantEditFormProps {
-  leadId: string;
-  tenant: Tenant;
+interface AddTenantFormProps {
+  ownerId: string;
+  property: ManualProperty;
   open: boolean;
   onClose: () => void;
 }
 
 const CHEQUE_STATUSES = ["pending", "cleared", "bounced"];
 
-export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditFormProps) {
-  const { upsert } = useTenantMutations(leadId);
-
-  // Fetch the linked owner's properties for the property selector
-  const { data: ownerData } = useOwner(tenant.ownerId ?? "");
+export function AddTenantForm({ ownerId, property, open, onClose }: AddTenantFormProps) {
+  const { createFromProperty } = useTenantPropertyMutations();
 
   const {
     register,
@@ -39,6 +35,11 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
     formState: { errors },
   } = useForm<TenantFormValues>({
     resolver: zodResolver(tenantSchema),
+    defaultValues: {
+      currency: "AED",
+      numberOfCheques: "",
+      cheques: [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -46,39 +47,31 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
     name: "cheques",
   });
 
-  // Populate form whenever the tenant data changes or modal opens
+  // Reset form when modal opens
   useEffect(() => {
     if (open) {
       reset({
-        fullName:              tenant.fullName ?? "",
-        mobileNumber:          tenant.mobileNumber ?? "",
-        email:                 tenant.email ?? "",
-        dateOfBirth:           tenant.dateOfBirth ? tenant.dateOfBirth.slice(0, 10) : "",
-        tenantNationality:     tenant.tenantNationality ?? "",
-        passportNumber:        tenant.passportNumber ?? "",
-        emiratesIdNumber:      tenant.emiratesIdNumber ?? "",
-        agreementStartDate:    tenant.agreementStartDate ? tenant.agreementStartDate.slice(0, 10) : "",
-        agreementEndDate:      tenant.agreementEndDate ? tenant.agreementEndDate.slice(0, 10) : "",
-        dateOfNotice:          tenant.dateOfNotice ? tenant.dateOfNotice.slice(0, 10) : "",
-        ownerId:               tenant.ownerId ?? "",
-        ownerPropertyId:       tenant.ownerPropertyId ?? "",
-        ownerManualPropertyId: tenant.ownerManualPropertyId ?? "",
-        annualRent:            tenant.annualRent != null ? String(tenant.annualRent) : "",
-        securityDeposit:       tenant.securityDeposit != null ? String(tenant.securityDeposit) : "",
-        adminFee:              tenant.adminFee != null ? String(tenant.adminFee) : "",
-        commission:            tenant.commission != null ? String(tenant.commission) : "",
-        currency:              tenant.currency ?? "",
-        modeOfPayment:         tenant.modeOfPayment ?? "",
-        numberOfCheques:       tenant.numberOfCheques != null ? String(tenant.numberOfCheques) : "",
-        cheques: (tenant.cheques ?? []).map((c) => ({
-          chequeNumber: c.chequeNumber,
-          chequeDate:   c.chequeDate ? c.chequeDate.slice(0, 10) : "",
-          amount:       c.amount != null ? String(c.amount) : "",
-          status:       c.status ?? "",
-        })),
+        fullName: "",
+        mobileNumber: "",
+        email: "",
+        dateOfBirth: "",
+        tenantNationality: "",
+        passportNumber: "",
+        emiratesIdNumber: "",
+        agreementStartDate: "",
+        agreementEndDate: "",
+        dateOfNotice: "",
+        annualRent: "",
+        securityDeposit: "",
+        adminFee: "",
+        commission: "",
+        currency: "AED",
+        modeOfPayment: "",
+        numberOfCheques: "",
+        cheques: [],
       });
     }
-  }, [open, tenant, reset]);
+  }, [open, reset]);
 
   // Auto-calculate Date of Notice = Agreement End Date − 100 days
   const agreementEndDate = watch("agreementEndDate");
@@ -97,31 +90,31 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
 
   async function onSubmit(values: TenantFormValues) {
     try {
-      await upsert.mutateAsync(values);
-      toast.success("Tenant details updated.");
+      await createFromProperty.mutateAsync({
+        ...values,
+        ownerId,
+        ownerManualPropertyId: property.id,
+      });
+      toast.success("Tenant added and property marked as rented.");
       onClose();
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
   }
 
-  // Build property options from the linked owner
-  const ownerProperties = ownerData?.properties ?? [];
-  const ownerManualProperties = ownerData?.manualProperties ?? [];
-
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Edit Tenant Details"
-      description="Update tenant personal, rental, property, and cheque information."
+      title="Add Tenant"
+      description={`Tenant for ${property.buildingName ?? "property"}${property.unitNumber ? ` — Unit ${property.unitNumber}` : ""}`}
       size="xl"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* ── Personal Information ─────────────────────────────────────── */}
         <FormSection title="Personal Information">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Tenant Name" error={errors.fullName?.message}>
+            <Field label="Tenant Name" required error={errors.fullName?.message}>
               <Input placeholder="As per ID" {...register("fullName")} />
             </Field>
             <Field label="Phone Number" error={errors.mobileNumber?.message}>
@@ -147,45 +140,6 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
             </Field>
             <Field label="Emirates ID Number" error={errors.emiratesIdNumber?.message}>
               <Input placeholder="784-XXXX-XXXXXXX-X" {...register("emiratesIdNumber")} />
-            </Field>
-          </div>
-        </FormSection>
-
-        {/* ── Owner & Property Link ────────────────────────────────────── */}
-        <FormSection title="Owner & Property Link">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Owner" error={errors.ownerId?.message}>
-              <Select {...register("ownerId")}>
-                <option value="">— No owner linked —</option>
-                {tenant.owner && (
-                  <option value={tenant.owner.id}>
-                    {tenant.owner.fullName} ({tenant.owner.mobileNumber})
-                  </option>
-                )}
-              </Select>
-            </Field>
-            <Field label="Property (Manual Portfolio)" error={errors.ownerManualPropertyId?.message}>
-              <Select {...register("ownerManualPropertyId")}>
-                <option value="">— No property linked —</option>
-                {ownerManualProperties.map((mp) => (
-                  <option key={mp.id} value={mp.id}>
-                    {mp.buildingName ?? "Unknown Building"}
-                    {mp.unitNumber ? ` — Unit ${mp.unitNumber}` : ""}
-                    {mp.community ? `, ${mp.community}` : ""}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Property (PF/Pocket-Linked)" error={errors.ownerPropertyId?.message}>
-              <Select {...register("ownerPropertyId")}>
-                <option value="">— No PF property linked —</option>
-                {ownerProperties.map((op) => (
-                  <option key={op.id} value={op.id}>
-                    {op.projectName}
-                    {op.unitNumber ? ` — Unit ${op.unitNumber}` : ""}
-                  </option>
-                ))}
-              </Select>
             </Field>
           </div>
         </FormSection>
@@ -254,7 +208,6 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
                 key={field.id}
                 className="grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 bg-neutral-50/50 p-3 sm:grid-cols-[40px_1fr_1fr_1fr_auto]"
               >
-                {/* Cheque number (read-only badge) */}
                 <div className="flex items-center">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-700">
                     {index + 1}
@@ -303,8 +256,8 @@ export function TenantEditForm({ leadId, tenant, open, onClose }: TenantEditForm
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={upsert.isPending}>
-            <Check className="h-4 w-4" /> Save Changes
+          <Button type="submit" loading={createFromProperty.isPending}>
+            <Check className="h-4 w-4" /> Add Tenant
           </Button>
         </div>
       </form>

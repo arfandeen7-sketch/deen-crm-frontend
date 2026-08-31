@@ -19,7 +19,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
 import { AccessGuard } from "@/components/shared/Guards";
-import { useIsMaster } from "@/hooks/useIsMaster";
+import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { tenantsService } from "@/services/tenants/tenants.service";
 import type {
   TenantImportPreviewResult,
@@ -65,7 +65,7 @@ export default function TenantImportPage() {
 
 function ImportContent() {
   const router = useRouter();
-  const isMaster = useIsMaster();
+  const isMaster = useOwnerTenantFullAccess();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Non-master users should not see this page

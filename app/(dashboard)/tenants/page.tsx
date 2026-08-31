@@ -19,6 +19,7 @@ import {
   User,
   AlertCircle,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
@@ -27,14 +28,15 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { AccessGuard } from "@/components/shared/Guards";
+import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useTenantsList } from "@/hooks/useTenants";
-import { useIsMaster } from "@/hooks/useIsMaster";
+import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { tenantsService } from "@/services/tenants/tenants.service";
 import { getErrorMessage } from "@/services/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { displayValue, formatDate, formatCurrency } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { TenantEditForm } from "@/components/tenants/TenantEditForm";
 import type { Tenant, TenantBulkDeletePreview } from "@/types";
 
 /** Whole-day difference between an end date and now (negative if already expired). */
@@ -105,7 +107,7 @@ export default function TenantsPage() {
 
 function TenantsPageContent() {
   const router = useRouter();
-  const isMaster = useIsMaster();
+  const isMaster = useOwnerTenantFullAccess();
   const qc = useQueryClient();
   const [params, setParams] = useState({
     page: 1,
@@ -119,6 +121,9 @@ function TenantsPageContent() {
   const [deletePreview, setDeletePreview] = useState<TenantBulkDeletePreview | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteExecuting, setDeleteExecuting] = useState(false);
+
+  // ── Edit modal state ───────────────────────────────────────────────────────
+  const [editTenant, setEditTenant] = useState<Tenant | null>(null);
 
   async function handleDeletePreview() {
     setDeleteLoading(true);
@@ -295,6 +300,16 @@ function TenantsPageContent() {
       className: "text-right",
       render: (t) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <CanAccess module="tenant_details" page="all_tenants" action="edit">
+            <button
+              type="button"
+              onClick={() => setEditTenant(t)}
+              className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              title="Edit tenant"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          </CanAccess>
           <Link
             href={`/tenants/${t.leadId}`}
             className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
@@ -459,6 +474,16 @@ function TenantsPageContent() {
           </div>
         )}
       </Modal>
+
+      {/* ── Edit Tenant Modal ─────────────────────────────────────────────── */}
+      {editTenant && (
+        <TenantEditForm
+          leadId={editTenant.leadId}
+          tenant={editTenant}
+          open={!!editTenant}
+          onClose={() => setEditTenant(null)}
+        />
+      )}
     </div>
   );
 }
