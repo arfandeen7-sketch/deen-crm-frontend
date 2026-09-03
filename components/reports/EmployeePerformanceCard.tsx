@@ -49,6 +49,12 @@ export function EmployeePerformanceCard({
   const highMissed = item.missedFollowUps >= 5;
 
   const donutData = Object.entries(item.statusBreakdown ?? {}).map(([label, value]) => ({ label, value }));
+  const masterAssigned = item.masterAssigned ?? 0;
+  const masterDonutData = Object.entries(item.masterAssignedStatusBreakdown ?? {}).map(([label, value]) => ({
+    label,
+    value,
+  }));
+  const masterTotal = masterDonutData.reduce((s, d) => s + d.value, 0);
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -157,6 +163,35 @@ export function EmployeePerformanceCard({
           <p className="mb-1 text-[11px] font-medium uppercase text-slate-400">Last 7 Days</p>
           <Sparkline data={item.weeklyActivity} />
         </div>
+      </div>
+
+      <div className="border-t border-slate-100 px-4 py-3">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-[11px] font-medium uppercase text-slate-400">Master-Assigned Leads</p>
+          <span className="text-sm font-semibold text-slate-900">{masterAssigned}</span>
+        </div>
+        {masterAssigned === 0 ? (
+          <p className="text-xs text-slate-400">No leads assigned by Master.</p>
+        ) : (
+          <div className="flex items-center gap-4">
+            <DonutChart data={masterDonutData} size="sm" showLegend={false} />
+            <ul className="flex-1 space-y-1">
+              {masterDonutData.map((d) => (
+                <li key={d.label} className="flex items-center justify-between text-xs text-slate-600">
+                  <span className="truncate pr-2">{d.label}</span>
+                  <span className="shrink-0 font-medium text-slate-700">
+                    {d.value}
+                    {masterTotal > 0 && (
+                      <span className="ml-1 text-slate-400">
+                        ({((d.value / masterTotal) * 100).toFixed(0)}%)
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-slate-100 px-4 py-3">

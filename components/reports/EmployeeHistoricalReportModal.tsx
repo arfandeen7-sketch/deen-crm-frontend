@@ -85,6 +85,7 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
         conversionRate: 0,
         followUpRate: 0,
         missedFollowUps: 0,
+        masterAssigned: 0,
         lastActivityAt: undefined as string | undefined,
       };
     }
@@ -98,6 +99,7 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
       conversionRate: assigned > 0 ? (converted / assigned) * 100 : 0,
       followUpRate: fuTotal > 0 ? (data.followedUp / fuTotal) * 100 : 0,
       missedFollowUps: data.missedFollowUps,
+      masterAssigned: data.masterAssigned ?? 0,
       lastActivityAt: data.lastActivityAt ?? undefined,
     };
   }, [report.data]);
@@ -207,6 +209,10 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
                 <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
                   {metric(stats.missedFollowUps)}
                   <p className="text-[11px] text-slate-500">Missed F/U</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
+                  {metric(stats.masterAssigned)}
+                  <p className="text-[11px] text-slate-500">Master-Assigned</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
                   <p className="text-lg font-semibold text-slate-900">{range.dateFrom} → {range.dateTo}</p>

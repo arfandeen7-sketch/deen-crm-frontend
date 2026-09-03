@@ -116,6 +116,8 @@ export const reportsService = {
       salesAmount: r.salesAmount ?? 0,
       avgDealValue: r.avgDealValue ?? 0,
       manuallyCreated: r.manuallyCreated ?? 0,
+      masterAssigned: r.masterAssigned ?? 0,
+      masterAssignedStatusBreakdown: r.masterAssignedStatusBreakdown ?? {},
     }));
   },
 
@@ -136,6 +138,8 @@ export const reportsService = {
       salesAmount: row.salesAmount ?? 0,
       avgDealValue: row.avgDealValue ?? 0,
       manuallyCreated: row.manuallyCreated ?? 0,
+      masterAssigned: row.masterAssigned ?? 0,
+      masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
     }));
   },
 
@@ -164,6 +168,8 @@ export const reportsService = {
       salesAmount: row.salesAmount ?? 0,
       avgDealValue: row.avgDealValue ?? 0,
       manuallyCreated: row.manuallyCreated ?? 0,
+      masterAssigned: row.masterAssigned ?? 0,
+      masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
     };
   },
 

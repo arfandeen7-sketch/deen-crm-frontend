@@ -330,6 +330,8 @@ function useEnhancedEmployeePerformance(
         salesAmount: 0,
         avgDealValue: 0,
         manuallyCreated: 0,
+        masterAssigned: 0,
+        masterAssignedStatusBreakdown: {},
         role: user.role,
         department: user.department,
         designation: user.designation,

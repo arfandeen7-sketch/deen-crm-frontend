@@ -1501,6 +1501,10 @@ export interface LeadReportRow {
   salesAmount?: number;
   avgDealValue?: number;
   manuallyCreated?: number;
+  /** Leads whose latest assignment was performed by a Master-role user. */
+  masterAssigned?: number;
+  /** Current status breakdown of the Master-assigned leads. */
+  masterAssignedStatusBreakdown?: Record<string, number>;
 }
 
 export interface LeadReportResponse {
@@ -1523,6 +1527,10 @@ export interface UserPerformanceItem {
   salesAmount?: number;
   avgDealValue?: number;
   manuallyCreated?: number;
+  /** Leads whose latest assignment was performed by a Master-role user. */
+  masterAssigned?: number;
+  /** Current status breakdown of the Master-assigned leads. */
+  masterAssignedStatusBreakdown?: Record<string, number>;
 }
 
 export interface LeadTimeSeriesItem {
