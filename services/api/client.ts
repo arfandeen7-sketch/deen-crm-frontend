@@ -3,7 +3,7 @@ import axios, {
   type AxiosInstance,
   type AxiosRequestConfig,
 } from "axios";
-import { getStoredToken, useAuthStore } from "@/store/auth.store";
+import { getStoredRefreshToken, getStoredToken, useAuthStore } from "@/store/auth.store";
 import { isDemoToken } from "@/services/auth/demo";
 import type { ApiError } from "@/types";
 
@@ -26,17 +26,68 @@ api.interceptors.request.use((config) => {
 // On 401, clear session and bounce to login (client-side only).
 // On 403, silently refetch permissions, cancel queries, and redirect if needed.
 let isRefreshingPermissions = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+type RetryableAxiosRequestConfig = AxiosRequestConfig & { _retry?: boolean };
+
+function clearSessionAndRedirect(): void {
+  useAuthStore.getState().clear();
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+    window.location.href = "/login";
+  }
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = getStoredRefreshToken();
+  const user = useAuthStore.getState().user;
+  if (!refreshToken || !user) return null;
+
+  try {
+    // Use the base axios client to avoid recursive interceptor loops.
+    const res = await axios.post<{ data: { token: string; refreshToken?: string } }>(
+      `${BASE_URL}/api/auth/refresh`,
+      { refreshToken },
+    );
+    const nextToken = res.data.data.token;
+    const nextRefreshToken = res.data.data.refreshToken ?? refreshToken;
+    useAuthStore.getState().setAuth(nextToken, user, nextRefreshToken);
+    return nextToken;
+  } catch {
+    return null;
+  }
+}
 
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError<ApiError>) => {
     const status = error.response?.status;
+    const currentToken = getStoredToken();
+    const originalRequest = error.config as RetryableAxiosRequestConfig | undefined;
+    const requestUrl = String(originalRequest?.url ?? "");
 
-    if (status === 401 && typeof window !== "undefined" && !isDemoToken(getStoredToken())) {
-      useAuthStore.getState().clear();
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
+    if (status === 401 && typeof window !== "undefined" && !isDemoToken(currentToken)) {
+      // Never retry login/refresh endpoints and never re-retry the same request.
+      if (requestUrl.includes("/auth/login") || requestUrl.includes("/auth/refresh") || originalRequest?._retry) {
+        clearSessionAndRedirect();
+        return Promise.reject(error);
       }
+
+      if (originalRequest) originalRequest._retry = true;
+
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken().finally(() => {
+          refreshPromise = null;
+        });
+      }
+
+      const nextToken = await refreshPromise;
+      if (nextToken && originalRequest) {
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${nextToken}`;
+        return api(originalRequest);
+      }
+
+      clearSessionAndRedirect();
     }
 
     if (status === 403 && typeof window !== "undefined") {

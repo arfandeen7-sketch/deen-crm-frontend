@@ -27,6 +27,14 @@ export const authService = {
     }
   },
 
+  async refresh(refreshToken: string): Promise<{ token: string; refreshToken?: string }> {
+    const res = await api.post<{ data: { token: string; refreshToken?: string } }>(
+      "/auth/refresh",
+      { refreshToken },
+    );
+    return res.data.data;
+  },
+
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     if (isDemoToken(getStoredToken())) {
       // Demo session: validate locally, nothing is persisted.

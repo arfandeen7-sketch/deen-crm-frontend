@@ -140,6 +140,7 @@ export interface LeaveBalance {
 
 export interface AuthResponse {
   token: string;
+  refreshToken?: string;
   user: User;
 }
 

@@ -25,7 +25,7 @@ export function useAuth() {
 
   async function login(email: string, password: string) {
     const res = await authService.login(email, password);
-    setAuth(res.token, res.user);
+    setAuth(res.token, res.user, res.refreshToken ?? null);
     if (isDemoToken(res.token)) {
       setAccess(MASTER_ACCESS);
       setPermissionStatus("ready");
