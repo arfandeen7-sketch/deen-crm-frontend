@@ -18,6 +18,7 @@ import {
   ExternalLink,
   UserPlus,
   LogOut,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -26,6 +27,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { ManualPropertyForm } from "@/components/forms/ManualPropertyForm";
 import { AddTenantForm } from "@/components/tenants/AddTenantForm";
 import { EndContractModal } from "@/components/tenants/EndContractModal";
+import { TenantRenewalModal, type RenewalPropertyInfo } from "@/components/tenants/TenantRenewalModal";
 import {
   LISTING_STATUS_LABELS,
   LISTING_STATUS_COLORS,
@@ -88,6 +90,7 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
   // ── Tenant management state ────────────────────────────────────────────────
   const [addTenantProp, setAddTenantProp] = useState<ManualProperty | null>(null);
   const [endContractTenant, setEndContractTenant] = useState<PropertyTenantSummary | null>(null);
+  const [renewalState, setRenewalState] = useState<{ tenant: PropertyTenantSummary; property: RenewalPropertyInfo } | null>(null);
 
   const properties: ManualProperty[] = data?.data ?? [];
   const importedCount = properties.filter((p) => p.isImported).length;
@@ -264,7 +267,7 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
                       <td className="whitespace-nowrap px-4 py-3 border-b border-neutral-100">
                         <div className="min-w-0">
                           <p className="font-medium text-slate-900">
-                            {p.buildingName || p.projectName || "—"}
+                            {p.buildingName || p.villaName || p.projectName || "—"}
                           </p>
                           {p.reference && (
                             <p className="text-[11px] text-slate-400 flex items-center gap-0.5">
@@ -379,6 +382,16 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
                                 title="Add tenant"
                               >
                                 <UserPlus className="h-4 w-4" />
+                              </button>
+                            )}
+                            {/* Renew — only for properties with an active tenant */}
+                            {activeTenant && (
+                              <button
+                                onClick={() => setRenewalState({ tenant: activeTenant, property: p })}
+                                className="rounded p-1.5 text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                                title="Renew tenant contract"
+                              >
+                                <RefreshCw className="h-4 w-4" />
                               </button>
                             )}
                             {/* End Contract — only for properties with an active tenant */}
@@ -520,6 +533,17 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
           tenant={endContractTenant}
           open={!!endContractTenant}
           onClose={() => setEndContractTenant(null)}
+        />
+      )}
+
+      {/* ── Renewal Modal ────────────────────────────────────────────────── */}
+      {renewalState && (
+        <TenantRenewalModal
+          tenant={renewalState.tenant}
+          currentProperty={renewalState.property}
+          ownerId={ownerId}
+          open={!!renewalState}
+          onClose={() => setRenewalState(null)}
         />
       )}
     </Card>

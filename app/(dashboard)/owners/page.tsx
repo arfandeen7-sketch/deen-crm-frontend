@@ -4,7 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Eye, Pencil, Trash2, Phone, Mail, Building2, Import, AlertTriangle, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Pencil,
+  Trash2,
+  Building2,
+  Import,
+  AlertTriangle,
+  Loader2,
+  FileText,
+  CreditCard,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +30,14 @@ import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import type { Owner, BulkDeleteImportedPreview } from "@/types";
+import { displayValue, formatDate } from "@/lib/utils";
+import {
+  OwnerFiltersBar,
+  type OwnerFilters,
+} from "@/components/owners/OwnerFiltersBar";
+import type { Owner, OwnerQueryParams, BulkDeleteImportedPreview } from "@/types";
+
+const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
 
 export default function OwnersPage() {
   return (
@@ -32,12 +50,16 @@ export default function OwnersPage() {
 function OwnersPageContent() {
   const router = useRouter();
   const isMaster = useOwnerTenantFullAccess();
-  const [params, setParams] = useState({
+  const [params, setParams] = useState<OwnerQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
     search: "",
   });
-  const { data, isLoading, isError, refetch } = useOwnersList(params);
+  const [filters, setFilters] = useState<OwnerFilters>({});
+
+  // Merge filters into params for the query
+  const queryParams: OwnerQueryParams = { ...params, ...filters };
+  const { data, isLoading, isError, refetch } = useOwnersList(queryParams);
   const { remove } = useOwnerMutations();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -46,6 +68,18 @@ function OwnersPageContent() {
   const [bulkPreview, setBulkPreview] = useState<BulkDeleteImportedPreview | null>(null);
   const [bulkPreviewLoading, setBulkPreviewLoading] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  function setFilter<K extends keyof OwnerFilters>(
+    key: K,
+    value: OwnerFilters[K] | undefined,
+  ) {
+    setFilters((f) => ({ ...f, [key]: value }));
+    setParams((p) => ({ ...p, page: 1 }));
+  }
+  function resetFilters() {
+    setFilters({});
+    setParams((p) => ({ ...p, page: 1 }));
+  }
 
   async function handleOpenBulkDelete() {
     setShowBulkDeleteModal(true);
@@ -93,38 +127,106 @@ function OwnersPageContent() {
     }
   }
 
+  // ── Columns ────────────────────────────────────────────────────────────────
+  // Each important field gets its own column, grouped logically:
+  //   Owner Info → Location → Identity Documents → Portfolio → Audit → Actions
   const columns: Column<Owner>[] = [
+    // ── Owner Information ────────────────────────────────────────────────────
     {
-      key: "name",
-      header: "Owner",
+      key: "fullName",
+      header: "Owner Name",
       render: (o) => (
         <div className="flex items-center gap-2.5">
           <UserAvatar name={o.fullName} size="sm" />
-          <div>
-            <p className="font-medium text-slate-900">{o.fullName}</p>
-            {o.email && (
-              <p className="flex items-center gap-1 text-xs text-slate-500">
-                <Mail className="h-3 w-3" /> {o.email}
-              </p>
-            )}
-          </div>
+          <span className="font-medium text-slate-900">{o.fullName}</span>
         </div>
       ),
     },
     {
-      key: "mobile",
+      key: "mobileNumber",
       header: "Mobile",
-      render: (o) => (
-        <span className="flex items-center gap-1.5 text-slate-700">
-          <Phone className="h-3.5 w-3.5 text-slate-400" /> {o.mobileNumber}
-        </span>
-      ),
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.mobileNumber)}</span>,
     },
+    {
+      key: "alternateMobile",
+      header: "Alternate Mobile",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.alternateMobile)}</span>,
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.email)}</span>,
+    },
+    {
+      key: "secondaryEmail",
+      header: "Secondary Email",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.secondaryEmail)}</span>,
+    },
+    {
+      key: "whatsapp",
+      header: "WhatsApp",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.whatsapp)}</span>,
+    },
+    {
+      key: "nationality",
+      header: "Nationality",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.nationality)}</span>,
+    },
+
+    // ── Location ─────────────────────────────────────────────────────────────
     {
       key: "emirate",
       header: "Emirate",
-      render: (o) => o.emirate ?? "—",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.emirate)}</span>,
     },
+    {
+      key: "city",
+      header: "City",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.city)}</span>,
+    },
+    {
+      key: "locality",
+      header: "Locality",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.locality)}</span>,
+    },
+
+    // ── Identity Documents ───────────────────────────────────────────────────
+    {
+      key: "passportNumber",
+      header: "Passport No.",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.passportNumber)}</span>,
+    },
+    {
+      key: "emiratesIdNumber",
+      header: "Emirates ID",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.emiratesIdNumber)}</span>,
+    },
+    {
+      key: "passportPdf",
+      header: "Passport PDF",
+      render: (o) =>
+        o.passportFileName ? (
+          <span className="inline-flex items-center gap-1 text-xs text-emerald-600" title={o.passportFileName}>
+            <FileText className="h-3.5 w-3.5" /> Uploaded
+          </span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "emiratesIdPdf",
+      header: "Emirates ID PDF",
+      render: (o) =>
+        o.emiratesIdFileName ? (
+          <span className="inline-flex items-center gap-1 text-xs text-emerald-600" title={o.emiratesIdFileName}>
+            <CreditCard className="h-3.5 w-3.5" /> Uploaded
+          </span>
+        ) : (
+          <Dash />
+        ),
+    },
+
+    // ── Portfolio ────────────────────────────────────────────────────────────
     {
       key: "properties",
       header: "Properties",
@@ -147,15 +249,22 @@ function OwnersPageContent() {
         );
       },
     },
-    ...(isMaster
-      ? [
-          {
-            key: "createdBy",
-            header: "Created by",
-            render: (o: Owner) => o.creator?.fullName ?? "—",
-          } satisfies Column<Owner>,
-        ]
-      : []),
+
+    // ── Audit ────────────────────────────────────────────────────────────────
+    {
+      key: "creator",
+      header: "Created By",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.creator?.fullName)}</span>,
+    },
+    {
+      key: "createdAt",
+      header: "Created At",
+      render: (o) => (
+        <span className="whitespace-nowrap text-xs text-slate-500">{formatDate(o.createdAt)}</span>
+      ),
+    },
+
+    // ── Actions ──────────────────────────────────────────────────────────────
     {
       key: "actions",
       header: "",
@@ -229,13 +338,14 @@ function OwnersPageContent() {
         }
       />
 
-      <Card className="flex flex-wrap items-center gap-2 p-4">
+      <Card className="space-y-3 p-4">
         <SearchInput
-          value={params.search}
+          value={params.search ?? ""}
           onChange={(v) => setParams((p) => ({ ...p, search: v, page: 1 }))}
           placeholder="Search owners by name, mobile, email…"
           className="w-full sm:w-80"
         />
+        <OwnerFiltersBar filters={filters} onChange={setFilter} onReset={resetFilters} />
       </Card>
 
       <DataTable

@@ -441,6 +441,7 @@ export function OwnerPropertyForm({
                 <option value="sold">Sold</option>
                 <option value="rented">Rented</option>
                 <option value="off_market">Off Market</option>
+                <option value="off_plan">Off-plan</option>
               </Select>
             </Field>
           </div>

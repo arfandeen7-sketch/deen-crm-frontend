@@ -7,13 +7,65 @@ import type {
   TenantImportResult,
   TenantBulkDeletePreview,
   TenantBulkDeleteResult,
+  TenantAgreementHistory,
 } from "@/types";
 import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
+
+/** A non-rented manual property with owner info — returned by the move-property picker endpoint. */
+export interface AvailableManualProperty {
+  id: string;
+  buildingName?: string | null;
+  unitNumber?: string | null;
+  community?: string | null;
+  emirate?: string | null;
+  type?: string | null;
+  bedrooms?: string | null;
+  listingStatus: string;
+  owner: {
+    id: string;
+    fullName: string;
+    mobileNumber: string;
+  };
+}
+
+/** Shared shape for renewal agreement + financials + cheques. */
+export interface TenantRenewalFields {
+  newAgreementStartDate?: string;
+  newAgreementEndDate: string;
+  dateOfNotice?: string;
+  annualRent?: string;
+  securityDeposit?: string;
+  adminFee?: string;
+  commission?: string;
+  currency?: string;
+  modeOfPayment?: string;
+  numberOfCheques?: string;
+  cheques?: { chequeNumber: number; chequeDate?: string; amount?: string; status?: string }[];
+}
+
+export interface TenantRenewBody extends TenantRenewalFields {}
+
+export interface TenantMovePropertyBody extends TenantRenewalFields {
+  newOwnerManualPropertyId: string;
+}
 
 export interface TenantQueryParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  // Per-field filters (combine with AND)
+  fullName?: string;
+  mobileNumber?: string;
+  email?: string;
+  tenantNationality?: string;
+  ownerName?: string;
+  building?: string;
+  unitNumber?: string;
+  community?: string;
+  emirate?: string;
+  agreementStart?: string;
+  agreementEnd?: string;
+  modeOfPayment?: string;
 }
 
 export const tenantsService = {
@@ -26,6 +78,14 @@ export const tenantsService = {
   /** GET /api/tenants/:leadId — fetch tenant by lead ID (returns null if none) */
   getByLeadId(leadId: string): Promise<Tenant | null> {
     return getData<Tenant | null>(`/tenants/${leadId}`);
+  },
+
+  /** GET /api/tenants/:leadId/history — all completed agreement periods */
+  async getHistory(leadId: string): Promise<TenantAgreementHistory[]> {
+    const res = await api.get<{ data: TenantAgreementHistory[] }>(
+      `/tenants/${leadId}/history`,
+    );
+    return res.data.data;
   },
 
   /** PUT /api/tenants/:leadId — upsert text fields */
@@ -42,6 +102,24 @@ export const tenantsService = {
   /** PATCH /api/tenants/:leadId/end-contract — end tenant contract early */
   async endContract(leadId: string, actualEndDate: string): Promise<Tenant> {
     return patchData<Tenant>(`/tenants/${leadId}/end-contract`, { actualEndDate });
+  },
+
+  /** GET /api/tenants/available-properties — all non-rented manual properties across all owners */
+  async availableProperties(params: { search?: string } = {}): Promise<{ data: AvailableManualProperty[] }> {
+    const res = await api.get<{ data: AvailableManualProperty[] }>(
+      `/tenants/available-properties${buildQuery(params)}`,
+    );
+    return res.data;
+  },
+
+  /** PATCH /api/tenants/:leadId/renew — renew contract on the same property */
+  async renewContract(leadId: string, body: TenantRenewBody): Promise<Tenant> {
+    return patchData<Tenant>(`/tenants/${leadId}/renew`, body);
+  },
+
+  /** PATCH /api/tenants/:leadId/move-property — move tenant to a different property */
+  async moveProperty(leadId: string, body: TenantMovePropertyBody): Promise<Tenant> {
+    return patchData<Tenant>(`/tenants/${leadId}/move-property`, body);
   },
 
   /** POST /api/tenants/:leadId/documents/passport — upload / replace passport PDF */

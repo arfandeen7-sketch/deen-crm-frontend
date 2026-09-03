@@ -1,12 +1,39 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { tenantsService, type TenantQueryParams } from "@/services/tenants/tenants.service";
+import { tenantsService, type TenantQueryParams, type TenantRenewBody, type TenantMovePropertyBody, type AvailableManualProperty } from "@/services/tenants/tenants.service";
+export type { AvailableManualProperty };
 import { retrySkipAuth } from "@/lib/query-gate";
 import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
 
 const KEY = "tenants";
 const OWNERS_KEY = "owners";
+
+/**
+ * Full agreement history for a specific tenant lead.
+ * Returns an array of completed periods, oldest first.
+ */
+export function useTenantHistory(leadId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "history", leadId],
+    queryFn: () => tenantsService.getHistory(leadId as string),
+    enabled: !!leadId,
+    retry: retrySkipAuth,
+  });
+}
+
+/**
+ * All non-rented manual properties across every owner — for the
+ * "Move to Another Property" picker in the tenant renewal modal.
+ */
+export function useTenantAvailableProperties(search?: string) {
+  return useQuery({
+    queryKey: [KEY, "available-properties", search ?? ""],
+    queryFn: () => tenantsService.availableProperties({ search }),
+    retry: retrySkipAuth,
+    staleTime: 30_000,
+  });
+}
 
 /** Paginated list of all tenants visible to the current user. */
 export function useTenantsList(params: TenantQueryParams = {}) {
@@ -112,5 +139,17 @@ export function useTenantPropertyMutations() {
     onSuccess: invalidateAll,
   });
 
-  return { createFromProperty, endContract };
+  const renewContract = useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: TenantRenewBody }) =>
+      tenantsService.renewContract(leadId, body),
+    onSuccess: invalidateAll,
+  });
+
+  const moveProperty = useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: TenantMovePropertyBody }) =>
+      tenantsService.moveProperty(leadId, body),
+    onSuccess: invalidateAll,
+  });
+
+  return { createFromProperty, endContract, renewContract, moveProperty };
 }

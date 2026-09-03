@@ -283,6 +283,53 @@ export interface Client {
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
 }
 
+// ── Bellaviu Client Data ──────────────────────────────────────────────────────
+
+export interface BellaviuClient {
+  id: string;
+  // Guest / client info
+  name: string;
+  phoneNumber?: string | null;
+  alternativeNumber?: string | null;
+  email?: string | null;
+  // Stay details
+  checkInDate?: string | null;
+  checkOutDate?: string | null;
+  bookingChannel?: string | null;
+  // Identity document numbers
+  emiratesId?: string | null;
+  passportNumber?: string | null;
+  // Property info
+  propertyName?: string | null;
+  propertySize?: string | null;
+  unitNo?: string | null;
+  countryOfClient?: string | null;
+  locationOfProperty?: string | null;
+  // Passport document metadata
+  passportFilePath?: string | null;
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID document metadata
+  emiratesIdFilePath?: string | null;
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
+  // Signed download URLs (generated per-request, not stored)
+  passportUrl?: string | null;
+  emiratesIdUrl?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
+  creator?: Pick<User, "id" | "fullName"> | null;
+  passportUploader?: Pick<User, "id" | "fullName"> | null;
+  emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+}
+
 // ── Tenant Details ────────────────────────────────────────────────────────────
 
 /** Lightweight tenant summary embedded in owner property records. */
@@ -311,6 +358,39 @@ export interface TenantCheque {
   chequeDate?: string | null;
   amount?: number | null;
   status?: string | null;
+}
+
+// ── Tenant Agreement History ──────────────────────────────────────────────────
+
+export interface TenantAgreementHistoryCheque {
+  id: string;
+  chequeNumber: number;
+  chequeDate?: string | null;
+  amount?: number | null;
+  status?: string | null;
+}
+
+export interface TenantAgreementHistory {
+  id: string;
+  tenantId: string;
+  periodNumber: number;
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  dateOfNotice?: string | null;
+  ownerManualPropertyId?: string | null;
+  propertySnapshot?: string | null;
+  ownerName?: string | null;
+  annualRent?: number | null;
+  securityDeposit?: number | null;
+  adminFee?: number | null;
+  commission?: number | null;
+  currency?: string | null;
+  modeOfPayment?: string | null;
+  numberOfCheques?: number | null;
+  renewedBy: string;
+  renewedAt: string;
+  renewedByUser?: { id: string; fullName: string } | null;
+  cheques: TenantAgreementHistoryCheque[];
 }
 
 export interface TenantOwnerSummary {
@@ -1067,7 +1147,8 @@ export type OwnerPropertyListingStatus =
   | "listed"
   | "sold"
   | "rented"
-  | "off_market";
+  | "off_market"
+  | "off_plan";
 
 export interface OwnerProperty {
   id: string;
@@ -1116,6 +1197,7 @@ export interface Owner {
   emirate?: string | null;
   city?: string | null;
   locality?: string | null;
+  nationality?: string | null;
   notes?: string | null;
   // Identity documents
   passportNumber?: string | null;
@@ -1156,12 +1238,14 @@ export type ManualPropertyListingStatus =
   | "listed"
   | "sold"
   | "rented"
-  | "off_market";
+  | "off_market"
+  | "off_plan";
 
 export interface ManualProperty {
   id: string;
   ownerId: string;
   buildingName?: string | null;
+  villaName?: string | null;
   unitNumber?: string | null;
   unitSize?: string | null;
   projectName?: string | null;
@@ -1296,6 +1380,18 @@ export interface OwnerQueryParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  // Per-field filters (combine with AND)
+  fullName?: string;
+  mobileNumber?: string;
+  alternateMobile?: string;
+  email?: string;
+  whatsapp?: string;
+  nationality?: string;
+  emirate?: string;
+  city?: string;
+  locality?: string;
+  passportNumber?: string;
+  emiratesIdNumber?: string;
 }
 
 export type OwnerInput = Partial<

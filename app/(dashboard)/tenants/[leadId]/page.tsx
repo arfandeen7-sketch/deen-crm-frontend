@@ -20,6 +20,7 @@ import {
   Receipt,
   ChevronRight,
   Pencil,
+  RefreshCw,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -29,6 +30,8 @@ import { LoadingState, ErrorState } from "@/components/ui/States";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
 import { TenantEditForm } from "@/components/tenants/TenantEditForm";
+import { TenantRenewalModal } from "@/components/tenants/TenantRenewalModal";
+import { TenantHistorySection } from "@/components/tenants/TenantHistorySection";
 import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
@@ -79,6 +82,7 @@ function TenantDetailPageContent() {
     uploadAgreement, deleteAgreement,
   } = useTenantMutations(params.leadId);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
 
   if (isLoading) return <LoadingState />;
   if (isError) return <ErrorState onRetry={refetch} />;
@@ -124,6 +128,15 @@ function TenantDetailPageContent() {
         actions={
           <div className="flex items-center gap-2">
             <CanAccess module="tenant_details" page="all_tenants" action="edit">
+              {tenant.ownerManualProperty && tenant.ownerId && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowRenewalModal(true)}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Renew
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={() => setShowEditModal(true)}
@@ -355,6 +368,9 @@ function TenantDetailPageContent() {
             </Card>
           )}
 
+          {/* Agreement History */}
+          <TenantHistorySection leadId={params.leadId} />
+
           {/* Identity & Agreement Documents (PDFs) */}
           <Card>
             <CardHeader title="KYC & Agreement Documents" subtitle="PDF uploads — Passport, Emirates ID, Tenant Agreement" />
@@ -454,6 +470,34 @@ function TenantDetailPageContent() {
         open={showEditModal}
         onClose={() => setShowEditModal(false)}
       />
+
+      {/* ── Renewal Modal ──────────────────────────────────────────────── */}
+      {tenant.ownerManualProperty && tenant.ownerId && showRenewalModal && (
+        <TenantRenewalModal
+          tenant={{
+            id: tenant.id,
+            leadId: tenant.leadId,
+            fullName: tenant.fullName,
+            mobileNumber: tenant.mobileNumber,
+            email: tenant.email,
+            tenantNationality: tenant.tenantNationality,
+            agreementStartDate: tenant.agreementStartDate,
+            agreementEndDate: tenant.agreementEndDate,
+            annualRent: tenant.annualRent,
+            securityDeposit: tenant.securityDeposit,
+            commission: tenant.commission,
+            modeOfPayment: tenant.modeOfPayment,
+            numberOfCheques: tenant.numberOfCheques,
+            currency: tenant.currency,
+            dateOfNotice: tenant.dateOfNotice,
+            externalZohoId: tenant.externalZohoId,
+          }}
+          currentProperty={tenant.ownerManualProperty}
+          ownerId={tenant.ownerId}
+          open={showRenewalModal}
+          onClose={() => setShowRenewalModal(false)}
+        />
+      )}
     </div>
   );
 }
