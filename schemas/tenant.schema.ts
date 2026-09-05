@@ -28,6 +28,9 @@ export const tenantSchema = z.object({
   tenantNationality:    optionalString,
   passportNumber:       optionalString,
   emiratesIdNumber:     optionalString,
+  // Passport validity period
+  passportStartDate:    optionalString,
+  passportEndDate:      optionalString,
   // Tenancy agreement
   agreementStartDate:   optionalString,
   agreementEndDate:     optionalString,

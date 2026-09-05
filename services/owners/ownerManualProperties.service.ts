@@ -71,9 +71,15 @@ export const ownerManualPropertiesService = {
 
   // ── Owner Documents ──────────────────────────────────────────────────────────
 
-  async uploadPassport(ownerId: string, file: File): Promise<Record<string, unknown>> {
+  async uploadPassport(
+    ownerId: string,
+    file: File,
+    passportDates?: { passportStartDate?: string; passportEndDate?: string },
+  ): Promise<Record<string, unknown>> {
     const form = new FormData();
     form.append("file", file);
+    if (passportDates?.passportStartDate) form.append("passportStartDate", passportDates.passportStartDate);
+    if (passportDates?.passportEndDate)   form.append("passportEndDate", passportDates.passportEndDate);
     const res = await api.post<{ data: Record<string, unknown> }>(
       `/owners/${ownerId}/passport`,
       form,

@@ -40,6 +40,7 @@ const ALIASES: Record<string, string[]> = {
   phone: ["mobile", "mobile number", "mobile no", "mobilenumber", "contact", "contact number", "contact no", "phone number", "phonenumber", "cell", "cellphone"],
   email: ["email address", "emailaddress", "mail", "e mail"],
   alternate_mobile: ["alternate phone", "alt mobile", "secondary mobile", "secondary phone", "alt phone", "alternate contact"],
+  nationality: ["nationality", "country", "citizenship", "nationality of client"],
   lead_source: ["source", "lead source name", "campaign", "channel"],
   service_type: ["service", "service category", "category"],
   unit_number: ["unit", "unit no", "flat", "flat no", "apartment", "apartment no"],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -22,6 +22,7 @@ import {
   Pencil,
   RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -29,10 +30,15 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
+import { GenericDocumentSection } from "@/components/shared/GenericDocumentSection";
+import { PassportDateModal, type PassportDateValues } from "@/components/shared/PassportDateModal";
 import { TenantEditForm } from "@/components/tenants/TenantEditForm";
 import { TenantRenewalModal } from "@/components/tenants/TenantRenewalModal";
 import { TenantHistorySection } from "@/components/tenants/TenantHistorySection";
-import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
+import { ChequeFileCell } from "@/components/tenants/ChequeFileCell";
+import { useTenantByLeadId, useTenantMutations, useTenantDocumentMutations, useTenantChequeFileMutations } from "@/hooks/useTenants";
+import { tenantsService } from "@/services/tenants/tenants.service";
+import { getErrorMessage } from "@/services/api/client";
 import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
 function InfoRow({
@@ -81,8 +87,38 @@ function TenantDetailPageContent() {
     uploadEmiratesId, deleteEmiratesId,
     uploadAgreement, deleteAgreement,
   } = useTenantMutations(params.leadId);
+  const documentMutations = useTenantDocumentMutations(params.leadId);
+  const chequeFileMutations = useTenantChequeFileMutations(params.leadId);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [passportModalOpen, setPassportModalOpen] = useState(false);
+  const pendingPassportFile = useRef<File | null>(null);
+
+  async function onPassportFilePicked(file: File) {
+    pendingPassportFile.current = file;
+    setPassportModalOpen(true);
+  }
+
+  async function onPassportDatesConfirm(values: PassportDateValues) {
+    const file = pendingPassportFile.current;
+    if (!file) {
+      setPassportModalOpen(false);
+      return;
+    }
+    try {
+      await uploadPassport.mutateAsync({
+        file,
+        passportStartDate: values.passportStartDate,
+        passportEndDate: values.passportEndDate,
+      });
+      toast.success("Passport uploaded successfully.");
+      setPassportModalOpen(false);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      pendingPassportFile.current = null;
+    }
+  }
 
   if (isLoading) return <LoadingState />;
   if (isError) return <ErrorState onRetry={refetch} />;
@@ -342,6 +378,7 @@ function TenantDetailPageContent() {
                         <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Cheque Date</th>
                         <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Amount</th>
                         <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Status</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-neutral-500">Cheque File</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -358,6 +395,15 @@ function TenantDetailPageContent() {
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <ChequeFileCell
+                              leadId={params.leadId}
+                              cheque={cheque}
+                              fileUrl={(lid, cid) => tenantsService.chequeFileUrl(lid, cid)}
+                              onUpload={(cid, file) => chequeFileMutations.uploadChequeFile.mutateAsync({ chequeId: cid, file })}
+                              onDelete={(cid) => chequeFileMutations.deleteChequeFile.mutateAsync(cid)}
+                            />
                           </td>
                         </tr>
                       ))}
@@ -381,7 +427,9 @@ function TenantDetailPageContent() {
                 uploadedAt={tenant.passportUploadedAt}
                 uploaderName={tenant.passportUploader?.fullName}
                 signedUrl={tenant.passportUrl}
-                onUpload={async (file) => { await uploadPassport.mutateAsync(file); }}
+                passportStartDate={tenant.passportStartDate}
+                passportEndDate={tenant.passportEndDate}
+                onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
               />
               <ClientDocumentCard
@@ -401,6 +449,25 @@ function TenantDetailPageContent() {
                 signedUrl={tenant.agreementUrl}
                 onUpload={async (file) => { await uploadAgreement.mutateAsync(file); }}
                 onDelete={async () => { await deleteAgreement.mutateAsync(); }}
+              />
+            </CardBody>
+          </Card>
+
+          {/* Generic Documents (Ejari, etc.) */}
+          <Card>
+            <CardHeader
+              title="Documents"
+              subtitle="Ejari, agreements, NOCs, and other uploaded documents"
+            />
+            <CardBody>
+              <GenericDocumentSection
+                documents={tenant.documents ?? []}
+                onUpload={(file, type, label) => documentMutations.upload.mutateAsync({ file, type, label })}
+                onDelete={(docId) => documentMutations.remove.mutateAsync(docId)}
+                fileUrl={(docId) => tenantsService.documentFileUrl(params.leadId, docId)}
+                permissionModule="tenant_details"
+                permissionPage="all_tenants"
+                permissionAction="upload_documents"
               />
             </CardBody>
           </Card>
@@ -498,6 +565,19 @@ function TenantDetailPageContent() {
           onClose={() => setShowRenewalModal(false)}
         />
       )}
+
+      {/* ── Passport Dates Modal ─────────────────────────────────────── */}
+      <PassportDateModal
+        open={passportModalOpen}
+        onClose={() => { setPassportModalOpen(false); pendingPassportFile.current = null; }}
+        onConfirm={onPassportDatesConfirm}
+        loading={uploadPassport.isPending}
+        entityLabel="this tenant"
+        initial={{
+          passportStartDate: tenant?.passportStartDate ?? undefined,
+          passportEndDate: tenant?.passportEndDate ?? undefined,
+        }}
+      />
     </div>
   );
 }

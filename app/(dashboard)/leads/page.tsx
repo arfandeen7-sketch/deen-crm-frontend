@@ -127,6 +127,16 @@ function LeadsPageContent() {
       ),
     },
     {
+      key: "nationality",
+      header: "Nationality",
+      render: (l) =>
+        !isEmptyDisplayValue(l.nationality) ? (
+          <span className="text-sm text-slate-700">{displayValue(l.nationality)}</span>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
       key: "source",
       header: "Source",
       render: (l) => (

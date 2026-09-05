@@ -32,6 +32,9 @@ export const ownerSchema = z.object({
   // Identity documents
   passportNumber: optionalString,
   emiratesIdNumber: optionalString,
+  // Passport validity period
+  passportStartDate: optionalString,
+  passportEndDate: optionalString,
 });
 
 export type OwnerFormValues = z.input<typeof ownerSchema>;

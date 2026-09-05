@@ -73,7 +73,11 @@ export function useTenantMutations(leadId: string) {
   });
 
   const uploadPassport = useMutation({
-    mutationFn: (file: File) => tenantsService.uploadPassport(leadId, file),
+    mutationFn: (params: { file: File; passportStartDate?: string; passportEndDate?: string }) =>
+      tenantsService.uploadPassport(leadId, params.file, {
+        passportStartDate: params.passportStartDate,
+        passportEndDate: params.passportEndDate,
+      }),
     onSuccess: invalidate,
   });
 
@@ -111,6 +115,60 @@ export function useTenantMutations(leadId: string) {
     uploadAgreement,
     deleteAgreement,
   };
+}
+
+// ── Tenant Generic Document Hooks ─────────────────────────────────────────────
+
+export function useTenantDocuments(leadId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "documents", leadId],
+    queryFn: () => tenantsService.listDocuments(leadId as string),
+    enabled: !!leadId,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useTenantDocumentMutations(leadId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "documents", leadId] });
+    qc.invalidateQueries({ queryKey: [KEY, "by-lead", leadId] });
+  };
+
+  const upload = useMutation({
+    mutationFn: ({ file, type, label }: { file: File; type: string; label?: string }) =>
+      tenantsService.uploadDocument(leadId, file, { type, label }),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (docId: string) => tenantsService.removeDocument(leadId, docId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove };
+}
+
+// ── Tenant Cheque File Hooks ──────────────────────────────────────────────────
+
+export function useTenantChequeFileMutations(leadId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "by-lead", leadId] });
+  };
+
+  const uploadChequeFile = useMutation({
+    mutationFn: ({ chequeId, file }: { chequeId: string; file: File }) =>
+      tenantsService.uploadChequeFile(leadId, chequeId, file),
+    onSuccess: invalidate,
+  });
+
+  const deleteChequeFile = useMutation({
+    mutationFn: (chequeId: string) => tenantsService.deleteChequeFile(leadId, chequeId),
+    onSuccess: invalidate,
+  });
+
+  return { uploadChequeFile, deleteChequeFile };
 }
 
 /**

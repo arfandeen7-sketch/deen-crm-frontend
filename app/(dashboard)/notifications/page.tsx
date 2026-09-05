@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CheckCheck, Filter, Trash2, Phone, Building2, Handshake, CalendarClock } from "lucide-react";
+import { Bell, CheckCheck, Filter, Trash2, Phone, Building2, Handshake, CalendarClock, ListChecks } from "lucide-react";
 import { useNotifications, useNotificationMutations } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
@@ -78,6 +78,9 @@ function NotificationCard({
                 )}
                 {notification.type === "followup" && (
                   <CalendarClock className="h-4 w-4 shrink-0 text-amber-600" />
+                )}
+                {notification.type === "todo_reminder" && (
+                  <ListChecks className="h-4 w-4 shrink-0 text-violet-600" />
                 )}
                 {notification.title}
               </h3>

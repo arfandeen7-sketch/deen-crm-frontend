@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { TodoReminderPopup } from "./TodoReminderPopup";
 import { useAuth } from "@/hooks/useAuth";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityModal } from "@/components/shared/InactivityModal";
@@ -79,6 +80,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         onStay={handleStay}
         onLeave={handleLeave}
       />
+
+      {/* At-time task reminder popup — shown only to the todo owner */}
+      <TodoReminderPopup />
     </div>
   );
 }

@@ -2,11 +2,11 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Upload, Eye, Trash2, FileText, Loader2 } from "lucide-react";
+import { Upload, Eye, Trash2, FileText, Loader2, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CanAccess } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/services/api/client";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, formatDate } from "@/lib/utils";
 
 interface ClientDocumentCardProps {
   label: string;
@@ -14,6 +14,9 @@ interface ClientDocumentCardProps {
   uploadedAt?: string | null;
   uploaderName?: string | null;
   signedUrl?: string | null;
+  /** Optional passport validity dates — only shown for passport documents. */
+  passportStartDate?: string | null;
+  passportEndDate?: string | null;
   onUpload: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
 }
@@ -26,6 +29,8 @@ export function ClientDocumentCard({
   uploadedAt,
   uploaderName,
   signedUrl,
+  passportStartDate,
+  passportEndDate,
   onUpload,
   onDelete,
 }: ClientDocumentCardProps) {
@@ -87,6 +92,22 @@ export function ClientDocumentCard({
               Uploaded {formatDateTime(uploadedAt)}
               {uploaderName ? ` by ${uploaderName}` : ""}
             </p>
+          )}
+          {(passportStartDate || passportEndDate) && (
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-600">
+              {passportStartDate && (
+                <span className="inline-flex items-center gap-1">
+                  <CalendarClock className="h-3 w-3 text-slate-400" />
+                  Start: {formatDate(passportStartDate)}
+                </span>
+              )}
+              {passportEndDate && (
+                <span className="inline-flex items-center gap-1">
+                  <CalendarClock className="h-3 w-3 text-slate-400" />
+                  Expiry: {formatDate(passportEndDate)}
+                </span>
+              )}
+            </div>
           )}
         </div>
       ) : (

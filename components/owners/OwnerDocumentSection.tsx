@@ -1,13 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileText, Upload, Trash2, ExternalLink } from "lucide-react";
+import { FileText, Upload, Trash2, ExternalLink, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/Modal";
+import { PassportDateModal, type PassportDateValues } from "@/components/shared/PassportDateModal";
 import { useOwnerDocumentMutations } from "@/hooks/useOwners";
 import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
 import { getErrorMessage } from "@/services/api/client";
+import { formatDate } from "@/lib/utils";
 import type { Owner } from "@/types";
 
 interface Props {
@@ -21,17 +23,37 @@ export function OwnerDocumentSection({ owner }: Props) {
   const eidRef = useRef<HTMLInputElement>(null);
   const [removingPassport, setRemovingPassport] = useState(false);
   const [removingEid, setRemovingEid] = useState(false);
+  const [passportModalOpen, setPassportModalOpen] = useState(false);
+  const pendingPassportFile = useRef<File | null>(null);
 
   async function handlePassportUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Stash the file and ask for passport validity dates before uploading.
+    pendingPassportFile.current = file;
+    setPassportModalOpen(true);
+    if (passportRef.current) passportRef.current.value = "";
+  }
+
+  async function onPassportDatesConfirm(values: PassportDateValues) {
+    const file = pendingPassportFile.current;
+    if (!file) {
+      setPassportModalOpen(false);
+      return;
+    }
     try {
-      await uploadPassport.mutateAsync({ ownerId: owner.id, file });
+      await uploadPassport.mutateAsync({
+        ownerId: owner.id,
+        file,
+        passportStartDate: values.passportStartDate,
+        passportEndDate: values.passportEndDate,
+      });
       toast.success("Passport uploaded successfully");
+      setPassportModalOpen(false);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
-      if (passportRef.current) passportRef.current.value = "";
+      pendingPassportFile.current = null;
     }
   }
 
@@ -76,6 +98,8 @@ export function OwnerDocumentSection({ owner }: Props) {
         number={owner.passportNumber}
         fileName={owner.passportFileName}
         uploadedAt={owner.passportUploadedAt}
+        passportStartDate={owner.passportStartDate}
+        passportEndDate={owner.passportEndDate}
         viewUrl={owner.passportFileName ? ownerManualPropertiesService.passportUrl(owner.id) : null}
         inputRef={passportRef}
         onUploadClick={() => passportRef.current?.click()}
@@ -118,6 +142,18 @@ export function OwnerDocumentSection({ owner }: Props) {
         confirmLabel="Remove"
         loading={removeEmiratesId.isPending}
       />
+
+      <PassportDateModal
+        open={passportModalOpen}
+        onClose={() => { setPassportModalOpen(false); pendingPassportFile.current = null; }}
+        onConfirm={onPassportDatesConfirm}
+        loading={uploadPassport.isPending}
+        entityLabel="this owner"
+        initial={{
+          passportStartDate: owner.passportStartDate ?? undefined,
+          passportEndDate: owner.passportEndDate ?? undefined,
+        }}
+      />
     </div>
   );
 }
@@ -127,6 +163,8 @@ function DocumentSlot({
   number,
   fileName,
   uploadedAt,
+  passportStartDate,
+  passportEndDate,
   viewUrl,
   inputRef,
   onUploadClick,
@@ -139,6 +177,8 @@ function DocumentSlot({
   number?: string | null;
   fileName?: string | null;
   uploadedAt?: string | null;
+  passportStartDate?: string | null;
+  passportEndDate?: string | null;
   viewUrl: string | null;
   inputRef: React.RefObject<HTMLInputElement | null>;
   onUploadClick: () => void;
@@ -178,6 +218,22 @@ function DocumentSlot({
             </p>
           ) : (
             <p className="mt-0.5 text-xs text-neutral-400">No document uploaded</p>
+          )}
+          {(passportStartDate || passportEndDate) && (
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-neutral-600">
+              {passportStartDate && (
+                <span className="inline-flex items-center gap-1">
+                  <CalendarClock className="h-3 w-3 text-neutral-400" />
+                  Start: {formatDate(passportStartDate)}
+                </span>
+              )}
+              {passportEndDate && (
+                <span className="inline-flex items-center gap-1">
+                  <CalendarClock className="h-3 w-3 text-neutral-400" />
+                  Expiry: {formatDate(passportEndDate)}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -144,6 +144,7 @@ function LeadDetailPageContent() {
               <InfoRow icon={Phone} label="Mobile" value={lead.mobileNumber} />
               <InfoRow icon={Phone} label="Alternate Mobile" value={lead.alternateMobile} />
               <InfoRow icon={Mail} label="Email" value={lead.email} />
+              <InfoRow icon={UserIcon} label="Nationality" value={lead.nationality} />
               <InfoRow icon={Calendar} label="Lead Date" value={formatDate(lead.leadDate)} />
               <InfoRow icon={Calendar} label="Follow Up Date" value={formatDate(lead.followUpDate)} />
               <InfoRow icon={MessageSquare} label="Follow Up Note" value={lead.followUpNote} />

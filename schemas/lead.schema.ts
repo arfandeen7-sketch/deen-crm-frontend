@@ -33,6 +33,7 @@ export const leadSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((v) => (v === "" ? undefined : v)),
+  nationality: optionalString,
   source: z.string().min(1, "Source is required"),
   projectName: optionalString,
   serviceType: z.string().min(1, "Service type is required"),
@@ -54,7 +55,15 @@ export const leadSchema = z.object({
   price: optionalString,
   propertySize: optionalString,
   configuration: optionalString,
-  comments: optionalString,
+  // Empty string clears the comment on save (full form submit always includes
+  // this field). Uses `.nullable()` (not `.optional()`) so input and output
+  // are both `string | null` — `null` survives JSON.stringify as an explicit
+  // "clear" signal, whereas `undefined` is dropped and the backend would skip
+  // the field, leaving the old comment in place. Same pattern as followUpNote.
+  comments: z
+    .string()
+    .nullable()
+    .transform((v) => (v === "" || v == null ? null : v)),
   customFields: z.record(z.string(), z.string()).optional(),
 });
 
