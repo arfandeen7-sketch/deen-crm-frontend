@@ -34,6 +34,7 @@ import {
   Plus,
   ClipboardList,
   Package,
+  Hotel,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -166,6 +167,25 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/pocket-listings",
         icon: Package,
         navAccess: { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
+      },
+    ],
+  },
+  // ── 6c. Bellaviu Client Data (direct link — no dropdown) ─────────────────
+  // Not visible to any user by default — Master must grant access per user.
+  {
+    id: "bellaviu_client_data",
+    title: "Bellaviu Client Data",
+    icon: Hotel,
+    href: "/bellaviu-clients",
+    isSingular: true,
+    moduleKey: "bellaviu_client_data",
+    section: "MENU",
+    items: [
+      {
+        label: "All Bellaviu Clients",
+        href: "/bellaviu-clients",
+        icon: Hotel,
+        navAccess: { module: "bellaviu_client_data", page: "all_bellaviu_clients", action: "view" },
       },
     ],
   },

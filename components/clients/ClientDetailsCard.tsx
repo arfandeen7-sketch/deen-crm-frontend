@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 import { CanAccess } from "@/components/shared/Guards";
 import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
+import { PassportDateModal, type PassportDateValues } from "@/components/shared/PassportDateModal";
 import { useClientByLeadId, useClientMutations } from "@/hooks/useClients";
 import { getErrorMessage } from "@/services/api/client";
 import { clientSchema, type ClientFormValues } from "@/schemas/client.schema";
@@ -46,6 +47,37 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
   const { upsert, uploadPassport, deletePassport, uploadEmiratesId, deleteEmiratesId } =
     useClientMutations(leadId);
   const [editing, setEditing] = useState(false);
+  const [passportModalOpen, setPassportModalOpen] = useState(false);
+  const pendingPassportFile = useRef<File | null>(null);
+
+  // Called by ClientDocumentCard after the user picks a passport file — we
+  // intercept it and open the passport-dates modal instead of uploading
+  // immediately.
+  async function onPassportFilePicked(file: File) {
+    pendingPassportFile.current = file;
+    setPassportModalOpen(true);
+  }
+
+  async function onPassportDatesConfirm(values: PassportDateValues) {
+    const file = pendingPassportFile.current;
+    if (!file) {
+      setPassportModalOpen(false);
+      return;
+    }
+    try {
+      await uploadPassport.mutateAsync({
+        file,
+        passportStartDate: values.passportStartDate,
+        passportEndDate: values.passportEndDate,
+      });
+      toast.success("Passport uploaded successfully.");
+      setPassportModalOpen(false);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      pendingPassportFile.current = null;
+    }
+  }
 
   const {
     register,
@@ -170,7 +202,9 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
                 uploadedAt={client.passportUploadedAt}
                 uploaderName={client.passportUploader?.fullName}
                 signedUrl={client.passportUrl}
-                onUpload={async (file) => { await uploadPassport.mutateAsync(file); }}
+                passportStartDate={client.passportStartDate}
+                passportEndDate={client.passportEndDate}
+                onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
               />
               <ClientDocumentCard
@@ -199,6 +233,18 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
           </p>
         )}
       </CardBody>
+
+      <PassportDateModal
+        open={passportModalOpen}
+        onClose={() => { setPassportModalOpen(false); pendingPassportFile.current = null; }}
+        onConfirm={onPassportDatesConfirm}
+        loading={uploadPassport.isPending}
+        entityLabel="this buyer"
+        initial={{
+          passportStartDate: client?.passportStartDate ?? undefined,
+          passportEndDate: client?.passportEndDate ?? undefined,
+        }}
+      />
     </Card>
   );
 }

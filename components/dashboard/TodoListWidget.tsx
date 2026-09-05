@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, type DragEvent, type FormEvent, type KeyboardEvent } from "react";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { Bell, BellRing, GripVertical, Plus, Trash2, X } from "lucide-react";
 import { EmptyState, LoadingState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTime, toDatetimeLocal } from "@/lib/utils";
 import {
   useMyTodos,
   useCreateTodo,
@@ -190,6 +190,9 @@ export function TodoListWidget() {
                 updateTodo.mutate({ id: todo.id, input: { isDone: !todo.isDone } })
               }
               onDelete={() => deleteTodo.mutate(todo.id)}
+              onSetReminder={(reminderAt) =>
+                updateTodo.mutate({ id: todo.id, input: { reminderAt } })
+              }
               deleting={deleteTodo.isPending && deleteTodo.variables === todo.id}
             />
           ))
@@ -209,6 +212,7 @@ function TodoRow({
   onDragEnd,
   onToggleDone,
   onDelete,
+  onSetReminder,
   deleting,
 }: {
   todo: Todo;
@@ -220,9 +224,29 @@ function TodoRow({
   onDragEnd: () => void;
   onToggleDone: () => void;
   onDelete: () => void;
+  onSetReminder: (reminderAt: string | null) => void;
   deleting: boolean;
 }) {
   const [canDrag, setCanDrag] = useState(false);
+  const [editingReminder, setEditingReminder] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  function openReminderEditor() {
+    setDraft(toDatetimeLocal(todo.reminderAt));
+    setEditingReminder(true);
+  }
+
+  function saveReminder() {
+    // datetime-local value is local time; send as ISO to the backend.
+    const iso = draft ? new Date(draft).toISOString() : null;
+    onSetReminder(iso);
+    setEditingReminder(false);
+  }
+
+  function clearReminder() {
+    onSetReminder(null);
+    setEditingReminder(false);
+  }
 
   return (
     <div
@@ -235,53 +259,119 @@ function TodoRow({
         onDragEnd();
       }}
       className={cn(
-        "flex items-center gap-2.5 py-3.5 first:pt-2 last:pb-0 group transition-colors",
+        "py-3.5 first:pt-2 last:pb-0 group transition-colors",
         isDragging && "opacity-40",
         isOver && "bg-zinc-50/80",
       )}
     >
-      <span
-        role="button"
-        className="cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 shrink-0 touch-none"
-        aria-label="Drag to reorder"
-        tabIndex={0}
-        onMouseDown={() => setCanDrag(true)}
-        onTouchStart={() => setCanDrag(true)}
-      >
-        <GripVertical className="h-4 w-4" />
-      </span>
-
-      <label className="flex items-center shrink-0 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={todo.isDone}
-          onChange={onToggleDone}
-          className="h-4 w-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
-        />
-      </label>
-
-      <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            "text-sm font-semibold text-zinc-900 truncate font-secondary",
-            todo.isDone && "line-through text-zinc-400 font-medium",
-          )}
+      <div className="flex items-center gap-2.5">
+        <span
+          role="button"
+          className="cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 shrink-0 touch-none"
+          aria-label="Drag to reorder"
+          tabIndex={0}
+          onMouseDown={() => setCanDrag(true)}
+          onTouchStart={() => setCanDrag(true)}
         >
-          {todo.title}
-        </p>
+          <GripVertical className="h-4 w-4" />
+        </span>
+
+        <label className="flex items-center shrink-0 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={todo.isDone}
+            onChange={onToggleDone}
+            className="h-4 w-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+          />
+        </label>
+
+        <div className="min-w-0 flex-1">
+          <p
+            className={cn(
+              "text-sm font-semibold text-zinc-900 truncate font-secondary",
+              todo.isDone && "line-through text-zinc-400 font-medium",
+            )}
+          >
+            {todo.title}
+          </p>
+        </div>
+
+        {todo.reminderAt && (
+          <span
+            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700"
+            title={`Reminder at ${formatDateTime(todo.reminderAt)}`}
+          >
+            <BellRing className="h-3 w-3" />
+            {formatDateTime(todo.reminderAt)}
+          </span>
+        )}
+
+        <PriorityBadge priority={todo.priority} />
+
+        <button
+          type="button"
+          onClick={openReminderEditor}
+          className={cn(
+            "text-zinc-300 hover:text-violet-600 transition-all shrink-0 p-1 rounded-md hover:bg-violet-50",
+            todo.reminderAt
+              ? "opacity-100 text-violet-500"
+              : "opacity-0 group-hover:opacity-100 focus:opacity-100",
+          )}
+          aria-label="Set reminder"
+          title="Set reminder"
+        >
+          {todo.reminderAt ? (
+            <BellRing className="h-3.5 w-3.5" />
+          ) : (
+            <Bell className="h-3.5 w-3.5" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-300 hover:text-rose-600 transition-all shrink-0 p-1 rounded-md hover:bg-rose-50 disabled:opacity-50"
+          aria-label="Delete task"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
 
-      <PriorityBadge priority={todo.priority} />
-
-      <button
-        type="button"
-        onClick={onDelete}
-        disabled={deleting}
-        className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-300 hover:text-rose-600 transition-all shrink-0 p-1 rounded-md hover:bg-rose-50 disabled:opacity-50"
-        aria-label="Delete task"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
+      {editingReminder && (
+        <div className="mt-2 ml-10 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/60 p-2">
+          <Input
+            type="datetime-local"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="h-8 w-auto text-xs"
+            aria-label="Reminder date and time"
+          />
+          <Button type="button" size="sm" onClick={saveReminder} className="h-8">
+            Save
+          </Button>
+          {todo.reminderAt && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearReminder}
+              className="h-8 text-rose-600"
+            >
+              <X className="h-3.5 w-3.5" /> Clear
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditingReminder(false)}
+            className="h-8"
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

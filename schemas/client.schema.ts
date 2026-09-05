@@ -17,6 +17,8 @@ export const clientSchema = z.object({
   dateOfBirth:      optionalString,
   passportNumber:   optionalString,
   emiratesIdNumber: optionalString,
+  passportStartDate: optionalString,
+  passportEndDate:   optionalString,
 });
 
 export type ClientFormValues = z.input<typeof clientSchema>;

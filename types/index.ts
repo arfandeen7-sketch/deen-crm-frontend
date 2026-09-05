@@ -180,6 +180,7 @@ export interface Lead {
   source: string;
   fbFormName?: string | null;
   email?: string | null;
+  nationality?: string | null;
   city?: string | null;
   locality?: string | null;
   unitNumber?: string | null;
@@ -260,6 +261,9 @@ export interface Client {
   passportMimeType?: string | null;
   passportUploadedAt?: string | null;
   passportUploadedBy?: string | null;
+  // Passport validity period (drives expiry notifications)
+  passportStartDate?: string | null;
+  passportEndDate?: string | null;
   // Emirates ID document metadata
   emiratesIdFilePath?: string | null;
   emiratesIdFileName?: string | null;
@@ -279,6 +283,55 @@ export interface Client {
     creator?: Pick<User, "id" | "fullName"> | null;
     sale?: { amount: number; closedAt: string } | null;
   } | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  passportUploader?: Pick<User, "id" | "fullName"> | null;
+  emiratesUploader?: Pick<User, "id" | "fullName"> | null;
+  // Generic uploaded documents (Ejari, etc.)
+  documents?: GenericDocument[];
+}
+
+// ── Bellaviu Client Data ──────────────────────────────────────────────────────
+
+export interface BellaviuClient {
+  id: string;
+  // Guest / client info
+  name: string;
+  phoneNumber?: string | null;
+  alternativeNumber?: string | null;
+  email?: string | null;
+  // Stay details
+  checkInDate?: string | null;
+  checkOutDate?: string | null;
+  bookingChannel?: string | null;
+  // Identity document numbers
+  emiratesId?: string | null;
+  passportNumber?: string | null;
+  // Property info
+  propertyName?: string | null;
+  propertySize?: string | null;
+  unitNo?: string | null;
+  countryOfClient?: string | null;
+  locationOfProperty?: string | null;
+  // Passport document metadata
+  passportFilePath?: string | null;
+  passportFileName?: string | null;
+  passportMimeType?: string | null;
+  passportUploadedAt?: string | null;
+  passportUploadedBy?: string | null;
+  // Emirates ID document metadata
+  emiratesIdFilePath?: string | null;
+  emiratesIdFileName?: string | null;
+  emiratesIdMimeType?: string | null;
+  emiratesIdUploadedAt?: string | null;
+  emiratesIdUploadedBy?: string | null;
+  // Signed download URLs (generated per-request, not stored)
+  passportUrl?: string | null;
+  emiratesIdUrl?: string | null;
+  // Audit
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Relations
   creator?: Pick<User, "id" | "fullName"> | null;
   passportUploader?: Pick<User, "id" | "fullName"> | null;
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
@@ -312,6 +365,71 @@ export interface TenantCheque {
   chequeDate?: string | null;
   amount?: number | null;
   status?: string | null;
+  // Per-cheque file upload metadata (file contents served via dedicated endpoint)
+  fileName?: string | null;
+  mimeType?: string | null;
+  uploadedAt?: string | null;
+  uploadedBy?: string | null;
+  fileUploader?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Generic uploaded documents (Owner / Buyer / Tenant) ───────────────────────
+
+export interface GenericDocument {
+  id: string;
+  type: string;
+  label?: string | null;
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  uploader?: Pick<User, "id" | "fullName"> | null;
+}
+
+// ── Owner Utility / Account Details ──────────────────────────────────────────
+
+export interface OwnerUtilityAccount {
+  id: string;
+  ownerId: string;
+  type: string;
+  label?: string | null;
+  value: string;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Tenant Agreement History ──────────────────────────────────────────────────
+
+export interface TenantAgreementHistoryCheque {
+  id: string;
+  chequeNumber: number;
+  chequeDate?: string | null;
+  amount?: number | null;
+  status?: string | null;
+}
+
+export interface TenantAgreementHistory {
+  id: string;
+  tenantId: string;
+  periodNumber: number;
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  dateOfNotice?: string | null;
+  ownerManualPropertyId?: string | null;
+  propertySnapshot?: string | null;
+  ownerName?: string | null;
+  annualRent?: number | null;
+  securityDeposit?: number | null;
+  adminFee?: number | null;
+  commission?: number | null;
+  currency?: string | null;
+  modeOfPayment?: string | null;
+  numberOfCheques?: number | null;
+  renewedBy: string;
+  renewedAt: string;
+  renewedByUser?: { id: string; fullName: string } | null;
+  cheques: TenantAgreementHistoryCheque[];
 }
 
 export interface TenantOwnerSummary {
@@ -382,6 +500,9 @@ export interface Tenant {
   passportMimeType?: string | null;
   passportUploadedAt?: string | null;
   passportUploadedBy?: string | null;
+  // Passport validity period (drives expiry notifications)
+  passportStartDate?: string | null;
+  passportEndDate?: string | null;
   // Emirates ID document metadata
   emiratesIdFilePath?: string | null;
   emiratesIdFileName?: string | null;
@@ -418,6 +539,8 @@ export interface Tenant {
   ownerManualProperty?: TenantOwnerManualPropertySummary | null;
   // Cheque schedule
   cheques?: TenantCheque[];
+  // Generic uploaded documents (Ejari, etc.)
+  documents?: GenericDocument[];
 }
 
 export interface LeadStatusHistory {
@@ -1068,7 +1191,8 @@ export type OwnerPropertyListingStatus =
   | "listed"
   | "sold"
   | "rented"
-  | "off_market";
+  | "off_market"
+  | "off_plan";
 
 export interface OwnerProperty {
   id: string;
@@ -1117,6 +1241,7 @@ export interface Owner {
   emirate?: string | null;
   city?: string | null;
   locality?: string | null;
+  nationality?: string | null;
   notes?: string | null;
   // Identity documents
   passportNumber?: string | null;
@@ -1126,6 +1251,9 @@ export interface Owner {
   passportMimeType?: string | null;
   passportUploadedAt?: string | null;
   passportUploadedBy?: string | null;
+  // Passport validity period (drives expiry notifications)
+  passportStartDate?: string | null;
+  passportEndDate?: string | null;
   // Emirates ID file metadata
   emiratesIdFileName?: string | null;
   emiratesIdMimeType?: string | null;
@@ -1137,6 +1265,10 @@ export interface Owner {
   creator?: Pick<User, "id" | "fullName"> | null;
   properties?: OwnerProperty[];
   manualProperties?: ManualProperty[];
+  // Utility / account details (DEWA, Cooler, Gas, Lock No., …)
+  utilityAccounts?: OwnerUtilityAccount[];
+  // Generic uploaded documents (Ejari, etc.)
+  documents?: GenericDocument[];
   _count?: { properties: number };
 }
 
@@ -1157,12 +1289,14 @@ export type ManualPropertyListingStatus =
   | "listed"
   | "sold"
   | "rented"
-  | "off_market";
+  | "off_market"
+  | "off_plan";
 
 export interface ManualProperty {
   id: string;
   ownerId: string;
   buildingName?: string | null;
+  villaName?: string | null;
   unitNumber?: string | null;
   unitSize?: string | null;
   projectName?: string | null;
@@ -1297,6 +1431,18 @@ export interface OwnerQueryParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  // Per-field filters (combine with AND)
+  fullName?: string;
+  mobileNumber?: string;
+  alternateMobile?: string;
+  email?: string;
+  whatsapp?: string;
+  nationality?: string;
+  emirate?: string;
+  city?: string;
+  locality?: string;
+  passportNumber?: string;
+  emiratesIdNumber?: string;
 }
 
 export type OwnerInput = Partial<
@@ -1693,11 +1839,12 @@ export interface AssignmentNotificationLead {
 
 export interface AppNotification {
   id: string;
-  type: "assignment" | "followup" | "system" | "leave" | "regularization" | "payslip" | "deal_closed";
+  type: "assignment" | "followup" | "system" | "leave" | "regularization" | "payslip" | "deal_closed" | "todo_reminder";
   title: string;
   body: string | null;
   leadId: string | null;
   leads: AssignmentNotificationLead[] | null;
+  metadata: Record<string, unknown> | null;
   isRead: boolean;
   createdAt: string;
 }
@@ -2008,6 +2155,9 @@ export interface Todo {
   priority: TodoPriority;
   isDone: boolean;
   sortOrder: number;
+  reminderAt: string | null;
+  reminder10mSent: boolean;
+  reminderAtSent: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -2015,12 +2165,14 @@ export interface Todo {
 export interface CreateTodoInput {
   title: string;
   priority?: TodoPriority;
+  reminderAt?: string | null;
 }
 
 export interface UpdateTodoInput {
   title?: string;
   priority?: TodoPriority;
   isDone?: boolean;
+  reminderAt?: string | null;
 }
 
 export interface EmployeeTodoGroup {

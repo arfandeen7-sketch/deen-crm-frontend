@@ -27,6 +27,7 @@ export function ManualPropertyForm({ initial, submitting, onSubmit, onCancel }: 
     resolver: zodResolver(manualPropertySchema),
     defaultValues: {
       buildingName: initial?.buildingName ?? "",
+      villaName: initial?.villaName ?? "",
       unitNumber: initial?.unitNumber ?? "",
       unitSize: initial?.unitSize ?? "",
       projectName: initial?.projectName ?? "",
@@ -98,6 +99,9 @@ export function ManualPropertyForm({ initial, submitting, onSubmit, onCancel }: 
           </Field>
           <Field label="Type" error={errors.type?.message}>
             <Input placeholder="e.g. Apartment, Villa, Office" {...register("type")} />
+          </Field>
+          <Field label="Villa Name" error={errors.villaName?.message}>
+            <Input placeholder="e.g. Villa 42, Palm Villa" {...register("villaName")} />
           </Field>
           <Field label="Configuration" error={errors.configuration?.message}>
             <Input placeholder="e.g. 2BR, Studio" {...register("configuration")} />

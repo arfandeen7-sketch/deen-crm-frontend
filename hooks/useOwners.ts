@@ -10,7 +10,8 @@ import {
   type OwnerCreateResult,
 } from "@/services/owners/owners.service";
 import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
-import type { OwnerInput, OwnerPropertyInput, OwnerQueryParams, ManualPropertyInput } from "@/types";
+import { ownerUtilitiesService, ownerDocumentsService } from "@/services/owners/ownerExtras.service";
+import type { OwnerInput, OwnerPropertyInput, OwnerQueryParams, ManualPropertyInput, OwnerUtilityAccount, GenericDocument } from "@/types";
 import { POLL_FAST } from "@/constants";
 import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
 import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
@@ -200,8 +201,16 @@ export function useOwnerDocumentMutations() {
   };
 
   const uploadPassport = useMutation({
-    mutationFn: ({ ownerId, file }: { ownerId: string; file: File }) =>
-      ownerManualPropertiesService.uploadPassport(ownerId, file),
+    mutationFn: ({ ownerId, file, passportStartDate, passportEndDate }: {
+      ownerId: string;
+      file: File;
+      passportStartDate?: string;
+      passportEndDate?: string;
+    }) =>
+      ownerManualPropertiesService.uploadPassport(ownerId, file, {
+        passportStartDate,
+        passportEndDate,
+      }),
     onSuccess: (_data, vars) => invalidate(vars.ownerId),
   });
 
@@ -224,4 +233,77 @@ export function useOwnerDocumentMutations() {
   return { uploadPassport, removePassport, uploadEmiratesId, removeEmiratesId };
 }
 
+// ── Owner Utility / Account Details Hooks ─────────────────────────────────────
+
+export function useOwnerUtilities(ownerId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "utilities", ownerId],
+    queryFn: () => ownerUtilitiesService.list(ownerId as string),
+    enabled: !!ownerId,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useOwnerUtilityMutations(ownerId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "utilities", ownerId] });
+    qc.invalidateQueries({ queryKey: [KEY, "detail", ownerId] });
+  };
+
+  const create = useMutation({
+    mutationFn: (body: { type: string; value: string; label?: string | null; notes?: string | null }) =>
+      ownerUtilitiesService.create(ownerId, body),
+    onSuccess: invalidate,
+  });
+
+  const update = useMutation({
+    mutationFn: ({ utilityId, body }: {
+      utilityId: string;
+      body: Partial<{ type: string; value: string; label?: string | null; notes?: string | null }>;
+    }) => ownerUtilitiesService.update(ownerId, utilityId, body),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (utilityId: string) => ownerUtilitiesService.remove(ownerId, utilityId),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, remove };
+}
+
+// ── Owner Generic Document Hooks ──────────────────────────────────────────────
+
+export function useOwnerDocuments(ownerId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "documents", ownerId],
+    queryFn: () => ownerDocumentsService.list(ownerId as string),
+    enabled: !!ownerId,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useOwnerGenericDocumentMutations(ownerId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "documents", ownerId] });
+    qc.invalidateQueries({ queryKey: [KEY, "detail", ownerId] });
+  };
+
+  const upload = useMutation({
+    mutationFn: ({ file, type, label }: { file: File; type: string; label?: string }) =>
+      ownerDocumentsService.upload(ownerId, file, { type, label }),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (docId: string) => ownerDocumentsService.remove(ownerId, docId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove };
+}
+
 export type { OwnerCreateResult };
+export type { OwnerUtilityAccount, GenericDocument };

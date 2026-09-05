@@ -1,12 +1,39 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { tenantsService, type TenantQueryParams } from "@/services/tenants/tenants.service";
+import { tenantsService, type TenantQueryParams, type TenantRenewBody, type TenantMovePropertyBody, type AvailableManualProperty } from "@/services/tenants/tenants.service";
+export type { AvailableManualProperty };
 import { retrySkipAuth } from "@/lib/query-gate";
 import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
 
 const KEY = "tenants";
 const OWNERS_KEY = "owners";
+
+/**
+ * Full agreement history for a specific tenant lead.
+ * Returns an array of completed periods, oldest first.
+ */
+export function useTenantHistory(leadId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "history", leadId],
+    queryFn: () => tenantsService.getHistory(leadId as string),
+    enabled: !!leadId,
+    retry: retrySkipAuth,
+  });
+}
+
+/**
+ * All non-rented manual properties across every owner — for the
+ * "Move to Another Property" picker in the tenant renewal modal.
+ */
+export function useTenantAvailableProperties(search?: string) {
+  return useQuery({
+    queryKey: [KEY, "available-properties", search ?? ""],
+    queryFn: () => tenantsService.availableProperties({ search }),
+    retry: retrySkipAuth,
+    staleTime: 30_000,
+  });
+}
 
 /** Paginated list of all tenants visible to the current user. */
 export function useTenantsList(params: TenantQueryParams = {}) {
@@ -46,7 +73,11 @@ export function useTenantMutations(leadId: string) {
   });
 
   const uploadPassport = useMutation({
-    mutationFn: (file: File) => tenantsService.uploadPassport(leadId, file),
+    mutationFn: (params: { file: File; passportStartDate?: string; passportEndDate?: string }) =>
+      tenantsService.uploadPassport(leadId, params.file, {
+        passportStartDate: params.passportStartDate,
+        passportEndDate: params.passportEndDate,
+      }),
     onSuccess: invalidate,
   });
 
@@ -86,6 +117,60 @@ export function useTenantMutations(leadId: string) {
   };
 }
 
+// ── Tenant Generic Document Hooks ─────────────────────────────────────────────
+
+export function useTenantDocuments(leadId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "documents", leadId],
+    queryFn: () => tenantsService.listDocuments(leadId as string),
+    enabled: !!leadId,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useTenantDocumentMutations(leadId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "documents", leadId] });
+    qc.invalidateQueries({ queryKey: [KEY, "by-lead", leadId] });
+  };
+
+  const upload = useMutation({
+    mutationFn: ({ file, type, label }: { file: File; type: string; label?: string }) =>
+      tenantsService.uploadDocument(leadId, file, { type, label }),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (docId: string) => tenantsService.removeDocument(leadId, docId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove };
+}
+
+// ── Tenant Cheque File Hooks ──────────────────────────────────────────────────
+
+export function useTenantChequeFileMutations(leadId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "by-lead", leadId] });
+  };
+
+  const uploadChequeFile = useMutation({
+    mutationFn: ({ chequeId, file }: { chequeId: string; file: File }) =>
+      tenantsService.uploadChequeFile(leadId, chequeId, file),
+    onSuccess: invalidate,
+  });
+
+  const deleteChequeFile = useMutation({
+    mutationFn: (chequeId: string) => tenantsService.deleteChequeFile(leadId, chequeId),
+    onSuccess: invalidate,
+  });
+
+  return { uploadChequeFile, deleteChequeFile };
+}
+
 /**
  * Standalone mutations for creating a tenant from an owner's manual property
  * and ending a tenant contract early. These invalidate both the tenants and
@@ -112,5 +197,17 @@ export function useTenantPropertyMutations() {
     onSuccess: invalidateAll,
   });
 
-  return { createFromProperty, endContract };
+  const renewContract = useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: TenantRenewBody }) =>
+      tenantsService.renewContract(leadId, body),
+    onSuccess: invalidateAll,
+  });
+
+  const moveProperty = useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: TenantMovePropertyBody }) =>
+      tenantsService.moveProperty(leadId, body),
+    onSuccess: invalidateAll,
+  });
+
+  return { createFromProperty, endContract, renewContract, moveProperty };
 }

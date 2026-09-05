@@ -95,6 +95,7 @@ export function LeadForm({
       mobileNumber: initial?.mobileNumber ?? "",
       alternateMobile: initial?.alternateMobile ?? "",
       email: initial?.email ?? "",
+      nationality: initial?.nationality ?? "",
       source: initial?.source ?? "",
       projectName: initial?.projectName ?? "",
       serviceType: effectiveServiceType,
@@ -178,6 +179,9 @@ export function LeadForm({
             </Field>
             <Field label="Email" error={errors.email?.message}>
               <Input type="email" placeholder="name@example.com" {...register("email")} />
+            </Field>
+            <Field label="Nationality" error={errors.nationality?.message}>
+              <Input placeholder="e.g. Emirati" {...register("nationality")} />
             </Field>
           </section>
         </div>

@@ -2,38 +2,37 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Upload, Eye, Trash2, FileText, Loader2, CalendarClock } from "lucide-react";
+import { Upload, Eye, Trash2, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CanAccess } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/services/api/client";
-import { formatDateTime, formatDate } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 
-interface ClientDocumentCardProps {
+interface BellaviuDocumentFieldProps {
   label: string;
   fileName?: string | null;
   uploadedAt?: string | null;
   uploaderName?: string | null;
   signedUrl?: string | null;
-  /** Optional passport validity dates — only shown for passport documents. */
-  passportStartDate?: string | null;
-  passportEndDate?: string | null;
   onUpload: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
 }
 
 const MAX_PDF_MB = 5;
 
-export function ClientDocumentCard({
+/**
+ * Reusable PDF upload/replace/remove card for Bellaviu client documents.
+ * The upload/remove buttons are gated by the bellaviu_client_data upload_documents action.
+ */
+export function BellaviuDocumentField({
   label,
   fileName,
   uploadedAt,
   uploaderName,
   signedUrl,
-  passportStartDate,
-  passportEndDate,
   onUpload,
   onDelete,
-}: ClientDocumentCardProps) {
+}: BellaviuDocumentFieldProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -58,7 +57,6 @@ export function ClientDocumentCard({
       toast.error(getErrorMessage(err));
     } finally {
       setUploading(false);
-      // Reset so re-selecting the same file fires onChange again
       if (fileRef.current) fileRef.current.value = "";
     }
   }
@@ -93,22 +91,6 @@ export function ClientDocumentCard({
               {uploaderName ? ` by ${uploaderName}` : ""}
             </p>
           )}
-          {(passportStartDate || passportEndDate) && (
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-600">
-              {passportStartDate && (
-                <span className="inline-flex items-center gap-1">
-                  <CalendarClock className="h-3 w-3 text-slate-400" />
-                  Start: {formatDate(passportStartDate)}
-                </span>
-              )}
-              {passportEndDate && (
-                <span className="inline-flex items-center gap-1">
-                  <CalendarClock className="h-3 w-3 text-slate-400" />
-                  Expiry: {formatDate(passportEndDate)}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       ) : (
         <p className="text-sm text-neutral-400 italic">No document uploaded</p>
@@ -126,7 +108,7 @@ export function ClientDocumentCard({
           </a>
         )}
 
-        <CanAccess module="client_details" page="all_clients" action="upload_documents">
+        <CanAccess module="bellaviu_client_data" page="all_bellaviu_clients" action="upload_documents">
           <>
             <Button
               type="button"
@@ -160,7 +142,6 @@ export function ClientDocumentCard({
         </CanAccess>
       </div>
 
-      {/* Hidden file input — PDF only, max 5 MB */}
       <input
         ref={fileRef}
         type="file"

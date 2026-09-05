@@ -36,13 +36,16 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
-import { useOwner, useOwnerManualProperties, useOwnerPropertyMutations } from "@/hooks/useOwners";
+import { useOwner, useOwnerManualProperties, useOwnerPropertyMutations, useOwnerUtilityMutations, useOwnerGenericDocumentMutations } from "@/hooks/useOwners";
 import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { formatCurrency, displayValue } from "@/lib/utils";
 import { OwnerPropertyForm } from "@/components/forms/OwnerPropertyForm";
 import { ManualPropertySection } from "@/components/owners/ManualPropertySection";
 import { OwnerDocumentSection } from "@/components/owners/OwnerDocumentSection";
+import { OwnerUtilitySection } from "@/components/owners/OwnerUtilitySection";
+import { GenericDocumentSection } from "@/components/shared/GenericDocumentSection";
+import { ownerDocumentsService } from "@/services/owners/ownerExtras.service";
 import {
   LISTING_STATUS_LABELS,
   LISTING_STATUS_COLORS,
@@ -99,6 +102,8 @@ function OwnerDetailContent() {
   const { data: owner, isLoading } = useOwner(params.id);
   const { createProperty, updateProperty, removeProperty } =
     useOwnerPropertyMutations();
+  const utilityMutations = useOwnerUtilityMutations(params.id);
+  const documentMutations = useOwnerGenericDocumentMutations(params.id);
   const isMaster = useOwnerTenantFullAccess();
   // Pre-fetch manual properties count for the subtitle (shared cache with ManualPropertySection)
   const { data: manualPropsData } = useOwnerManualProperties(params.id);
@@ -321,6 +326,51 @@ function OwnerDetailContent() {
           </CardBody>
         </Card>
       )}
+
+      {/* ── Utility / Account Details ─────────────────────────────── */}
+      <Card>
+        <CardHeader
+          title={
+            <span className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-slate-400" />
+              Utilities / Account Details
+            </span>
+          }
+          subtitle="DEWA, Cooler, Gas, Lock No., and other account details"
+        />
+        <CardBody>
+          <OwnerUtilitySection
+            utilities={owner.utilityAccounts ?? []}
+            onCreate={(body) => utilityMutations.create.mutateAsync(body)}
+            onUpdate={(utilityId, body) => utilityMutations.update.mutateAsync({ utilityId, body })}
+            onRemove={(utilityId) => utilityMutations.remove.mutateAsync(utilityId)}
+          />
+        </CardBody>
+      </Card>
+
+      {/* ── Generic Documents (Ejari, etc.) ───────────────────────── */}
+      <Card>
+        <CardHeader
+          title={
+            <span className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-slate-400" />
+              Documents
+            </span>
+          }
+          subtitle="Ejari, agreements, NOCs, and other uploaded documents"
+        />
+        <CardBody>
+          <GenericDocumentSection
+            documents={owner.documents ?? []}
+            onUpload={(file, type, label) => documentMutations.upload.mutateAsync({ file, type, label })}
+            onDelete={(docId) => documentMutations.remove.mutateAsync(docId)}
+            fileUrl={(docId) => ownerDocumentsService.fileUrl(owner.id, docId)}
+            permissionModule="owners"
+            permissionPage="all_owners"
+            permissionAction={isMaster ? "edit" : "view"}
+          />
+        </CardBody>
+      </Card>
 
       {/* ── PF/Pocket-linked Properties ────────────────────────────── */}
       <div>

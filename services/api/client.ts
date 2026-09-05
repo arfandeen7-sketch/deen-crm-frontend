@@ -118,7 +118,8 @@ api.interceptors.response.use(
         pathname.startsWith("/activity") ||
         pathname.startsWith("/properties") ||
         pathname.startsWith("/property-submissions") ||
-        pathname.startsWith("/owners");
+        pathname.startsWith("/owners") ||
+        pathname.startsWith("/bellaviu-clients");
 
       if (isProtectedRoute) {
         window.location.href = "/dashboard/overview";

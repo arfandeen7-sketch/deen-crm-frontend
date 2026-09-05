@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,13 +14,18 @@ import {
   ExternalLink,
   DollarSign,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { AccessGuard } from "@/components/shared/Guards";
 import { ClientDocumentCard } from "@/components/clients/ClientDocumentCard";
-import { useClientByLeadId, useClientMutations } from "@/hooks/useClients";
+import { GenericDocumentSection } from "@/components/shared/GenericDocumentSection";
+import { PassportDateModal, type PassportDateValues } from "@/components/shared/PassportDateModal";
+import { useClientByLeadId, useClientMutations, useClientDocumentMutations } from "@/hooks/useClients";
+import { clientsService } from "@/services/clients/clients.service";
+import { getErrorMessage } from "@/services/api/client";
 import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
 function InfoRow({
@@ -55,6 +61,35 @@ function ClientDetailPageContent() {
   const { data: client, isLoading, isError, refetch } = useClientByLeadId(params.leadId);
   const { uploadPassport, deletePassport, uploadEmiratesId, deleteEmiratesId } =
     useClientMutations(params.leadId);
+  const documentMutations = useClientDocumentMutations(params.leadId);
+  const [passportModalOpen, setPassportModalOpen] = useState(false);
+  const pendingPassportFile = useRef<File | null>(null);
+
+  async function onPassportFilePicked(file: File) {
+    pendingPassportFile.current = file;
+    setPassportModalOpen(true);
+  }
+
+  async function onPassportDatesConfirm(values: PassportDateValues) {
+    const file = pendingPassportFile.current;
+    if (!file) {
+      setPassportModalOpen(false);
+      return;
+    }
+    try {
+      await uploadPassport.mutateAsync({
+        file,
+        passportStartDate: values.passportStartDate,
+        passportEndDate: values.passportEndDate,
+      });
+      toast.success("Passport uploaded successfully.");
+      setPassportModalOpen(false);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      pendingPassportFile.current = null;
+    }
+  }
 
   if (isLoading) return <LoadingState />;
   if (isError) return <ErrorState onRetry={refetch} />;
@@ -141,7 +176,9 @@ function ClientDetailPageContent() {
                 uploadedAt={client.passportUploadedAt}
                 uploaderName={client.passportUploader?.fullName}
                 signedUrl={client.passportUrl}
-                onUpload={async (file) => { await uploadPassport.mutateAsync(file); }}
+                passportStartDate={client.passportStartDate}
+                passportEndDate={client.passportEndDate}
+                onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
               />
               <ClientDocumentCard
@@ -152,6 +189,25 @@ function ClientDetailPageContent() {
                 signedUrl={client.emiratesIdUrl}
                 onUpload={async (file) => { await uploadEmiratesId.mutateAsync(file); }}
                 onDelete={async () => { await deleteEmiratesId.mutateAsync(); }}
+              />
+            </CardBody>
+          </Card>
+
+          {/* Generic Documents (Ejari, etc.) */}
+          <Card>
+            <CardHeader
+              title="Documents"
+              subtitle="Ejari, agreements, NOCs, and other uploaded documents"
+            />
+            <CardBody>
+              <GenericDocumentSection
+                documents={client.documents ?? []}
+                onUpload={(file, type, label) => documentMutations.upload.mutateAsync({ file, type, label })}
+                onDelete={(docId) => documentMutations.remove.mutateAsync(docId)}
+                fileUrl={(docId) => clientsService.documentFileUrl(params.leadId, docId)}
+                permissionModule="client_details"
+                permissionPage="all_clients"
+                permissionAction="upload_documents"
               />
             </CardBody>
           </Card>
@@ -218,6 +274,18 @@ function ClientDetailPageContent() {
           </Card>
         </div>
       </div>
+
+      <PassportDateModal
+        open={passportModalOpen}
+        onClose={() => { setPassportModalOpen(false); pendingPassportFile.current = null; }}
+        onConfirm={onPassportDatesConfirm}
+        loading={uploadPassport.isPending}
+        entityLabel="this buyer"
+        initial={{
+          passportStartDate: client?.passportStartDate ?? undefined,
+          passportEndDate: client?.passportEndDate ?? undefined,
+        }}
+      />
     </div>
   );
 }

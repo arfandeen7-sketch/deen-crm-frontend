@@ -45,7 +45,11 @@ export function useClientMutations(leadId: string) {
   });
 
   const uploadPassport = useMutation({
-    mutationFn: (file: File) => clientsService.uploadPassport(leadId, file),
+    mutationFn: (params: { file: File; passportStartDate?: string; passportEndDate?: string }) =>
+      clientsService.uploadPassport(leadId, params.file, {
+        passportStartDate: params.passportStartDate,
+        passportEndDate: params.passportEndDate,
+      }),
     onSuccess: invalidate,
   });
 
@@ -65,4 +69,36 @@ export function useClientMutations(leadId: string) {
   });
 
   return { upsert, uploadPassport, deletePassport, uploadEmiratesId, deleteEmiratesId };
+}
+
+// ── Client Generic Document Hooks ─────────────────────────────────────────────
+
+export function useClientDocuments(leadId: string | undefined) {
+  return useQuery({
+    queryKey: [KEY, "documents", leadId],
+    queryFn: () => clientsService.listDocuments(leadId as string),
+    enabled: !!leadId,
+    retry: retrySkipAuth,
+  });
+}
+
+export function useClientDocumentMutations(leadId: string) {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY, "documents", leadId] });
+    qc.invalidateQueries({ queryKey: [KEY, "by-lead", leadId] });
+  };
+
+  const upload = useMutation({
+    mutationFn: ({ file, type, label }: { file: File; type: string; label?: string }) =>
+      clientsService.uploadDocument(leadId, file, { type, label }),
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: (docId: string) => clientsService.removeDocument(leadId, docId),
+    onSuccess: invalidate,
+  });
+
+  return { upload, remove };
 }

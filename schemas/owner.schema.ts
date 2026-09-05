@@ -32,6 +32,9 @@ export const ownerSchema = z.object({
   // Identity documents
   passportNumber: optionalString,
   emiratesIdNumber: optionalString,
+  // Passport validity period
+  passportStartDate: optionalString,
+  passportEndDate: optionalString,
 });
 
 export type OwnerFormValues = z.input<typeof ownerSchema>;
@@ -58,7 +61,7 @@ export const ownerPropertySchema = z.object({
   floorNumber: optionalString,
   parkingSlots: optionalString,
   listingStatus: z
-    .enum(["available", "listed", "sold", "rented", "off_market"])
+    .enum(["available", "listed", "sold", "rented", "off_market", "off_plan"])
     .optional(),
   notes: optionalString,
 });
@@ -72,6 +75,7 @@ export const LISTING_STATUS_LABELS: Record<string, string> = {
   sold: "Sold",
   rented: "Rented",
   off_market: "Off Market",
+  off_plan: "Off-plan",
 };
 
 export const LISTING_STATUS_COLORS: Record<string, string> = {
@@ -80,12 +84,14 @@ export const LISTING_STATUS_COLORS: Record<string, string> = {
   sold: "bg-rose-100 text-rose-700",
   rented: "bg-amber-100 text-amber-700",
   off_market: "bg-slate-100 text-slate-600",
+  off_plan: "bg-purple-100 text-purple-700",
 };
 
 // ── Manual Property Schema ────────────────────────────────────────────────────
 
 export const manualPropertySchema = z.object({
   buildingName: optionalString,
+  villaName: optionalString,
   unitNumber: optionalString,
   unitSize: optionalString,
   projectName: optionalString,
@@ -102,7 +108,7 @@ export const manualPropertySchema = z.object({
   price: optionalString,
   reference: optionalString,
   listingStatus: z
-    .enum(["available", "listed", "sold", "rented", "off_market"])
+    .enum(["available", "listed", "sold", "rented", "off_market", "off_plan"])
     .optional(),
   notes: optionalString,
   remarks: optionalString,

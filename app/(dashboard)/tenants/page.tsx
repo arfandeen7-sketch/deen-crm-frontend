@@ -5,18 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  UserCircle2,
-  Phone,
-  Mail,
   ExternalLink,
   FileText,
   CreditCard,
   CalendarClock,
-  Home,
   Upload,
   Trash2,
-  Building2,
-  User,
   AlertCircle,
   CheckCircle2,
   Pencil,
@@ -32,11 +26,16 @@ import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useTenantsList } from "@/hooks/useTenants";
 import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { tenantsService } from "@/services/tenants/tenants.service";
+import type { TenantQueryParams } from "@/services/tenants/tenants.service";
 import { getErrorMessage } from "@/services/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { displayValue, formatDate, formatCurrency } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { TenantEditForm } from "@/components/tenants/TenantEditForm";
+import {
+  TenantFiltersBar,
+  type TenantFilters,
+} from "@/components/tenants/TenantFiltersBar";
 import type { Tenant, TenantBulkDeletePreview } from "@/types";
 
 /** Whole-day difference between an end date and now (negative if already expired). */
@@ -81,21 +80,32 @@ function RemainingDaysBadge({ days }: { days: number | null }) {
   );
 }
 
-/** Resolve the property label from either OwnerProperty or OwnerManualProperty. */
-function propertyLabel(t: Tenant): string | null {
-  if (t.ownerManualProperty) {
-    const mp = t.ownerManualProperty;
-    const parts = [mp.buildingName, mp.unitNumber && `Unit ${mp.unitNumber}`, mp.community].filter(Boolean);
-    return parts.length > 0 ? parts.join(", ") : null;
-  }
-  if (t.ownerProperty) {
-    const op = t.ownerProperty;
-    const parts = [op.building ?? op.projectName, op.unitNumber && `Unit ${op.unitNumber}`, op.community].filter(Boolean);
-    return parts.length > 0 ? parts.join(", ") : null;
-  }
-  // Fallback to lead projectName
+/** Resolve the property building/project label from either property relation. */
+function buildingLabel(t: Tenant): string | null {
+  if (t.ownerManualProperty) return t.ownerManualProperty.buildingName ?? null;
+  if (t.ownerProperty) return t.ownerProperty.building ?? t.ownerProperty.projectName ?? null;
   return t.lead?.projectName ?? null;
 }
+/** Resolve the unit number from either property relation. */
+function unitLabel(t: Tenant): string | null {
+  if (t.ownerManualProperty) return t.ownerManualProperty.unitNumber ?? null;
+  if (t.ownerProperty) return t.ownerProperty.unitNumber ?? null;
+  return null;
+}
+/** Resolve the community from either property relation. */
+function communityLabel(t: Tenant): string | null {
+  if (t.ownerManualProperty) return t.ownerManualProperty.community ?? null;
+  if (t.ownerProperty) return t.ownerProperty.community ?? null;
+  return null;
+}
+/** Resolve the emirate from either property relation. */
+function emirateLabel(t: Tenant): string | null {
+  if (t.ownerManualProperty) return t.ownerManualProperty.emirate ?? null;
+  if (t.ownerProperty) return t.ownerProperty.emirate ?? null;
+  return null;
+}
+
+const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
 
 export default function TenantsPage() {
   return (
@@ -109,12 +119,16 @@ function TenantsPageContent() {
   const router = useRouter();
   const isMaster = useOwnerTenantFullAccess();
   const qc = useQueryClient();
-  const [params, setParams] = useState({
+  const [params, setParams] = useState<TenantQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
     search: "",
   });
-  const { data, isLoading, isError, refetch } = useTenantsList(params);
+  const [filters, setFilters] = useState<TenantFilters>({});
+
+  // Merge filters into params for the query
+  const queryParams: TenantQueryParams = { ...params, ...filters };
+  const { data, isLoading, isError, refetch } = useTenantsList(queryParams);
   const rows = data?.data ?? [];
 
   // ── Bulk delete state ──────────────────────────────────────────────────────
@@ -124,6 +138,18 @@ function TenantsPageContent() {
 
   // ── Edit modal state ───────────────────────────────────────────────────────
   const [editTenant, setEditTenant] = useState<Tenant | null>(null);
+
+  function setFilter<K extends keyof TenantFilters>(
+    key: K,
+    value: TenantFilters[K] | undefined,
+  ) {
+    setFilters((f) => ({ ...f, [key]: value }));
+    setParams((p) => ({ ...p, page: 1 }));
+  }
+  function resetFilters() {
+    setFilters({});
+    setParams((p) => ({ ...p, page: 1 }));
+  }
 
   async function handleDeletePreview() {
     setDeleteLoading(true);
@@ -153,116 +179,96 @@ function TenantsPageContent() {
     }
   }
 
+  // ── Columns ────────────────────────────────────────────────────────────────
+  // Each important field gets its own column, grouped logically:
+  //   Tenant Info → Property Info → Lease/Renewal → Payment/Cheque → Documents → Audit → Actions
   const columns: Column<Tenant>[] = [
+    // ── Tenant Information ───────────────────────────────────────────────────
     {
-      key: "tenant",
+      key: "fullName",
       header: "Tenant Name",
       render: (t) => (
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-            <UserCircle2 className="h-4 w-4" />
-          </div>
-          <div>
-            <p className="font-medium text-slate-900">{displayValue(t.fullName)}</p>
-            <p className="text-xs text-slate-500">
-              {displayValue(t.tenantNationality, "—")}
-            </p>
-          </div>
-        </div>
+        <span className="font-medium text-slate-900">{displayValue(t.fullName)}</span>
       ),
     },
     {
-      key: "contact",
-      header: "Email / Phone",
-      render: (t) => (
-        <div className="space-y-0.5">
-          {t.email && (
-            <span className="flex items-center gap-1.5 text-sm text-slate-700">
-              <Mail className="h-3.5 w-3.5 text-slate-400" /> {t.email}
-            </span>
-          )}
-          {t.mobileNumber && (
-            <span className="flex items-center gap-1.5 text-sm text-slate-500">
-              <Phone className="h-3.5 w-3.5 text-slate-400" /> {t.mobileNumber}
-            </span>
-          )}
-        </div>
-      ),
+      key: "mobileNumber",
+      header: "Phone",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.mobileNumber)}</span>,
     },
+    {
+      key: "email",
+      header: "Email",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.email)}</span>,
+    },
+    {
+      key: "tenantNationality",
+      header: "Nationality",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.tenantNationality)}</span>,
+    },
+    {
+      key: "dateOfBirth",
+      header: "Date of Birth",
+      render: (t) => <span className="text-sm text-slate-700">{formatDate(t.dateOfBirth)}</span>,
+    },
+    {
+      key: "passportNumber",
+      header: "Passport No.",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.passportNumber)}</span>,
+    },
+    {
+      key: "emiratesIdNumber",
+      header: "Emirates ID",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.emiratesIdNumber)}</span>,
+    },
+
+    // ── Property Information ─────────────────────────────────────────────────
     {
       key: "owner",
       header: "Owner",
-      render: (t) => (
-        <div className="space-y-0.5">
-          {t.owner ? (
-            <>
-              <Link
-                href={`/owners/${t.owner.id}`}
-                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <User className="h-3.5 w-3.5 text-slate-400" /> {t.owner.fullName}
-              </Link>
-              {t.owner.mobileNumber && (
-                <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <Phone className="h-3 w-3 text-slate-400" /> {t.owner.mobileNumber}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-sm text-slate-400">—</span>
-          )}
-        </div>
-      ),
+      render: (t) =>
+        t.owner ? (
+          <Link
+            href={`/owners/${t.owner.id}`}
+            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {t.owner.fullName}
+          </Link>
+        ) : (
+          <Dash />
+        ),
     },
     {
-      key: "property",
-      header: "Property",
-      render: (t) => {
-        const label = propertyLabel(t);
-        return (
-          <span className="flex items-center gap-1.5 text-sm text-slate-700">
-            <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-            <span className="truncate">{displayValue(label)}</span>
-          </span>
-        );
-      },
+      key: "ownerPhone",
+      header: "Owner Phone",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.owner?.mobileNumber)}</span>,
     },
     {
-      key: "rent",
-      header: "Annual Rent",
-      render: (t) => (
-        <div className="space-y-0.5">
-          {t.annualRent != null ? (
-            <span className="text-sm font-semibold text-slate-900">
-              {formatCurrency(Number(t.annualRent))}
-            </span>
-          ) : (
-            <span className="text-sm text-slate-400">—</span>
-          )}
-          {t.modeOfPayment && (
-            <span className="block text-xs text-slate-500">{t.modeOfPayment}</span>
-          )}
-        </div>
-      ),
+      key: "building",
+      header: "Building / Project",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(buildingLabel(t))}</span>,
     },
     {
-      key: "ids",
-      header: "Passport / EID",
-      render: (t) => (
-        <div className="space-y-0.5">
-          <span className="flex items-center gap-1.5 text-sm text-slate-700">
-            <FileText className="h-3.5 w-3.5 text-slate-400" /> {displayValue(t.passportNumber)}
-          </span>
-          <span className="flex items-center gap-1.5 text-sm text-slate-500">
-            <CreditCard className="h-3.5 w-3.5 text-slate-400" /> {displayValue(t.emiratesIdNumber)}
-          </span>
-        </div>
-      ),
+      key: "unitNumber",
+      header: "Unit No.",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(unitLabel(t))}</span>,
     },
     {
-      key: "agreementStart",
-      header: "Start Date",
+      key: "community",
+      header: "Community",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(communityLabel(t))}</span>,
+    },
+    {
+      key: "emirate",
+      header: "Emirate",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(emirateLabel(t))}</span>,
+    },
+
+    // ── Lease / Renewal Information ──────────────────────────────────────────
+    {
+      key: "agreementStartDate",
+      header: "Agreement Start",
       render: (t) => (
         <span className="whitespace-nowrap text-sm text-slate-700">
           {formatDate(t.agreementStartDate)}
@@ -270,11 +276,20 @@ function TenantsPageContent() {
       ),
     },
     {
-      key: "agreementEnd",
-      header: "End Date",
+      key: "agreementEndDate",
+      header: "Agreement End",
       render: (t) => (
         <span className="whitespace-nowrap text-sm text-slate-700">
           {formatDate(t.agreementEndDate)}
+        </span>
+      ),
+    },
+    {
+      key: "dateOfNotice",
+      header: "Date of Notice",
+      render: (t) => (
+        <span className="whitespace-nowrap text-sm text-slate-700">
+          {formatDate(t.dateOfNotice)}
         </span>
       ),
     },
@@ -283,15 +298,148 @@ function TenantsPageContent() {
       header: "Remaining",
       render: (t) => <RemainingDaysBadge days={remainingDays(t.agreementEndDate)} />,
     },
+
+    // ── Payment / Cheque Information ─────────────────────────────────────────
     {
-      key: "cheques",
-      header: "Cheques",
+      key: "annualRent",
+      header: "Annual Rent",
       render: (t) => (
-        <span className="text-sm text-slate-700">
-          {t.cheques && t.cheques.length > 0 ? `${t.cheques.length} cheques` : "—"}
+        <span className="text-sm font-semibold text-slate-900">
+          {t.annualRent != null ? formatCurrency(Number(t.annualRent)) : <Dash />}
         </span>
       ),
     },
+    {
+      key: "securityDeposit",
+      header: "Security Deposit",
+      render: (t) => (
+        <span className="text-sm text-slate-700">
+          {t.securityDeposit != null ? formatCurrency(Number(t.securityDeposit)) : <Dash />}
+        </span>
+      ),
+    },
+    {
+      key: "adminFee",
+      header: "Admin Fee",
+      render: (t) => (
+        <span className="text-sm text-slate-700">
+          {t.adminFee != null ? formatCurrency(Number(t.adminFee)) : <Dash />}
+        </span>
+      ),
+    },
+    {
+      key: "commission",
+      header: "Commission",
+      render: (t) => (
+        <span className="text-sm text-slate-700">
+          {t.commission != null ? formatCurrency(Number(t.commission)) : <Dash />}
+        </span>
+      ),
+    },
+    {
+      key: "currency",
+      header: "Currency",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.currency)}</span>,
+    },
+    {
+      key: "modeOfPayment",
+      header: "Mode of Payment",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.modeOfPayment)}</span>,
+    },
+    {
+      key: "numberOfCheques",
+      header: "No. of Cheques",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.numberOfCheques)}</span>,
+    },
+    {
+      key: "cheques",
+      header: "Cheques Recorded",
+      render: (t) => (
+        <span className="text-sm text-slate-700">
+          {t.cheques && t.cheques.length > 0 ? `${t.cheques.length} cheques` : <Dash />}
+        </span>
+      ),
+    },
+
+    // ── Documents ────────────────────────────────────────────────────────────
+    {
+      key: "passportPdf",
+      header: "Passport PDF",
+      render: (t) =>
+        t.passportFileName && t.passportUrl ? (
+          <a
+            href={t.passportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline"
+            title={t.passportFileName}
+          >
+            <FileText className="h-3.5 w-3.5" /> View
+          </a>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "emiratesIdPdf",
+      header: "Emirates ID PDF",
+      render: (t) =>
+        t.emiratesIdFileName && t.emiratesIdUrl ? (
+          <a
+            href={t.emiratesIdUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline"
+            title={t.emiratesIdFileName}
+          >
+            <CreditCard className="h-3.5 w-3.5" /> View
+          </a>
+        ) : (
+          <Dash />
+        ),
+    },
+    {
+      key: "agreementPdf",
+      header: "Agreement PDF",
+      render: (t) =>
+        t.agreementFileName && t.agreementUrl ? (
+          <a
+            href={t.agreementUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline"
+            title={t.agreementFileName}
+          >
+            <FileText className="h-3.5 w-3.5" /> View
+          </a>
+        ) : (
+          <Dash />
+        ),
+    },
+
+    // ── Audit ────────────────────────────────────────────────────────────────
+    {
+      key: "creator",
+      header: "Created By",
+      render: (t) => <span className="text-sm text-slate-700">{displayValue(t.creator?.fullName)}</span>,
+    },
+    {
+      key: "createdAt",
+      header: "Created At",
+      render: (t) => (
+        <span className="whitespace-nowrap text-xs text-slate-500">{formatDate(t.createdAt)}</span>
+      ),
+    },
+    {
+      key: "externalZohoId",
+      header: "Zoho ID",
+      render: (t) => <span className="text-xs text-slate-500">{displayValue(t.externalZohoId)}</span>,
+    },
+
+    // ── Actions ──────────────────────────────────────────────────────────────
     {
       key: "actions",
       header: "",
@@ -358,13 +506,14 @@ function TenantsPageContent() {
         }
       />
 
-      <Card className="flex flex-wrap items-center gap-2 p-4">
+      <Card className="space-y-3 p-4">
         <SearchInput
-          value={params.search}
+          value={params.search ?? ""}
           onChange={(v) => setParams((p) => ({ ...p, search: v, page: 1 }))}
           placeholder="Search by name, mobile, email, passport, Emirates ID…"
           className="w-full sm:w-96"
         />
+        <TenantFiltersBar filters={filters} onChange={setFilter} onReset={resetFilters} />
       </Card>
 
       <DataTable
