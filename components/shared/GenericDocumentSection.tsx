@@ -29,8 +29,8 @@ interface Props {
   documents: GenericDocument[];
   onUpload: (file: File, type: string, label?: string) => Promise<unknown>;
   onDelete: (docId: string) => Promise<unknown>;
-  /** Returns the authenticated download URL for a document. */
-  fileUrl: (docId: string) => string;
+  /** Optional fallback URL builder for legacy records without signed URLs. */
+  fileUrl?: (docId: string) => string;
   /** Permission gating for the upload/delete controls. */
   permissionModule: string;
   permissionPage: string;
@@ -62,7 +62,7 @@ export function GenericDocumentSection({
             <DocumentRow
               key={doc.id}
               doc={doc}
-              viewUrl={fileUrl(doc.id)}
+              viewUrl={doc.fileUrl ?? fileUrl?.(doc.id) ?? null}
               permissionModule={permissionModule}
               permissionPage={permissionPage}
               permissionAction={permissionAction}
@@ -118,7 +118,7 @@ function DocumentRow({
   onDelete,
 }: {
   doc: GenericDocument;
-  viewUrl: string;
+  viewUrl: string | null;
   permissionModule: string;
   permissionPage: string;
   permissionAction: string;
@@ -146,14 +146,16 @@ function DocumentRow({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <a
-          href={viewUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-        >
-          <ExternalLink className="h-3.5 w-3.5" /> View
-        </a>
+        {viewUrl && (
+          <a
+            href={viewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> View
+          </a>
+        )}
         <CanAccess module={permissionModule} page={permissionPage} action={permissionAction}>
           <button
             type="button"

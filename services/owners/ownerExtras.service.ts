@@ -1,4 +1,4 @@
-import { api, getData, deleteData } from "@/services/api/client";
+import { api, getData, deleteData, withAccessToken } from "@/services/api/client";
 import type { OwnerUtilityAccount, GenericDocument } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -64,6 +64,6 @@ export const ownerDocumentsService = {
 
   /** Authenticated URL to download/view a generic owner document. */
   fileUrl(ownerId: string, docId: string): string {
-    return `${BASE_URL}/api/owners/${ownerId}/docs/${docId}/file`;
+    return withAccessToken(`${BASE_URL}/api/owners/${ownerId}/docs/${docId}/file`);
   },
 };

@@ -14,7 +14,7 @@ const MAX_MB = 10;
 interface Props {
   leadId: string;
   cheque: TenantCheque;
-  fileUrl: (leadId: string, chequeId: string) => string;
+  fileUrl?: (leadId: string, chequeId: string) => string;
   onUpload: (chequeId: string, file: File) => Promise<unknown>;
   onDelete: (chequeId: string) => Promise<unknown>;
 }
@@ -24,6 +24,7 @@ export function ChequeFileCell({ leadId, cheque, fileUrl, onUpload, onDelete }: 
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const hasFile = !!cheque.fileName;
+  const resolvedFileUrl = cheque.fileUrl ?? fileUrl?.(leadId, cheque.id) ?? null;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -61,15 +62,21 @@ export function ChequeFileCell({ leadId, cheque, fileUrl, onUpload, onDelete }: 
       {hasFile ? (
         <div className="flex items-center gap-2">
           <FileText className="h-3.5 w-3.5 shrink-0 text-neutral-500" />
-          <a
-            href={fileUrl(leadId, cheque.id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="truncate text-xs font-medium text-blue-600 hover:underline"
-            title={cheque.fileName ?? undefined}
-          >
-            {cheque.fileName}
-          </a>
+          {resolvedFileUrl ? (
+            <a
+              href={resolvedFileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="truncate text-xs font-medium text-blue-600 hover:underline"
+              title={cheque.fileName ?? undefined}
+            >
+              {cheque.fileName}
+            </a>
+          ) : (
+            <span className="truncate text-xs font-medium text-neutral-600" title={cheque.fileName ?? undefined}>
+              {cheque.fileName}
+            </span>
+          )}
         </div>
       ) : (
         <span className="text-xs text-neutral-400 italic">No file</span>
@@ -101,15 +108,17 @@ export function ChequeFileCell({ leadId, cheque, fileUrl, onUpload, onDelete }: 
 
           {hasFile && (
             <>
-              <a
-                href={fileUrl(leadId, cheque.id)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-                title="View"
-              >
-                <Eye className="h-3 w-3" /> View
-              </a>
+              {resolvedFileUrl && (
+                <a
+                  href={resolvedFileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                  title="View"
+                >
+                  <Eye className="h-3 w-3" /> View
+                </a>
+              )}
               <button
                 type="button"
                 onClick={handleDelete}

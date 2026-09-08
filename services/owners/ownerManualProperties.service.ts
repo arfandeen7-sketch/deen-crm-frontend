@@ -1,4 +1,4 @@
-import { api, getData, deleteData } from "@/services/api/client";
+import { api, getData, deleteData, withAccessToken } from "@/services/api/client";
 import type {
   ManualProperty,
   ManualPropertyInput,
@@ -109,12 +109,12 @@ export const ownerManualPropertiesService = {
 
   /** Returns the authenticated URL for the owner's passport document. */
   passportUrl(ownerId: string): string {
-    return `${BASE_URL}/api/owners/${ownerId}/documents/passport`;
+    return withAccessToken(`${BASE_URL}/api/owners/${ownerId}/documents/passport`);
   },
 
   /** Returns the authenticated URL for the owner's Emirates ID document. */
   emiratesIdUrl(ownerId: string): string {
-    return `${BASE_URL}/api/owners/${ownerId}/documents/emirates-id`;
+    return withAccessToken(`${BASE_URL}/api/owners/${ownerId}/documents/emirates-id`);
   },
 
   // ── Import ───────────────────────────────────────────────────────────────────

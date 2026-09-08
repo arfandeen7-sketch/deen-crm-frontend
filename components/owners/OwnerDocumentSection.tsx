@@ -100,7 +100,7 @@ export function OwnerDocumentSection({ owner }: Props) {
         uploadedAt={owner.passportUploadedAt}
         passportStartDate={owner.passportStartDate}
         passportEndDate={owner.passportEndDate}
-        viewUrl={owner.passportFileName ? ownerManualPropertiesService.passportUrl(owner.id) : null}
+        viewUrl={owner.passportUrl ?? (owner.passportFileName ? ownerManualPropertiesService.passportUrl(owner.id) : null)}
         inputRef={passportRef}
         onUploadClick={() => passportRef.current?.click()}
         onUploadChange={handlePassportUpload}
@@ -115,7 +115,7 @@ export function OwnerDocumentSection({ owner }: Props) {
         number={owner.emiratesIdNumber}
         fileName={owner.emiratesIdFileName}
         uploadedAt={owner.emiratesIdUploadedAt}
-        viewUrl={owner.emiratesIdFileName ? ownerManualPropertiesService.emiratesIdUrl(owner.id) : null}
+        viewUrl={owner.emiratesIdUrl ?? (owner.emiratesIdFileName ? ownerManualPropertiesService.emiratesIdUrl(owner.id) : null)}
         inputRef={eidRef}
         onUploadClick={() => eidRef.current?.click()}
         onUploadChange={handleEidUpload}

@@ -183,3 +183,20 @@ export async function deleteData<T>(
   const res = await api.delete<{ data: T }>(url, config);
   return res.data.data;
 }
+
+/**
+ * Appends the current bearer token as a query param for browser-opened links
+ * (e.g. `<a target="_blank">`) where custom Authorization headers are not
+ * available. Used only for authenticated file-serving endpoints.
+ */
+export function withAccessToken(url: string): string {
+  const token = getStoredToken();
+  if (!token) return url;
+  try {
+    const parsed = new URL(url, BASE_URL);
+    parsed.searchParams.set('access_token', token);
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}

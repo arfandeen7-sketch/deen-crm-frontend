@@ -371,6 +371,7 @@ export interface TenantCheque {
   uploadedAt?: string | null;
   uploadedBy?: string | null;
   fileUploader?: Pick<User, "id" | "fullName"> | null;
+  fileUrl?: string | null;
 }
 
 // ── Generic uploaded documents (Owner / Buyer / Tenant) ───────────────────────
@@ -384,6 +385,7 @@ export interface GenericDocument {
   uploadedAt: string;
   uploadedBy: string;
   uploader?: Pick<User, "id" | "fullName"> | null;
+  fileUrl?: string | null;
 }
 
 // ── Owner Utility / Account Details ──────────────────────────────────────────
@@ -1251,6 +1253,7 @@ export interface Owner {
   passportMimeType?: string | null;
   passportUploadedAt?: string | null;
   passportUploadedBy?: string | null;
+  passportUrl?: string | null;
   // Passport validity period (drives expiry notifications)
   passportStartDate?: string | null;
   passportEndDate?: string | null;
@@ -1259,6 +1262,7 @@ export interface Owner {
   emiratesIdMimeType?: string | null;
   emiratesIdUploadedAt?: string | null;
   emiratesIdUploadedBy?: string | null;
+  emiratesIdUrl?: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;

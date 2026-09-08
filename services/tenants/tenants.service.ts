@@ -1,4 +1,4 @@
-import { api, getData, putData, patchData, deleteData } from "@/services/api/client";
+import { api, getData, putData, patchData, deleteData, withAccessToken } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
   Tenant,
@@ -208,7 +208,7 @@ export const tenantsService = {
 
   /** Authenticated URL to download/view a generic tenant document. */
   documentFileUrl(leadId: string, docId: string): string {
-    return `${BASE_URL}/api/tenants/${leadId}/docs/${docId}/file`;
+    return withAccessToken(`${BASE_URL}/api/tenants/${leadId}/docs/${docId}/file`);
   },
 
   // ── Per-cheque file upload ──────────────────────────────────────────────────
@@ -233,7 +233,7 @@ export const tenantsService = {
 
   /** Authenticated URL to download/view a cheque file. */
   chequeFileUrl(leadId: string, chequeId: string): string {
-    return `${BASE_URL}/api/tenants/${leadId}/cheques/${chequeId}/file`;
+    return withAccessToken(`${BASE_URL}/api/tenants/${leadId}/cheques/${chequeId}/file`);
   },
 
   // ── Import ───────────────────────────────────────────────────────────────────
