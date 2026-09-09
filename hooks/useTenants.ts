@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { tenantsService, type TenantQueryParams, type TenantRenewBody, type TenantMovePropertyBody, type AvailableManualProperty } from "@/services/tenants/tenants.service";
+import { tenantsService, type TenantQueryParams, type TenantRenewBody, type TenantMovePropertyBody, type TenantHistoryCreateBody, type AvailableManualProperty } from "@/services/tenants/tenants.service";
 export type { AvailableManualProperty };
 import { retrySkipAuth } from "@/lib/query-gate";
 import type { TenantFormOutput, TenantFormValues } from "@/schemas/tenant.schema";
@@ -209,5 +209,11 @@ export function useTenantPropertyMutations() {
     onSuccess: invalidateAll,
   });
 
-  return { createFromProperty, endContract, renewContract, moveProperty };
+  const createHistory = useMutation({
+    mutationFn: ({ leadId, body }: { leadId: string; body: TenantHistoryCreateBody }) =>
+      tenantsService.createHistory(leadId, body),
+    onSuccess: invalidateAll,
+  });
+
+  return { createFromProperty, endContract, renewContract, moveProperty, createHistory };
 }

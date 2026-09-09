@@ -52,6 +52,23 @@ export interface TenantMovePropertyBody extends TenantRenewalFields {
   newOwnerManualPropertyId: string;
 }
 
+/** Body for POST /api/tenants/:leadId/history — manually add a previous period. */
+export interface TenantHistoryCreateBody {
+  agreementStartDate?: string;
+  agreementEndDate?: string;
+  dateOfNotice?: string;
+  propertySnapshot?: string;
+  ownerName?: string;
+  annualRent?: string;
+  securityDeposit?: string;
+  adminFee?: string;
+  commission?: string;
+  currency?: string;
+  modeOfPayment?: string;
+  numberOfCheques?: string;
+  cheques?: { chequeNumber: number; chequeDate?: string; amount?: string; status?: string }[];
+}
+
 export interface TenantQueryParams {
   page?: number;
   pageSize?: number;
@@ -87,6 +104,15 @@ export const tenantsService = {
   async getHistory(leadId: string): Promise<TenantAgreementHistory[]> {
     const res = await api.get<{ data: TenantAgreementHistory[] }>(
       `/tenants/${leadId}/history`,
+    );
+    return res.data.data;
+  },
+
+  /** POST /api/tenants/:leadId/history — manually add a previous agreement period */
+  async createHistory(leadId: string, body: TenantHistoryCreateBody): Promise<TenantAgreementHistory> {
+    const res = await api.post<{ data: TenantAgreementHistory }>(
+      `/tenants/${leadId}/history`,
+      body,
     );
     return res.data.data;
   },

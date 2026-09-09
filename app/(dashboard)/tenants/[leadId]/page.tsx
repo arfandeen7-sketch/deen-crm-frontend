@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Pencil,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -35,6 +36,7 @@ import { PassportDateModal, type PassportDateValues } from "@/components/shared/
 import { TenantEditForm } from "@/components/tenants/TenantEditForm";
 import { TenantRenewalModal } from "@/components/tenants/TenantRenewalModal";
 import { TenantHistorySection } from "@/components/tenants/TenantHistorySection";
+import { EndContractModal } from "@/components/tenants/EndContractModal";
 import { ChequeFileCell } from "@/components/tenants/ChequeFileCell";
 import { useTenantByLeadId, useTenantMutations, useTenantDocumentMutations, useTenantChequeFileMutations } from "@/hooks/useTenants";
 import { tenantsService } from "@/services/tenants/tenants.service";
@@ -91,6 +93,7 @@ function TenantDetailPageContent() {
   const chequeFileMutations = useTenantChequeFileMutations(params.leadId);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [showEndContractModal, setShowEndContractModal] = useState(false);
   const [passportModalOpen, setPassportModalOpen] = useState(false);
   const pendingPassportFile = useRef<File | null>(null);
 
@@ -165,13 +168,23 @@ function TenantDetailPageContent() {
           <div className="flex items-center gap-2">
             <CanAccess module="tenant_details" page="all_tenants" action="edit">
               {tenant.ownerManualProperty && tenant.ownerId && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowRenewalModal(true)}
-                >
-                  <RefreshCw className="h-3.5 w-3.5" /> Renew
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowRenewalModal(true)}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Renew
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowEndContractModal(true)}
+                    className="border-amber-300 text-amber-600 hover:bg-amber-50"
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" /> End Contract
+                  </Button>
+                </>
               )}
               <Button
                 size="sm"
@@ -563,6 +576,32 @@ function TenantDetailPageContent() {
           ownerId={tenant.ownerId}
           open={showRenewalModal}
           onClose={() => setShowRenewalModal(false)}
+        />
+      )}
+
+      {/* ── End Contract Modal ─────────────────────────────────────────── */}
+      {tenant.ownerManualProperty && tenant.ownerId && showEndContractModal && (
+        <EndContractModal
+          tenant={{
+            id: tenant.id,
+            leadId: tenant.leadId,
+            fullName: tenant.fullName,
+            mobileNumber: tenant.mobileNumber,
+            email: tenant.email,
+            tenantNationality: tenant.tenantNationality,
+            agreementStartDate: tenant.agreementStartDate,
+            agreementEndDate: tenant.agreementEndDate,
+            annualRent: tenant.annualRent,
+            securityDeposit: tenant.securityDeposit,
+            commission: tenant.commission,
+            modeOfPayment: tenant.modeOfPayment,
+            numberOfCheques: tenant.numberOfCheques,
+            currency: tenant.currency,
+            dateOfNotice: tenant.dateOfNotice,
+            externalZohoId: tenant.externalZohoId,
+          }}
+          open={showEndContractModal}
+          onClose={() => setShowEndContractModal(false)}
         />
       )}
 
