@@ -51,7 +51,8 @@ export function DataTable<T>({
   onToggleAll,
   rowClassName,
 }: DataTableProps<T>) {
-  const allChecked = rows.length > 0 && selectedIds.length === rows.length;
+  const pageIds = rows.map(rowKey);
+  const allChecked = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
 
   if (loading) return <TableSkeleton cols={columns.length + (selectable ? 1 : 0)} />;
   if (error) return <ErrorState onRetry={onRetry} />;

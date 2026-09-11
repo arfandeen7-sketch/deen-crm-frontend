@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Pencil,
+  X,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
@@ -23,8 +24,9 @@ import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
-import { useTenantsList } from "@/hooks/useTenants";
+import { useTenantsList, useTenantDeleteMutations } from "@/hooks/useTenants";
 import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
+import { useAuth } from "@/hooks/useAuth";
 import { tenantsService } from "@/services/tenants/tenants.service";
 import type { TenantQueryParams } from "@/services/tenants/tenants.service";
 import { getErrorMessage } from "@/services/api/client";
@@ -118,7 +120,10 @@ export default function TenantsPage() {
 function TenantsPageContent() {
   const router = useRouter();
   const isMaster = useOwnerTenantFullAccess();
+  const { canAction } = useAuth();
+  const canDelete = canAction("tenant_details", "all_tenants", "delete");
   const qc = useQueryClient();
+  const { remove, bulkDelete } = useTenantDeleteMutations();
   const [params, setParams] = useState<TenantQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -131,13 +136,30 @@ function TenantsPageContent() {
   const { data, isLoading, isError, refetch } = useTenantsList(queryParams);
   const rows = data?.data ?? [];
 
-  // ── Bulk delete state ──────────────────────────────────────────────────────
+  // ── Selection + row/bulk delete ────────────────────────────────────────────
+  const [selected, setSelected] = useState<string[]>([]);
+  const [deleteTenant, setDeleteTenant] = useState<Tenant | null>(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+
+  // ── Bulk delete imported data state ────────────────────────────────────────
   const [deletePreview, setDeletePreview] = useState<TenantBulkDeletePreview | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteExecuting, setDeleteExecuting] = useState(false);
 
   // ── Edit modal state ───────────────────────────────────────────────────────
   const [editTenant, setEditTenant] = useState<Tenant | null>(null);
+
+  function toggleRow(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+  function toggleAll(checked: boolean) {
+    const pageIds = rows.map((r) => r.id);
+    setSelected((s) =>
+      checked
+        ? [...new Set([...s, ...pageIds])]
+        : s.filter((id) => !pageIds.includes(id)),
+    );
+  }
 
   function setFilter<K extends keyof TenantFilters>(
     key: K,
@@ -171,11 +193,35 @@ function TenantsPageContent() {
         `Deleted ${result.tenantsDeleted} tenants, ${result.leadsDeleted} leads, ${result.propertiesDeleted} properties, ${result.ownersDeleted} owners.`,
       );
       setDeletePreview(null);
+      setSelected([]);
       qc.invalidateQueries({ queryKey: ["tenants"] });
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {
       setDeleteExecuting(false);
+    }
+  }
+
+  async function handleRowDelete() {
+    if (!deleteTenant) return;
+    try {
+      await remove.mutateAsync(deleteTenant.leadId);
+      toast.success(`Deleted ${deleteTenant.fullName ?? "tenant"}`);
+      setSelected((s) => s.filter((id) => id !== deleteTenant.id));
+      setDeleteTenant(null);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  async function handleBulkDeleteSelected() {
+    try {
+      const res = await bulkDelete.mutateAsync(selected);
+      toast.success(`Deleted ${res.deleted} tenant${res.deleted === 1 ? "" : "s"}`);
+      setBulkDeleteOpen(false);
+      setSelected([]);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
     }
   }
 
@@ -458,6 +504,16 @@ function TenantsPageContent() {
               <Pencil className="h-4 w-4" />
             </button>
           </CanAccess>
+          <CanAccess module="tenant_details" page="all_tenants" action="delete">
+            <button
+              type="button"
+              onClick={() => setDeleteTenant(t)}
+              className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+              title="Delete tenant"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </CanAccess>
           <Link
             href={`/tenants/${t.leadId}`}
             className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
@@ -516,6 +572,31 @@ function TenantsPageContent() {
         <TenantFiltersBar filters={filters} onChange={setFilter} onReset={resetFilters} />
       </Card>
 
+      {canDelete && selected.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-zinc-900 px-5 py-3 shadow-lg shadow-black/20">
+          <span className="text-sm font-medium text-white">
+            {selected.length} selected
+          </span>
+          <div className="h-4 w-px bg-zinc-700" />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBulkDeleteOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-rose-400 transition-colors hover:bg-zinc-800 hover:text-rose-300"
+            >
+              <Trash2 className="h-4 w-4" /> Delete
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelected([])}
+              className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <DataTable
         columns={columns}
         rows={rows}
@@ -526,6 +607,10 @@ function TenantsPageContent() {
         emptyTitle="No tenants"
         emptyMessage="Tenant records are created when rental leads are closed and tenant details are saved."
         onRowClick={(t) => router.push(`/tenants/${t.leadId}`)}
+        selectable={canDelete}
+        selectedIds={selected}
+        onToggleRow={toggleRow}
+        onToggleAll={toggleAll}
       />
 
       {data && data.total > 0 && (
@@ -633,6 +718,26 @@ function TenantsPageContent() {
           onClose={() => setEditTenant(null)}
         />
       )}
+
+      <ConfirmModal
+        open={!!deleteTenant}
+        onClose={() => setDeleteTenant(null)}
+        onConfirm={handleRowDelete}
+        title="Delete tenant?"
+        message={`This will permanently remove ${deleteTenant?.fullName ?? "this tenant"} and their documents, cheques, and agreement history. The linked lead will be kept.`}
+        confirmLabel="Delete"
+        loading={remove.isPending}
+      />
+
+      <ConfirmModal
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDeleteSelected}
+        title="Delete selected tenants?"
+        message={`This will permanently remove ${selected.length} tenant${selected.length === 1 ? "" : "s"} and their documents, cheques, and agreement history. Linked leads will be kept.`}
+        confirmLabel="Delete"
+        loading={bulkDelete.isPending}
+      />
     </div>
   );
 }

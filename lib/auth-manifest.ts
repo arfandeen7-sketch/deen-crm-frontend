@@ -280,6 +280,9 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "clients:upload-documents": { module: "client_details", page: "all_clients", action: "upload_documents" },
   "clients:export": { module: "client_details", page: "all_clients", action: "export" },
 
+  "tenants:delete": { module: "tenant_details", page: "all_tenants", action: "delete" },
+  "tenants:bulk-delete": { module: "tenant_details", page: "all_tenants", action: "delete" },
+
   "owners:create": { module: "owners", page: "all_owners", action: "create" },
   "owners:edit": { module: "owners", page: "all_owners", action: "edit" },
   "owners:delete": { module: "owners", page: "all_owners", action: "delete" },

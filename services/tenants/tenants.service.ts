@@ -1,4 +1,4 @@
-import { api, getData, putData, patchData, deleteData, withAccessToken } from "@/services/api/client";
+import { api, getData, putData, patchData, postData, deleteData, withAccessToken } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
   Tenant,
@@ -287,6 +287,16 @@ export const tenantsService = {
       { headers: { "Content-Type": "multipart/form-data" } },
     );
     return res.data.data;
+  },
+
+  /** DELETE /api/tenants/:leadId — delete a single tenant record */
+  async remove(leadId: string): Promise<{ success: true }> {
+    return deleteData<{ success: true }>(`/tenants/${leadId}`);
+  },
+
+  /** POST /api/tenants/bulk-delete — delete selected tenant records */
+  bulkDeleteByIds(tenantIds: string[]): Promise<{ deleted: number }> {
+    return postData<{ deleted: number }>("/tenants/bulk-delete", { tenantIds });
   },
 
   // ── Bulk Delete Imported Data ────────────────────────────────────────────────

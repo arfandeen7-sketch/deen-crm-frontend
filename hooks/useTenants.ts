@@ -217,3 +217,25 @@ export function useTenantPropertyMutations() {
 
   return { createFromProperty, endContract, renewContract, moveProperty, createHistory };
 }
+
+/** Delete one or many tenant records from the tenants table. */
+export function useTenantDeleteMutations() {
+  const qc = useQueryClient();
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: [KEY] });
+    qc.invalidateQueries({ queryKey: [OWNERS_KEY] });
+  };
+
+  const remove = useMutation({
+    mutationFn: (leadId: string) => tenantsService.remove(leadId),
+    onSuccess: invalidate,
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: (tenantIds: string[]) => tenantsService.bulkDeleteByIds(tenantIds),
+    onSuccess: invalidate,
+  });
+
+  return { remove, bulkDelete };
+}
