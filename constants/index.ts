@@ -6,6 +6,14 @@ export const APP_NAME = "DEEN Properties CRM";
 export const POLL_FAST = 20_000;  // 20 s — live lists: leads, dashboard, follow-ups, attendance, notifications
 export const POLL_SLOW = 60_000;  // 60 s — reference data: users, brokers, employees, leave, payslips
 
+/**
+ * Dashboard analytics cadence. These endpoints run multi-table aggregates, so
+ * they must not poll at POLL_FAST — they are served from cache for ANALYTICS_STALE
+ * and refreshed in the background at ANALYTICS_POLL.
+ */
+export const ANALYTICS_STALE = 120_000; // 2 min — cache window for aggregates
+export const ANALYTICS_POLL = 300_000;  // 5 min — background refresh
+
 export const TOKEN_STORAGE_KEY = "deen_crm_token";
 
 export const PAGE_SIZES = [25, 50, 100] as const;

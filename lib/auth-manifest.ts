@@ -132,6 +132,9 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/settings/profile": { type: "authenticated" },
   "/settings/change-password": { type: "authenticated" },
 
+  // Sales Targets (Master-only)
+  "/targets": { type: "master" },
+
   // Activity Stream (Master-only)
   "/activity": { type: "master" },
 };
@@ -171,6 +174,17 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "dashboard:status-count": { module: "leads", page: "all_leads", action: "view" },
   "dashboard:category-count": { module: "leads", page: "all_leads", action: "view" },
   "dashboard:employee-activity": { module: "dashboard", page: "dashboard_home", action: "view" },
+
+  // Role dashboard analytics — mirrors the gating on dashboard.routes.ts.
+  "dashboard:sales-overview": { module: "dashboard", page: "dashboard_home", action: "view" },
+  "dashboard:my-performance": { module: "dashboard", page: "dashboard_home", action: "view" },
+  "dashboard:attention": { module: "dashboard", page: "dashboard_home", action: "view" },
+  "dashboard:recent-deals": { module: "dashboard", page: "dashboard_home", action: "view" },
+  "dashboard:source-performance": { module: "dashboard", page: "analytics", action: "view" },
+  "dashboard:team-performance": { module: "dashboard", page: "analytics", action: "view" },
+  "dashboard:hr-overview": { module: "dashboard", page: "hr_overview", action: "view" },
+  "dashboard:hr-trend": { module: "dashboard", page: "hr_overview", action: "view" },
+  "targets:list": { module: "dashboard", page: "targets", action: "view" },
 
   "users:list": { module: "users", page: "all_users", action: "view" },
   "users:detail": { module: "users", page: "all_users", action: "view" },

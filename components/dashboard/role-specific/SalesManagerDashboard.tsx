@@ -1,142 +1,266 @@
 "use client";
 
-import Link from "next/link";
-import { Users2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import { KpiRow, KpiTile } from "@/components/dashboard/kpi/KpiTile";
 import {
-  useDashboardSummary,
-  useLeadCategoryCount,
-} from "@/hooks/useDashboard";
-import { useMyTeam } from "@/hooks/useTeams";
-import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
-import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
+  DashboardHeader,
+  DashboardSection,
+  DashboardSplit,
+  PanelHeading,
+} from "@/components/dashboard/widgets/DashboardShell";
+import { RevenueTrendPanel } from "@/components/dashboard/widgets/RevenueTrendPanel";
+import { FunnelPanel, StatusMixPanel } from "@/components/dashboard/widgets/PipelinePanel";
+import { SourcePerformancePanel } from "@/components/dashboard/widgets/SourcePerformancePanel";
+import { TeamLeaderboard } from "@/components/dashboard/widgets/TeamLeaderboard";
+import { FollowupCompliancePanel } from "@/components/dashboard/widgets/FollowupCompliancePanel";
+import { AttentionPanel } from "@/components/dashboard/widgets/AttentionPanel";
+import { RecentDealsFeed } from "@/components/dashboard/widgets/RecentDealsFeed";
+import { TargetCard } from "@/components/dashboard/widgets/TargetCard";
+import { QuickActionsPanel } from "@/components/dashboard/widgets/QuickActionsPanel";
+import { ChartFrame } from "@/components/dashboard/charts/ChartFrame";
+import { HorizontalBarChart } from "@/components/dashboard/charts/HorizontalBarChart";
+import {
+  SERIES,
+  formatAed,
+  formatHours,
+  formatNumber,
+  formatPercent,
+} from "@/components/dashboard/charts/theme";
+import {
+  comparisonLabel,
+  usePeriod,
+} from "@/components/dashboard/filters/PeriodSelector";
+import {
+  useAnalyticsRecentDeals,
+  useAttention,
+  useSalesOverview,
+  useSourcePerformance,
+  useTeamPerformance,
+} from "@/hooks/useDashboardAnalytics";
 import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
 import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
 
+/**
+ * Sales manager dashboard — team execution.
+ *
+ * Same metric vocabulary as the master view but scoped to the manager's team,
+ * with the diagnostic panels (workload, follow-up hygiene) promoted above the
+ * channel analysis: a manager's leverage is redistributing work, not media spend.
+ */
 export function SalesManagerDashboard() {
-  const summary = useDashboardSummary();
-  const untouched = useLeadCategoryCount("untouched");
-  const unassigned = useLeadCategoryCount("unassigned");
-  const teamQuery = useMyTeam();
+  const period = usePeriod();
+  const overview = useSalesOverview(period);
+  const team = useTeamPerformance(period);
+  const sources = useSourcePerformance(period);
+  const attention = useAttention();
+  const deals = useAnalyticsRecentDeals(5);
 
-  const teamMembers = teamQuery.data?.teamMembers ?? [];
-  const totalTeamLeads = teamMembers.reduce((sum, m) => sum + (m.stats?.totalLeads ?? 0), 0);
-  const quickActions = ROLE_QUICK_ACTIONS.sales_manager;
+  const data = overview.data;
+  const kpis = data?.kpis.current;
+  const deltas = data?.kpis.deltas;
+  const loading = overview.isLoading;
+  const caption = comparisonLabel(period);
+
+  const revenueSpark = useMemo(
+    () => (data?.trend ?? []).map((p) => p.revenue),
+    [data?.trend],
+  );
+
+  const teamRows = useMemo(() => team.data?.rows ?? [], [team.data?.rows]);
+  const activeRepCount = teamRows.filter((r) => r.activeLeads > 0).length;
+
+  const workload = useMemo(
+    () =>
+      teamRows
+        .slice()
+        .sort((a, b) => b.activeLeads - a.activeLeads)
+        .slice(0, 8)
+        .map((row) => ({
+          label: row.fullName,
+          value: row.activeLeads,
+          meta:
+            row.untouched > 0
+              ? `${row.untouched} untouched`
+              : `${formatPercent(row.touchRate, 0)} touched`,
+          color: row.untouched > 0 ? SERIES.risk : SERIES.ink,
+        })),
+    [teamRows],
+  );
 
   return (
-    <div className="space-y-4 font-sans pb-12">
-      {/* ── Top Stat Strip ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-neutral-200/80 pb-8 border-b border-neutral-200/80">
-        <div className="flex flex-col justify-between pt-2 pb-4 pr-6 md:pl-0 md:pr-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.totalLeads ?? 0)}
+    <div className="pb-12 font-sans">
+      <DashboardHeader
+        title="Team Overview"
+        subtitle={`Your team's performance · comparisons ${caption}`}
+      />
+
+      <KpiRow>
+        <KpiTile
+          label="Team Revenue"
+          value={formatAed(kpis?.revenue ?? 0, {
+            compact: (kpis?.revenue ?? 0) >= 1_000_000,
+          })}
+          hint={`${formatNumber(kpis?.dealsClosed ?? 0)} deals closed`}
+          delta={deltas?.revenue}
+          deltaLabel={caption}
+          accent="revenue"
+          sparkline={revenueSpark}
+          loading={loading}
+        />
+        <KpiTile
+          label="Leads Assigned"
+          value={formatNumber(kpis?.leadsAssigned ?? 0)}
+          hint={`${formatNumber(kpis?.leadsCreated ?? 0)} created in period`}
+          delta={deltas?.leadsAssigned}
+          deltaLabel={caption}
+          accent="ink"
+          loading={loading}
+        />
+        <KpiTile
+          label="Touch Rate"
+          value={formatPercent(kpis?.touchRate ?? 0, 0)}
+          hint={`${formatNumber(team.data?.totals.untouched ?? 0)} never contacted`}
+          delta={deltas?.touchRate}
+          deltaLabel={caption}
+          accent={(kpis?.touchRate ?? 100) < 70 ? "risk" : "ink"}
+          loading={loading}
+        />
+        <KpiTile
+          label="First Response"
+          value={formatHours(kpis?.avgFirstResponseHours)}
+          hint="Assignment to first contact"
+          delta={deltas?.avgFirstResponseHours}
+          invertDelta
+          deltaLabel={caption}
+          accent={(kpis?.avgFirstResponseHours ?? 0) > 24 ? "risk" : "ink"}
+          loading={loading}
+        />
+        <KpiTile
+          label="Missed Follow-ups"
+          value={formatNumber(data?.pendingFollowups.missed ?? 0)}
+          hint={`${formatNumber(data?.pendingFollowups.today ?? 0)} due today`}
+          accent={
+            (data?.pendingFollowups.missed ?? 0) > 0 ? "negative" : "muted"
+          }
+          href="/followup/missed"
+          loading={loading}
+        />
+        <KpiTile
+          label="Win Rate"
+          value={formatPercent(kpis?.winRate ?? 0)}
+          hint={`${activeRepCount} reps carrying pipeline`}
+          delta={deltas?.winRate}
+          deltaLabel={caption}
+          accent="ink"
+          loading={loading}
+        />
+      </KpiRow>
+
+      {/* ── Trend + target ── */}
+      <DashboardSplit
+        divider={false}
+        primary={
+          <RevenueTrendPanel
+            trend={data?.trend}
+            granularity={data?.period.granularity}
+            loading={loading}
+          />
+        }
+        secondary={
+          <div className="flex h-full flex-col">
+            <PanelHeading
+              title="Against Target"
+              subtitle={
+                data?.target
+                  ? "Combined team goal for the month"
+                  : "No team target set for this month"
+              }
+            />
+            <div className="mt-4 flex-1">
+              <TargetCard
+                target={data?.target}
+                current={data?.kpis.current}
+                previous={data?.kpis.previous}
+                revenueDelta={deltas?.revenue}
+                loading={loading}
+                comparisonCaption={caption}
+              />
             </div>
           </div>
-          <div className="h-1 bg-black absolute bottom-0 left-0 right-0 md:left-0 md:right-6 rounded-full" />
-        </div>
+        }
+      />
 
-        <Link href="/leads/untouched" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Untouched Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {untouched.isLoading ? "..." : (untouched.data ?? 0).toString().padStart(2, "0")}
+      {/* ── Who is performing ── */}
+      <DashboardSplit
+        primary={
+          <TeamLeaderboard
+            rows={teamRows}
+            loading={team.isLoading}
+            title="My Team"
+            subtitle="Click a name for the full employee report"
+          />
+        }
+        secondary={
+          <ChartFrame
+            title="Workload Balance"
+            subtitle="Open leads per rep — amber flags untouched leads"
+            height={260}
+            loading={team.isLoading}
+            isEmpty={workload.length === 0}
+            emptyMessage="No active leads assigned to your team"
+          >
+            <div className="h-full overflow-y-auto pr-1">
+              <HorizontalBarChart data={workload} valueFormatter={formatNumber} />
             </div>
-          </div>
-          <div className="h-1 bg-amber-500 absolute bottom-0 left-6 right-6 rounded-full" />
-        </Link>
+          </ChartFrame>
+        }
+      />
 
-        <div className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Deals Closed</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.dealsClosed ?? 0).toString().padStart(2, "0")}
-            </div>
-            <p className="mt-1 text-xs font-medium text-teal-700">
-              AED {summary.isLoading ? "…" : Math.round(summary.data?.salesAmount ?? 0).toLocaleString()}
-            </p>
-          </div>
-          <div className="h-1 bg-teal-600 absolute bottom-0 left-6 right-6 rounded-full" />
-        </div>
+      {/* ── Execution hygiene ── */}
+      <DashboardSplit
+        primary={
+          <FollowupCompliancePanel rows={teamRows} loading={team.isLoading} />
+        }
+        secondary={
+          <AttentionPanel
+            data={attention.data}
+            loading={attention.isLoading}
+            subtitle="Within your team's leads"
+          />
+        }
+      />
 
-        <Link href="/leads/unassigned" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Unassigned Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {unassigned.isLoading ? "..." : (unassigned.data ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-0 rounded-full" />
-        </Link>
-      </div>
+      {/* ── Pipeline shape ── */}
+      <DashboardSplit
+        primary={<FunnelPanel funnel={data?.funnel} loading={loading} />}
+        secondary={
+          <StatusMixPanel statusMix={data?.statusMix} loading={loading} />
+        }
+      />
 
-      {/* ── Recent Leads (2/3) & Missed Follow-ups (1/3) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-b border-zinc-200">
-        <div className="lg:col-span-2">
-          <RecentLeadsTable />
-        </div>
+      {/* ── Channels + deals ── */}
+      <DashboardSplit
+        primary={
+          <SourcePerformancePanel
+            rows={sources.data?.rows}
+            loading={sources.isLoading}
+          />
+        }
+        secondary={
+          <RecentDealsFeed deals={deals.data} loading={deals.isLoading} />
+        }
+      />
 
-        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <FollowUpsWidget />
-        </div>
-      </div>
+      {/* ── Personal work ── */}
+      <DashboardSplit
+        split="1/2"
+        primary={<FollowUpsWidget />}
+        secondary={<TodoListWidget />}
+      />
 
-      {/* ── My Todos ── */}
-      <div className="py-8 border-t border-zinc-200">
-        <TodoListWidget />
-      </div>
-
-      {/* ── My Team & Quick Actions ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-8 border-t border-zinc-200">
-        <div className="flex flex-col">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">My Team</h3>
-            <p className="text-xs text-zinc-400 mt-1">Team overview</p>
-          </div>
-
-          <div className="mt-4 flex-1 flex flex-col justify-center">
-            <Link
-              href="/my-team"
-              className="flex items-center gap-4 rounded-2xl border border-zinc-200/80 p-4 bg-white hover:bg-zinc-50/50 hover:border-zinc-300 transition-all shadow-sm group"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0 bg-violet-50 text-violet-600 transition-transform group-hover:scale-105">
-                <Users2 className="h-6 w-6" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-zinc-700 font-secondary group-hover:text-zinc-900">My Team</p>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  {teamQuery.isLoading ? "Loading..." : `${teamMembers.length} members · ${totalTeamLeads} leads`}
-                </p>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Quick Actions</h3>
-            <p className="text-xs text-zinc-400 mt-1">Frequent tools</p>
-          </div>
-
-          <div className="mt-4 flex-1 flex flex-col justify-center space-y-3">
-            {quickActions.map((a) => (
-              <Link
-                key={a.href}
-                href={a.href}
-                className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/80 p-3.5 bg-white hover:bg-zinc-50/50 hover:border-zinc-300 transition-all shadow-sm group"
-              >
-                <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform group-hover:scale-105", a.accent)}>
-                  <a.icon className="h-5 w-5" />
-                </span>
-                <span className="text-sm font-bold text-zinc-700 font-secondary transition-colors group-hover:text-zinc-900">
-                  {a.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      <DashboardSection>
+        <QuickActionsPanel role="sales_manager" layout="row" />
+      </DashboardSection>
     </div>
   );
 }

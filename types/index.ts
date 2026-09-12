@@ -1122,6 +1122,366 @@ export interface StatusAnalytics {
   windowHours: number;
 }
 
+// ── Dashboard analytics (role dashboards) ───────────────────────────────────
+
+export type AnalyticsPeriod =
+  | "today"
+  | "7d"
+  | "30d"
+  | "mtd"
+  | "qtd"
+  | "ytd"
+  | "12m"
+  | "custom";
+
+export type ChartGranularity = "day" | "week" | "month";
+
+export interface AnalyticsPeriodMeta {
+  key: AnalyticsPeriod;
+  label: string;
+  start: string;
+  end: string;
+  granularity: ChartGranularity;
+  /** 0..1 — how far through the calendar period we are. */
+  elapsedFraction: number;
+}
+
+export interface SalesKpis {
+  leadsCreated: number;
+  leadsAssigned: number;
+  dealsClosed: number;
+  revenue: number;
+  avgDealValue: number;
+  winRate: number;
+  qualifiedRate: number;
+  touchRate: number;
+  avgFirstResponseHours: number | null;
+}
+
+/** Percentage change vs the previous period; null when incomparable. */
+export type KpiDeltas = Partial<Record<keyof SalesKpis, number | null>>;
+
+export interface TrendPoint {
+  bucket: string;
+  leads: number;
+  deals: number;
+  revenue: number;
+}
+
+export interface FunnelStage {
+  key: string;
+  label: string;
+  count: number;
+  stageConversion: number;
+  overallConversion: number;
+}
+
+/** Null whenever no target is configured — dashboards fall back to deltas. */
+export interface TargetProgress {
+  revenueTarget: number;
+  dealsTarget: number;
+  leadsTarget: number;
+  currency: string;
+  revenueProgress: number;
+  dealsProgress: number;
+  leadsProgress: number;
+  pace: number;
+  onTrack: boolean;
+}
+
+export interface SalesOverview {
+  period: AnalyticsPeriodMeta;
+  kpis: { current: SalesKpis; previous: SalesKpis; deltas: KpiDeltas };
+  trend: TrendPoint[];
+  funnel: FunnelStage[];
+  statusMix: { status: string; count: number }[];
+  activeLeads: number;
+  pendingFollowups: { today: number; missed: number; upcoming: number };
+  target: TargetProgress | null;
+}
+
+export interface SourcePerformanceRow {
+  source: string;
+  leads: number;
+  touched: number;
+  qualified: number;
+  deals: number;
+  revenue: number;
+  touchRate: number;
+  qualifiedRate: number;
+  winRate: number;
+  avgDealValue: number;
+}
+
+export interface SourcePerformanceResponse {
+  period: AnalyticsPeriod;
+  rows: SourcePerformanceRow[];
+}
+
+export interface TeamPerformanceRow {
+  userId: string;
+  fullName: string;
+  role: UserRole;
+  designation: string | null;
+  leadsAssigned: number;
+  activeLeads: number;
+  touched: number;
+  untouched: number;
+  qualified: number;
+  deals: number;
+  revenue: number;
+  avgDealValue: number;
+  touchRate: number;
+  winRate: number;
+  avgFirstResponseHours: number | null;
+  followupsToday: number;
+  missedFollowups: number;
+  activities: number;
+  lastActivityAt: string | null;
+  revenueTarget: number | null;
+  revenueProgress: number | null;
+}
+
+export interface TeamPerformanceResponse {
+  period: AnalyticsPeriod;
+  rows: TeamPerformanceRow[];
+  totals: {
+    leadsAssigned: number;
+    deals: number;
+    revenue: number;
+    missedFollowups: number;
+    untouched: number;
+  };
+}
+
+export interface ActivityTrendPoint {
+  bucket: string;
+  total: number;
+  byAction: Record<string, number>;
+}
+
+export interface PeerRank {
+  rank: number;
+  total: number;
+  metric: "revenue";
+  leaderRevenue: number;
+  myRevenue: number;
+}
+
+export interface MyHrSnapshot {
+  attendanceToday: {
+    status: string;
+    checkInTime: string | null;
+    checkOutTime: string | null;
+    workingHours: number | null;
+  } | null;
+  monthToDate: {
+    present: number;
+    late: number;
+    absent: number;
+    onLeave: number;
+    avgWorkingHours: number | null;
+  };
+  pendingLeaves: number;
+}
+
+export interface MyPerformance extends SalesOverview {
+  activityTrend: ActivityTrendPoint[];
+  rank: PeerRank;
+  hr: MyHrSnapshot;
+}
+
+export interface AttentionLead {
+  id: string;
+  leadName: string;
+  mobileNumber: string;
+  leadStatus: string;
+  source: string;
+  leadPriority: string | null;
+  assignedToName: string | null;
+  followUpDate: string | null;
+  assignedAt: string | null;
+  updatedAt: string;
+}
+
+export type AttentionSeverity = "critical" | "warning" | "info";
+
+export interface AttentionBucket {
+  key: string;
+  label: string;
+  description: string;
+  severity: AttentionSeverity;
+  count: number;
+  href: string;
+  samples: AttentionLead[];
+}
+
+export interface AttentionResponse {
+  buckets: AttentionBucket[];
+  systemAlerts: {
+    key: string;
+    label: string;
+    count: number;
+    severity: AttentionSeverity;
+    href: string;
+  }[];
+}
+
+export interface AnalyticsRecentDeal {
+  id: string;
+  leadId: string;
+  leadName: string;
+  amount: number;
+  currency: string;
+  closedAt: string;
+  employeeName: string;
+  source: string;
+}
+
+// ── Workforce analytics (HR dashboard) ──────────────────────────────────────
+
+export interface HrAttendanceBreakdown {
+  present: number;
+  late: number;
+  halfDay: number;
+  absent: number;
+  onLeave: number;
+  notCheckedIn: number;
+  weekendOrHoliday: number;
+  attendanceRate: number;
+  lateRate: number;
+}
+
+export interface HrOverview {
+  date: string;
+  headcount: {
+    total: number;
+    byDepartment: { department: string; count: number }[];
+    byRole: { role: string; count: number }[];
+    byEmploymentStatus: { status: string; count: number }[];
+    newJoiners30d: number;
+  };
+  attendance: HrAttendanceBreakdown;
+  punctuality: {
+    avgCheckInMinutes: number | null;
+    expectedCheckInMinutes: number | null;
+    lateToday: number;
+    repeatLateOffenders: {
+      userId: string;
+      fullName: string;
+      department: string | null;
+      lateDays: number;
+    }[];
+  };
+  approvals: {
+    leavePending: number;
+    leaveAwaitingFinal: number;
+    regularizationPending: number;
+    total: number;
+  };
+  leave: {
+    onLeaveToday: number;
+    upcoming: {
+      id: string;
+      userId: string;
+      fullName: string;
+      leaveType: string;
+      dateFrom: string;
+      dateTo: string;
+      totalDays: number;
+    }[];
+    pending: {
+      id: string;
+      userId: string;
+      fullName: string;
+      leaveType: string;
+      dateFrom: string;
+      dateTo: string;
+      totalDays: number;
+      status: string;
+      createdAt: string;
+    }[];
+    utilisation: { leaveType: string; days: number; requests: number }[];
+  };
+  payroll: {
+    month: number;
+    year: number;
+    draft: number;
+    generated: number;
+    sent: number;
+    missing: number;
+    totalNetSalary: number;
+  };
+  milestones: {
+    anniversaries: {
+      userId: string;
+      fullName: string;
+      joiningDate: string;
+      years: number;
+      inDays: number;
+    }[];
+  };
+}
+
+export interface HrTrendPoint {
+  date: string;
+  present: number;
+  late: number;
+  halfDay: number;
+  absent: number;
+  onLeave: number;
+  attendanceRate: number;
+  avgWorkingHours: number | null;
+}
+
+// ── Sales targets ───────────────────────────────────────────────────────────
+
+export interface SalesTargetRow {
+  userId: string;
+  fullName: string;
+  role: UserRole;
+  designation: string | null;
+  managerName: string | null;
+  revenueTarget: number;
+  dealsTarget: number;
+  leadsTarget: number;
+  currency: string;
+  note: string | null;
+  hasTarget: boolean;
+  achievedRevenue: number;
+  achievedDeals: number;
+  achievedLeads: number;
+}
+
+export interface SalesTargetsResponse {
+  month: number;
+  year: number;
+  rows: SalesTargetRow[];
+  totals: {
+    revenueTarget: number;
+    dealsTarget: number;
+    leadsTarget: number;
+    achievedRevenue: number;
+    achievedDeals: number;
+    achievedLeads: number;
+  };
+  company: {
+    revenueTarget: number;
+    dealsTarget: number;
+    leadsTarget: number;
+    currency: string;
+    note: string | null;
+  } | null;
+}
+
+export interface SalesTargetInput {
+  userId: string | null;
+  revenueTarget: number;
+  dealsTarget: number;
+  leadsTarget: number;
+  note?: string | null;
+}
+
 // ── Employee Activity (dashboard) ────────────────────────────────────────────
 
 export interface EmployeeActivitySummary {

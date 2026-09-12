@@ -35,6 +35,7 @@ import {
   ClipboardList,
   Package,
   Hotel,
+  Target,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -311,6 +312,18 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "All Integrations", href: "/integrations", icon: Plug, navAccess: { module: "integrations", page: "all_integrations" } },
       { label: "Dashboard", href: "/integrations/dashboard", icon: Activity, navAccess: { module: "integrations", page: "all_integrations", action: "health" } },
+    ],
+  },
+  {
+    id: "targets",
+    title: "Sales Targets",
+    icon: Target,
+    href: "/targets",
+    isSingular: true,
+    masterOnly: true,
+    section: "GENERAL",
+    items: [
+      { label: "Sales Targets", href: "/targets", icon: Target, masterOnly: true },
     ],
   },
   {

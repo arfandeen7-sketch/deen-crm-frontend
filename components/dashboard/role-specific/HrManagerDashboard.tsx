@@ -1,271 +1,401 @@
 "use client";
 
 import Link from "next/link";
-import { UserAvatar } from "@/components/ui/Avatar";
-import { EmptyState, LoadingState } from "@/components/ui/States";
-import { cn, formatDate } from "@/lib/utils";
+import { CakeSlice, CalendarDays, CheckCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { KpiRow, KpiTile } from "@/components/dashboard/kpi/KpiTile";
 import {
-  useEmployeeList,
-  useAttendanceList,
-  useLeaveList,
-  usePayslipList,
-} from "@/hooks/useHrms";
-import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
-import { LEAVE_STATUS_COLORS } from "@/constants";
+  DashboardHeader,
+  DashboardSection,
+  DashboardSplit,
+  PanelHeading,
+} from "@/components/dashboard/widgets/DashboardShell";
+import { QuickActionsPanel } from "@/components/dashboard/widgets/QuickActionsPanel";
+import {
+  AttendanceTodayPanel,
+  AttendanceTrendPanel,
+  HeadcountPanel,
+  LeaveUtilisationPanel,
+  PayrollPanel,
+  PunctualityPanel,
+  WorkingHoursPanel,
+} from "@/components/dashboard/widgets/hr/AttendancePanels";
+import {
+  formatClockMinutes,
+  formatNumber,
+  formatPercent,
+} from "@/components/dashboard/charts/theme";
+import { Skeleton } from "@/components/ui/States";
+import { useHrOverview, useHrTrend } from "@/hooks/useDashboardAnalytics";
 import { EmployeeActivitySection } from "@/components/dashboard/EmployeeActivitySection";
+import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
 import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
+import type { HrOverview } from "@/types";
 
-function todayISO(): string {
-  return new Date().toISOString().split("T")[0];
+function formatDayRange(from: string, to: string): string {
+  const options = { day: "numeric", month: "short", timeZone: "UTC" } as const;
+  const start = new Date(`${from}T00:00:00Z`).toLocaleDateString("en-US", options);
+  if (from === to) return start;
+  const end = new Date(`${to}T00:00:00Z`).toLocaleDateString("en-US", options);
+  return `${start} – ${end}`;
 }
 
-function currentMonth(): number {
-  return new Date().getMonth() + 1;
-}
-
-function currentYear(): number {
-  return new Date().getFullYear();
-}
-
-export function HrManagerDashboard() {
-  const today = todayISO();
-
-  const employees = useEmployeeList({ page: 1, pageSize: 1 });
-  const todayAttendance = useAttendanceList({ dateFrom: today, dateTo: today, pageSize: 100 });
-  const pendingLeaves = useLeaveList({ status: "pending", pageSize: 4 });
-  const payslips = usePayslipList({ month: currentMonth(), year: currentYear(), pageSize: 100 });
-
-  const attendanceRecords = todayAttendance.data?.data ?? [];
-  const attendanceCounts: Record<string, number> = {
-    present: 0,
-    late: 0,
-    absent: 0,
-    half_day: 0,
-    leave: 0,
-  };
-  attendanceRecords.forEach((r) => {
-    const status = r.status as string;
-    if (attendanceCounts[status] !== undefined) {
-      attendanceCounts[status]++;
-    }
-  });
-
-  const pendingPayslips = (payslips.data?.data ?? []).filter((p) => p.status === "draft").length;
-  const processedPayslips = (payslips.data?.data ?? []).filter((p) => p.status !== "draft").length;
-
-  const pendingLeaveList = pendingLeaves.data?.data ?? [];
-  const quickActions = ROLE_QUICK_ACTIONS.hr_manager;
-
-  const attendanceBreakdown = [
-    { label: "Present", count: attendanceCounts.present, color: "bg-emerald-500" },
-    { label: "Late", count: attendanceCounts.late, color: "bg-orange-500" },
-    { label: "Absent", count: attendanceCounts.absent, color: "bg-rose-500" },
-    { label: "Half Day", count: attendanceCounts.half_day, color: "bg-amber-400" },
-    { label: "On Leave", count: attendanceCounts.leave, color: "bg-sky-500" },
-  ];
-  const maxAttendance = Math.max(...attendanceBreakdown.map((b) => b.count), 1);
+/** Approval queue — the HR manager's actual inbox, ordered oldest first. */
+function ApprovalsPanel({
+  overview,
+  loading,
+}: {
+  overview: HrOverview | undefined;
+  loading?: boolean;
+}) {
+  const approvals = overview?.approvals;
+  const pending = overview?.leave.pending ?? [];
+  const regularizations = approvals?.regularizationPending ?? 0;
 
   return (
-    <div className="space-y-4 font-sans pb-12">
-      {/* ── Top Stat Strip ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-neutral-200/80 pb-8 border-b border-neutral-200/80">
-        <div className="flex flex-col justify-between pt-2 pb-4 pr-6 md:pl-0 md:pr-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Employees</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {employees.isLoading ? "..." : (employees.data?.total ?? 0)}
-            </div>
-          </div>
-          <div className="h-1 bg-black absolute bottom-0 left-0 right-0 md:left-0 md:right-6 rounded-full" />
-        </div>
+    <div className="flex h-full flex-col">
+      <PanelHeading
+        title="Awaiting My Approval"
+        subtitle={
+          loading
+            ? "Loading queue"
+            : `${approvals?.total ?? 0} item${(approvals?.total ?? 0) === 1 ? "" : "s"} pending`
+        }
+        href="/hrms/leave"
+      />
 
-        <div className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Present Today</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {todayAttendance.isLoading ? "..." : (attendanceCounts.present + attendanceCounts.late + attendanceCounts.half_day).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-emerald-600 absolute bottom-0 left-6 right-6 rounded-full" />
-        </div>
-
-        <Link href="/hrms/leave" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pending Leaves</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {pendingLeaves.isLoading ? "..." : (pendingLeaves.data?.total ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-amber-500 absolute bottom-0 left-6 right-6 rounded-full" />
-        </Link>
-
-        <Link href="/hrms/payroll" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Pending Payroll</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {payslips.isLoading ? "..." : pendingPayslips.toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-0 rounded-full" />
-        </Link>
-      </div>
-
-      {/* ── Split Section 1: Attendance Overview & Pending Leave Requests ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-b border-zinc-200">
-        {/* Attendance Overview (left, 2/3) */}
-        <div className="lg:col-span-2 flex flex-col min-h-[340px] pr-4">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Attendance Overview</h3>
-            <p className="text-xs text-zinc-400 mt-1">Today&apos;s attendance breakdown</p>
-          </div>
-
-          <div className="mt-6 flex-1 space-y-4">
-            {todayAttendance.isLoading ? (
-              <LoadingState />
-            ) : attendanceRecords.length === 0 ? (
-              <div className="h-full flex items-center justify-center py-8">
-                <EmptyState title="No attendance records" message="Attendance data will appear here once employees check in." />
-              </div>
-            ) : (
-              attendanceBreakdown.map((item) => (
-                <div key={item.label} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-zinc-700 font-secondary">{item.label}</span>
-                    <span className="text-2xl font-bold text-zinc-900 font-secondary tracking-tight">{item.count}</span>
-                  </div>
-                  <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all duration-500", item.color)}
-                      style={{ width: `${(item.count / maxAttendance) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Pending Leave Requests (right, 1/3) */}
-        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Pending Leaves</h3>
-              <p className="text-xs text-zinc-400 mt-1">Awaiting review</p>
-            </div>
-            <Link href="/hrms/leave" className="text-xs font-bold text-zinc-500 hover:text-zinc-950 transition-colors">
-              View all
-            </Link>
-          </div>
-
-          <div className="mt-4 flex-1 divide-y divide-zinc-100">
-            {pendingLeaves.isLoading ? (
-              <LoadingState />
-            ) : pendingLeaveList.length === 0 ? (
-              <div className="h-full flex items-center justify-center py-8">
-                <EmptyState title="No pending leaves" message="All caught up! 🎉" />
-              </div>
-            ) : (
-              pendingLeaveList.slice(0, 4).map((leave) => (
-                <Link
-                  key={leave.id}
-                  href="/hrms/leave"
-                  className="flex items-center gap-3 py-3.5 hover:bg-zinc-50/50 px-2 rounded-2xl transition-colors group"
-                >
-                  <UserAvatar name={leave.user?.fullName} size="sm" className="w-10 h-10 shrink-0 ring-2 ring-zinc-50" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-zinc-900 truncate font-secondary group-hover:text-zinc-950">
-                      {leave.user?.fullName ?? "Unknown"}
-                    </p>
-                    <p className="text-xs text-zinc-400 mt-0.5 capitalize">
-                      {leave.leaveType} · {formatDate(leave.dateFrom)}
-                      {leave.dateTo !== leave.dateFrom ? ` – ${formatDate(leave.dateTo)}` : ""}
-                    </p>
-                  </div>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-xs font-semibold tracking-wide shrink-0",
-                    LEAVE_STATUS_COLORS[leave.status] ?? "bg-zinc-100 text-zinc-600"
-                  )}>
-                    Review
-                  </span>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Employee Activity Section ── */}
-      <EmployeeActivitySection showLeadData={false} />
-
-      {/* ── My Todos ── */}
-      <div className="py-8 border-t border-zinc-200">
-        <TodoListWidget />
-      </div>
-
-      {/* ── Split Section 2: Payroll Summary & Quick Actions ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-t border-zinc-200">
-        <div className="lg:col-span-2 flex flex-col min-h-[340px] pr-4">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Payroll This Month</h3>
-            <p className="text-xs text-zinc-400 mt-1">
-              {new Date(currentYear(), currentMonth() - 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-            </p>
-          </div>
-
-          <div className="mt-6 flex-1 flex flex-col justify-center space-y-6">
-            {payslips.isLoading ? (
-              <LoadingState />
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <span className="text-sm font-semibold text-zinc-400 font-secondary">Pending</span>
-                    <div className="text-4xl font-bold text-amber-600 font-secondary tracking-tight">
-                      {pendingPayslips}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-sm font-semibold text-zinc-400 font-secondary">Processed</span>
-                    <div className="text-4xl font-bold text-emerald-600 font-secondary tracking-tight">
-                      {processedPayslips}
-                    </div>
-                  </div>
-                </div>
-                <Link
-                  href="/hrms/payroll"
-                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-200/80 px-4 py-3 bg-white hover:bg-zinc-50/50 hover:border-zinc-300 transition-all shadow-sm text-sm font-bold text-zinc-700 font-secondary w-fit"
-                >
-                  Manage Payroll
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Quick Actions</h3>
-            <p className="text-xs text-zinc-400 mt-1">Frequent tools</p>
-          </div>
-
-          <div className="mt-4 flex-1 flex flex-col justify-center space-y-3">
-            {quickActions.map((a) => (
-              <Link
-                key={a.href}
-                href={a.href}
-                className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/80 p-3.5 bg-white hover:bg-zinc-50/50 hover:border-zinc-300 transition-all shadow-sm group"
-              >
-                <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform group-hover:scale-105", a.accent)}>
-                  <a.icon className="h-5 w-5" />
-                </span>
-                <span className="text-sm font-bold text-zinc-700 font-secondary transition-colors group-hover:text-zinc-900">
-                  {a.label}
-                </span>
-              </Link>
+      <div className="mt-3 flex-1">
+        {loading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-11 w-full" />
             ))}
           </div>
-        </div>
+        ) : (approvals?.total ?? 0) === 0 ? (
+          <div className="flex h-full min-h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-teal-200 bg-teal-50/30 p-6 text-center">
+            <CheckCheck className="h-5 w-5 text-teal-700" />
+            <p className="text-xs font-bold text-zinc-700">Inbox clear</p>
+            <p className="text-[11px] text-zinc-500">
+              No leave requests or attendance corrections are waiting on you.
+            </p>
+          </div>
+        ) : (
+          <>
+            <ul className="divide-y divide-zinc-100">
+              {pending.map((leave) => (
+                <li key={leave.id}>
+                  <Link
+                    href="/hrms/leave"
+                    className="flex items-center justify-between gap-3 py-2.5 transition-colors hover:bg-zinc-50/60"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-xs font-bold text-zinc-800">
+                        {leave.fullName}
+                      </span>
+                      <span className="block truncate text-[11px] text-zinc-400">
+                        {leave.leaveType.replace(/_/g, " ")} ·{" "}
+                        {formatDayRange(leave.dateFrom, leave.dateTo)}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block text-xs font-bold tabular-nums text-zinc-900">
+                        {leave.totalDays}d
+                      </span>
+                      <span
+                        className={cn(
+                          "block text-[10px] font-bold uppercase tracking-wider",
+                          leave.status === "hr_approved"
+                            ? "text-teal-700"
+                            : "text-amber-700",
+                        )}
+                      >
+                        {leave.status === "hr_approved" ? "Final approval" : "New"}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {regularizations > 0 && (
+              <Link
+                href="/hrms/attendance-corrections"
+                className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50/60 px-3 py-2.5 transition-colors hover:bg-white"
+              >
+                <span className="text-xs font-medium text-zinc-700">
+                  Attendance corrections to review
+                </span>
+                <span className="text-xs font-bold tabular-nums text-zinc-900">
+                  {regularizations}
+                </span>
+              </Link>
+            )}
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+/** Upcoming approved leave and work anniversaries — the planning ahead panel. */
+function LookAheadPanel({
+  overview,
+  loading,
+}: {
+  overview: HrOverview | undefined;
+  loading?: boolean;
+}) {
+  const upcoming = overview?.leave.upcoming ?? [];
+  const anniversaries = overview?.milestones.anniversaries ?? [];
+  const isEmpty = upcoming.length === 0 && anniversaries.length === 0;
+
+  return (
+    <div className="flex h-full flex-col">
+      <PanelHeading
+        title="Looking Ahead"
+        subtitle="Approved leave and milestones in the next 30 days"
+        href="/hrms/team-calendar"
+      />
+
+      <div className="mt-3 flex-1">
+        {loading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : isEmpty ? (
+          <div className="flex h-full min-h-32 items-center justify-center rounded-xl border border-dashed border-neutral-200 bg-neutral-50/40 p-6">
+            <p className="text-xs font-medium text-zinc-400">
+              Nothing scheduled in the next two weeks
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {upcoming.length > 0 && (
+              <div>
+                <p className="flex items-center gap-1.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  <CalendarDays className="h-3 w-3" />
+                  Upcoming leave
+                </p>
+                <ul className="divide-y divide-zinc-100">
+                  {upcoming.map((leave) => (
+                    <li
+                      key={leave.id}
+                      className="flex items-center justify-between gap-3 py-2"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-xs font-semibold text-zinc-800">
+                          {leave.fullName}
+                        </span>
+                        <span className="block text-[11px] text-zinc-400">
+                          {leave.leaveType.replace(/_/g, " ")}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-[11px] font-bold text-zinc-700">
+                          {formatDayRange(leave.dateFrom, leave.dateTo)}
+                        </span>
+                        <span className="block text-[10px] text-zinc-400">
+                          {leave.totalDays} day{leave.totalDays === 1 ? "" : "s"}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {anniversaries.length > 0 && (
+              <div>
+                <p className="flex items-center gap-1.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  <CakeSlice className="h-3 w-3" />
+                  Work anniversaries
+                </p>
+                <ul className="divide-y divide-zinc-100">
+                  {anniversaries.map((person) => (
+                    <li
+                      key={person.userId}
+                      className="flex items-center justify-between gap-3 py-2"
+                    >
+                      <span className="truncate text-xs font-semibold text-zinc-800">
+                        {person.fullName}
+                      </span>
+                      <span className="shrink-0 text-[11px] font-bold text-zinc-700">
+                        {person.years} year{person.years === 1 ? "" : "s"}
+                        <span className="ml-1 font-medium text-zinc-400">
+                          {person.inDays === 0 ? "today" : `in ${person.inDays}d`}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * HR manager dashboard — workforce health.
+ *
+ * No period selector: HR questions are "who is in today" and "what is waiting
+ * on me", which are point-in-time. The trend charts carry their own fixed
+ * 30-day window instead.
+ */
+export function HrManagerDashboard() {
+  const overviewQuery = useHrOverview();
+  const trendQuery = useHrTrend(30);
+
+  const overview = overviewQuery.data;
+  const loading = overviewQuery.isLoading;
+  const attendance = overview?.attendance;
+
+  const avgCheckIn = overview?.punctuality.avgCheckInMinutes ?? null;
+  const expectedCheckIn = overview?.punctuality.expectedCheckInMinutes ?? null;
+
+  return (
+    <div className="pb-12 font-sans">
+      <DashboardHeader
+        title="Workforce Overview"
+        subtitle="Attendance, approvals and payroll — live for today"
+        showPeriodSelector={false}
+      />
+
+      <KpiRow>
+        <KpiTile
+          label="Headcount"
+          value={formatNumber(overview?.headcount.total ?? 0)}
+          hint={`${formatNumber(overview?.headcount.newJoiners30d ?? 0)} joined in 30 days`}
+          accent="ink"
+          href="/hrms/employees"
+          loading={loading}
+        />
+        <KpiTile
+          label="Attendance Rate"
+          value={formatPercent(attendance?.attendanceRate ?? 0, 0)}
+          hint={`${formatNumber(attendance?.present ?? 0)} present · ${formatNumber(
+            attendance?.late ?? 0,
+          )} late`}
+          accent={(attendance?.attendanceRate ?? 100) < 85 ? "risk" : "revenue"}
+          href="/hrms/attendance"
+          loading={loading}
+        />
+        <KpiTile
+          label="Absent Today"
+          value={formatNumber(attendance?.absent ?? 0)}
+          hint={`${formatNumber(attendance?.notCheckedIn ?? 0)} yet to check in`}
+          accent={(attendance?.absent ?? 0) > 0 ? "negative" : "muted"}
+          href="/hrms/attendance"
+          loading={loading}
+        />
+        <KpiTile
+          label="On Leave"
+          value={formatNumber(attendance?.onLeave ?? 0)}
+          hint={`${formatNumber(overview?.leave.upcoming.length ?? 0)} upcoming in 14 days`}
+          accent="muted"
+          href="/hrms/leave"
+          loading={loading}
+        />
+        <KpiTile
+          label="Avg Check-in"
+          value={formatClockMinutes(avgCheckIn)}
+          hint={
+            expectedCheckIn != null
+              ? `Start time ${formatClockMinutes(expectedCheckIn)}`
+              : "No start time configured"
+          }
+          accent={
+            avgCheckIn != null && expectedCheckIn != null && avgCheckIn > expectedCheckIn
+              ? "risk"
+              : "ink"
+          }
+          loading={loading}
+        />
+        <KpiTile
+          label="Pending Approvals"
+          value={formatNumber(overview?.approvals.total ?? 0)}
+          hint={`${formatNumber(
+            overview?.approvals.leavePending ?? 0,
+          )} leave · ${formatNumber(
+            overview?.approvals.regularizationPending ?? 0,
+          )} corrections`}
+          accent={(overview?.approvals.total ?? 0) > 0 ? "risk" : "muted"}
+          href="/hrms/leave"
+          loading={loading}
+        />
+      </KpiRow>
+
+      {/* ── Today ── */}
+      <DashboardSplit
+        divider={false}
+        primary={
+          <AttendanceTrendPanel trend={trendQuery.data} loading={trendQuery.isLoading} />
+        }
+        secondary={
+          <AttendanceTodayPanel attendance={attendance} loading={loading} />
+        }
+      />
+
+      {/* ── My inbox ── */}
+      <DashboardSplit
+        primary={<ApprovalsPanel overview={overview} loading={loading} />}
+        secondary={<LookAheadPanel overview={overview} loading={loading} />}
+      />
+
+      {/* ── Discipline signals ── */}
+      <DashboardSplit
+        primary={
+          <PunctualityPanel
+            punctuality={overview?.punctuality}
+            lateRate={attendance?.lateRate}
+            loading={loading}
+          />
+        }
+        secondary={
+          <WorkingHoursPanel trend={trendQuery.data} loading={trendQuery.isLoading} />
+        }
+      />
+
+      {/* ── Organisation ── */}
+      <DashboardSplit
+        primary={<HeadcountPanel headcount={overview?.headcount} loading={loading} />}
+        secondary={
+          <LeaveUtilisationPanel
+            utilisation={overview?.leave.utilisation}
+            loading={loading}
+          />
+        }
+      />
+
+      {/* ── Payroll + personal ── */}
+      <DashboardSplit
+        primary={
+          <PayrollPanel
+            payroll={overview?.payroll}
+            headcount={overview?.headcount.total}
+            loading={loading}
+          />
+        }
+        secondary={
+          <div className="flex h-full flex-col gap-4">
+            <AttendanceCheckInOut />
+            <TodoListWidget />
+          </div>
+        }
+      />
+
+      {/* ── Per-employee detail ── */}
+      <DashboardSection>
+        <EmployeeActivitySection showLeadData={false} />
+      </DashboardSection>
+
+      <DashboardSection>
+        <QuickActionsPanel role="hr_manager" layout="row" />
+      </DashboardSection>
     </div>
   );
 }

@@ -116,6 +116,7 @@ api.interceptors.response.use(
         pathname.startsWith("/dynamic-fields") ||
         pathname.startsWith("/followup") ||
         pathname.startsWith("/activity") ||
+        pathname.startsWith("/targets") ||
         pathname.startsWith("/properties") ||
         pathname.startsWith("/property-submissions") ||
         pathname.startsWith("/owners") ||

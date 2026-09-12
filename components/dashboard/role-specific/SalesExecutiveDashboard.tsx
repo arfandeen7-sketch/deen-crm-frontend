@@ -1,135 +1,311 @@
 "use client";
 
+import { useMemo } from "react";
+import { CalendarClock, Clock, FileText } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { KpiRow, KpiTile } from "@/components/dashboard/kpi/KpiTile";
 import {
-  useDashboardSummary,
-  useTodayFollowupCount,
-  useMissedFollowupCount,
-} from "@/hooks/useDashboard";
-import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
-import { ROLE_QUICK_ACTIONS } from "@/constants/dashboard";
+  DashboardHeader,
+  DashboardSection,
+  DashboardSplit,
+  PanelHeading,
+} from "@/components/dashboard/widgets/DashboardShell";
+import { TodayAgenda } from "@/components/dashboard/widgets/TodayAgenda";
+import { MyActivityPanel, RankCard } from "@/components/dashboard/widgets/MyActivityPanel";
+import { FunnelPanel, StatusMixPanel } from "@/components/dashboard/widgets/PipelinePanel";
+import { RevenueSparkPanel } from "@/components/dashboard/widgets/RevenueTrendPanel";
+import { AttentionPanel } from "@/components/dashboard/widgets/AttentionPanel";
+import { TargetCard } from "@/components/dashboard/widgets/TargetCard";
+import { QuickActionsPanel } from "@/components/dashboard/widgets/QuickActionsPanel";
+import {
+  formatAed,
+  formatHours,
+  formatNumber,
+  formatPercent,
+} from "@/components/dashboard/charts/theme";
+import {
+  comparisonLabel,
+  usePeriod,
+} from "@/components/dashboard/filters/PeriodSelector";
+import { useAttention, useMyPerformance } from "@/hooks/useDashboardAnalytics";
 import { useAuth } from "@/hooks/useAuth";
-import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
-import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
+import { AttendanceCheckInOut } from "@/components/hrms/AttendanceCheckInOut";
 import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
+import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
+import type { MyHrSnapshot } from "@/types";
 
-export function SalesExecutiveDashboard() {
-  const summary = useDashboardSummary();
-  const todayCount = useTodayFollowupCount();
-  const missedCount = useMissedFollowupCount();
-  const { user } = useAuth();
-
-  const quickActions = ROLE_QUICK_ACTIONS.sales_executive;
+/** My HR snapshot — attendance and leave, kept compact beside the check-in card. */
+function MyHrCard({
+  hr,
+  loading,
+}: {
+  hr: MyHrSnapshot | undefined;
+  loading?: boolean;
+}) {
+  const mtd = hr?.monthToDate;
 
   return (
-    <div className="space-y-4 font-sans pb-12">
-      {/* ── Top Stat Strip ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-neutral-200/80 pb-8 border-b border-neutral-200/80">
-        <div className="flex flex-col justify-between pt-2 pb-4 pr-6 md:pl-0 md:pr-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">My Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.totalLeads ?? 0)}
-            </div>
-          </div>
-          <div className="h-1 bg-black absolute bottom-0 left-0 right-0 md:left-0 md:right-6 rounded-full" />
+    <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+        My month so far
+      </p>
+
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
+        <div>
+          <dt className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+            Days present
+          </dt>
+          <dd className="font-secondary text-lg font-bold text-zinc-900">
+            {loading ? "…" : formatNumber(mtd?.present ?? 0)}
+          </dd>
         </div>
-
-        <Link href="/followup/today" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Today&apos;s Follow-ups</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {todayCount.isLoading ? "..." : (todayCount.data ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-emerald-600 absolute bottom-0 left-6 right-6 rounded-full" />
-        </Link>
-
-        <Link href="/followup/missed" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Missed Follow-ups</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {missedCount.isLoading ? "..." : (missedCount.data ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-6 rounded-full" />
-        </Link>
-
-        <div className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Deals Closed</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.dealsClosed ?? 0).toString().padStart(2, "0")}
-            </div>
-            <p className="mt-1 text-xs font-medium text-teal-700">
-              AED {summary.isLoading ? "…" : Math.round(summary.data?.salesAmount ?? 0).toLocaleString()}
-            </p>
-          </div>
-          <div className="h-1 bg-teal-600 absolute bottom-0 left-6 right-0 rounded-full" />
+        <div>
+          <dt className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+            Late arrivals
+          </dt>
+          <dd
+            className={
+              (mtd?.late ?? 0) > 0
+                ? "font-secondary text-lg font-bold text-amber-700"
+                : "font-secondary text-lg font-bold text-zinc-900"
+            }
+          >
+            {loading ? "…" : formatNumber(mtd?.late ?? 0)}
+          </dd>
         </div>
+        <div>
+          <dt className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+            Avg hours / day
+          </dt>
+          <dd className="font-secondary text-lg font-bold text-zinc-900">
+            {loading ? "…" : formatHours(mtd?.avgWorkingHours)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+            Leaves pending
+          </dt>
+          <dd className="font-secondary text-lg font-bold text-zinc-900">
+            {loading ? "…" : formatNumber(hr?.pendingLeaves ?? 0)}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-4 flex flex-wrap gap-3 border-t border-zinc-100 pt-3">
+        <Link
+          href="/my-hr/attendance"
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:text-zinc-900"
+        >
+          <CalendarClock className="h-3 w-3" />
+          Attendance
+        </Link>
+        <Link
+          href="/my-hr/leaves"
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:text-zinc-900"
+        >
+          <Clock className="h-3 w-3" />
+          Leaves
+        </Link>
+        <Link
+          href="/my-hr/payslips"
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:text-zinc-900"
+        >
+          <FileText className="h-3 w-3" />
+          Payslips
+        </Link>
       </div>
+    </div>
+  );
+}
 
-      {/* ── Recent Leads (assigned to me, 2/3) & Missed Follow-ups (1/3) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-b border-zinc-200">
-        <div className="lg:col-span-2">
+/**
+ * Sales executive dashboard — personal productivity.
+ *
+ * Today's Agenda sits at the top because an executive's first question is "who
+ * do I call now", not "how did the quarter go". Performance context follows.
+ */
+export function SalesExecutiveDashboard() {
+  const { user } = useAuth();
+  const period = usePeriod();
+  const performance = useMyPerformance(period, 14);
+  const attention = useAttention();
+
+  const data = performance.data;
+  const kpis = data?.kpis.current;
+  const deltas = data?.kpis.deltas;
+  const loading = performance.isLoading;
+  const caption = comparisonLabel(period);
+
+  const revenueSpark = useMemo(
+    () => (data?.trend ?? []).map((p) => p.revenue),
+    [data?.trend],
+  );
+
+  const firstName = user?.fullName?.split(" ")[0];
+
+  return (
+    <div className="pb-12 font-sans">
+      <DashboardHeader
+        title={firstName ? `Hello, ${firstName}` : "My Dashboard"}
+        subtitle={`Your pipeline and performance · comparisons ${caption}`}
+      />
+
+      <KpiRow>
+        <KpiTile
+          label="Due Today"
+          value={formatNumber(data?.pendingFollowups.today ?? 0)}
+          hint={`${formatNumber(data?.pendingFollowups.upcoming ?? 0)} scheduled later`}
+          accent="ink"
+          href="/followup/today"
+          loading={loading}
+        />
+        <KpiTile
+          label="Overdue"
+          value={formatNumber(data?.pendingFollowups.missed ?? 0)}
+          hint="Follow-up date has passed"
+          accent={
+            (data?.pendingFollowups.missed ?? 0) > 0 ? "negative" : "muted"
+          }
+          href="/followup/missed"
+          loading={loading}
+        />
+        <KpiTile
+          label="My Revenue"
+          value={formatAed(kpis?.revenue ?? 0, {
+            compact: (kpis?.revenue ?? 0) >= 1_000_000,
+          })}
+          hint={`${formatNumber(kpis?.dealsClosed ?? 0)} deals closed`}
+          delta={deltas?.revenue}
+          deltaLabel={caption}
+          accent="revenue"
+          sparkline={revenueSpark}
+          loading={loading}
+        />
+        <KpiTile
+          label="Open Leads"
+          value={formatNumber(data?.activeLeads ?? 0)}
+          hint={`${formatNumber(kpis?.leadsAssigned ?? 0)} assigned this period`}
+          accent="muted"
+          href="/leads"
+          loading={loading}
+        />
+        <KpiTile
+          label="Win Rate"
+          value={formatPercent(kpis?.winRate ?? 0)}
+          hint={`${formatPercent(kpis?.qualifiedRate ?? 0, 0)} reached qualified`}
+          delta={deltas?.winRate}
+          deltaLabel={caption}
+          accent="ink"
+          loading={loading}
+        />
+        <KpiTile
+          label="My Response Time"
+          value={formatHours(kpis?.avgFirstResponseHours)}
+          hint="Assignment to first contact"
+          delta={deltas?.avgFirstResponseHours}
+          invertDelta
+          deltaLabel={caption}
+          accent={(kpis?.avgFirstResponseHours ?? 0) > 24 ? "risk" : "ink"}
+          loading={loading}
+        />
+      </KpiRow>
+
+      {/* ── Hero: what to do now ── */}
+      <DashboardSplit
+        divider={false}
+        primary={<TodayAgenda />}
+        secondary={
+          <div className="flex h-full flex-col gap-4">
+            <RankCard rank={data?.rank} loading={loading} />
+            <div className="flex-1">
+              <PanelHeading
+                title="My Target"
+                subtitle={
+                  data?.target
+                    ? "Your monthly revenue goal"
+                    : "No personal target this month"
+                }
+              />
+              <div className="mt-3">
+                <TargetCard
+                  target={data?.target}
+                  current={data?.kpis.current}
+                  previous={data?.kpis.previous}
+                  revenueDelta={deltas?.revenue}
+                  loading={loading}
+                  comparisonCaption={caption}
+                />
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      {/* ── Effort and outcome ── */}
+      <DashboardSplit
+        primary={<MyActivityPanel trend={data?.activityTrend} loading={loading} />}
+        secondary={
+          <RevenueSparkPanel
+            trend={data?.trend}
+            granularity={data?.period.granularity}
+            loading={loading}
+            title="My Revenue Trend"
+          />
+        }
+      />
+
+      {/* ── Pipeline shape ── */}
+      <DashboardSplit
+        primary={
+          <FunnelPanel
+            funnel={data?.funnel}
+            loading={loading}
+            title="My Conversion"
+            subtitle="Leads that came to me in this period"
+          />
+        }
+        secondary={
+          <StatusMixPanel
+            statusMix={data?.statusMix}
+            loading={loading}
+            title="My Pipeline"
+          />
+        }
+      />
+
+      {/* ── Risk queue ── */}
+      <DashboardSplit
+        primary={
+          <AttentionPanel
+            data={attention.data}
+            loading={attention.isLoading}
+            title="Leads At Risk"
+            subtitle="Your leads that need action today"
+          />
+        }
+        secondary={<TodoListWidget />}
+      />
+
+      {/* ── Recent work ── */}
+      <DashboardSplit
+        primary={
           <RecentLeadsTable
             assignedTo={user?.id}
             title="My Recent Leads"
-            subtitle="Latest leads assigned to you"
-            viewAllHref="/leads/assigned"
+            subtitle="Newest assignments first"
           />
-        </div>
-
-        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <FollowUpsWidget
-            subtitle="Overdue follow-ups need attention"
-            emptyMessage="Great job staying on track! 🎉"
-            showAssignedTo={false}
-          />
-        </div>
-      </div>
-
-      {/* ── My Todos ── */}
-      <div className="py-8 border-t border-zinc-200">
-        <TodoListWidget />
-      </div>
-
-      {/* ── Attendance & Quick Actions ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-8 border-t border-zinc-200">
-        <div className="flex flex-col">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary mb-4">Attendance</h3>
-          </div>
-          <div className="flex-1">
+        }
+        secondary={
+          <div className="flex h-full flex-col gap-4">
             <AttendanceCheckInOut />
+            <MyHrCard hr={data?.hr} loading={loading} />
           </div>
-        </div>
+        }
+      />
 
-        <div className="flex flex-col lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Quick Actions</h3>
-            <p className="text-xs text-zinc-400 mt-1">Frequent tools</p>
-          </div>
-
-          <div className="mt-4 flex-1 flex flex-col justify-center space-y-3">
-            {quickActions.map((a) => (
-              <Link
-                key={a.href}
-                href={a.href}
-                className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/80 p-3.5 bg-white hover:bg-zinc-50/50 hover:border-zinc-300 transition-all shadow-sm group"
-              >
-                <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform group-hover:scale-105", a.accent)}>
-                  <a.icon className="h-5 w-5" />
-                </span>
-                <span className="text-sm font-bold text-zinc-700 font-secondary transition-colors group-hover:text-zinc-900">
-                  {a.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      <DashboardSection>
+        <QuickActionsPanel role="sales_executive" layout="row" />
+      </DashboardSection>
     </div>
   );
 }
