@@ -237,6 +237,17 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "HR Reports", href: "/hrms/reports", icon: PieChart, navAccess: { module: "hrms", page: "login_activity" } },
     ],
   },
+  // ── 8b. Reports (unified reporting platform) ──────────────────────────────
+  {
+    id: "reports",
+    title: "Reports",
+    icon: BarChart2,
+    moduleKey: "reports",
+    section: "MENU",
+    items: [
+      { label: "All Reports", href: "/reports", icon: BarChart2, navAccess: { module: "reports" } },
+    ],
+  },
   // ── 9. Users ────────────────────────────────────────────────────────────
   {
     id: "users",

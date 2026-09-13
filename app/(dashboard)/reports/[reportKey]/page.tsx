@@ -1,26 +1,14 @@
 "use client";
 
 import { use } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { useReportCatalog } from "@/hooks/useReports";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { AccessGuard } from "@/components/shared/Guards";
 import { ReportShell } from "@/components/reports/ReportShell";
 
-/**
- * Legacy /leads/reports/employee/[userId] path — re-pointed at the
- * `employee-performance` report, pre-filtered to this user. Keeps the
- * path working so existing bookmarks don't break.
- */
-export default function EmployeeReportPage({
-  params,
-}: {
-  params: Promise<{ userId: string }>;
-}) {
-  const { userId } = use(params);
-  const router = useRouter();
+export default function ReportPage({ params }: { params: Promise<{ reportKey: string }> }) {
+  const { reportKey } = use(params);
+  const permissionPage = reportKey.replace(/-/g, "_");
   const catalogQuery = useReportCatalog(true);
 
   if (catalogQuery.isLoading || catalogQuery.isPending) {
@@ -39,7 +27,7 @@ export default function EmployeeReportPage({
     );
   }
 
-  const entry = catalogQuery.data?.find((r) => r.key === "employee-performance");
+  const entry = catalogQuery.data?.find((r) => r.key === reportKey);
 
   if (!entry) {
     return (
@@ -50,17 +38,8 @@ export default function EmployeeReportPage({
   }
 
   return (
-    <AccessGuard module="reports" page="employee_performance" action="view">
-      <div className="mx-auto max-w-7xl space-y-4 px-4 py-6">
-        <Button variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Button>
-      </div>
-      <ReportShell
-        entry={entry}
-        lockedFilters={{ userId }}
-        hideBackLink
-      />
+    <AccessGuard module="reports" page={permissionPage} action="view">
+      <ReportShell entry={entry} />
     </AccessGuard>
   );
 }

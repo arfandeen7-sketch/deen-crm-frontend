@@ -179,11 +179,21 @@ export const reportsService = {
    * `date` bucketed by the requested `period` (daily/weekly/monthly).
    */
   timeSeries(params: LeadReportParams): Promise<LeadTimeSeriesItem[]> {
+    // B3 fix: send `groupBy=day|week|month` (backend accepts both, but this is canonical).
+    const periodToGroupBy: Record<string, "day" | "week" | "month"> = {
+      daily: "day",
+      weekly: "week",
+      monthly: "month",
+      day: "day",
+      week: "week",
+      month: "month",
+    };
+    const groupBy = periodToGroupBy[params.period ?? "daily"] ?? "day";
     return getData<LeadTimeSeriesItem[]>(
       `/leads/report/timeseries${buildQuery({
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
-        period: params.period ?? "daily",
+        groupBy,
       })}`,
     );
   },

@@ -10,7 +10,6 @@ import { payrollService, type PayrollPreviewParams } from "@/services/hrms/payro
 import { payslipService, type PayslipQuery } from "@/services/hrms/payslip.service";
 import { emailService, type SmtpConfigInput, type EmailTemplateInput } from "@/services/hrms/email.service";
 import { loginActivityService, type LoginActivityQuery } from "@/services/hrms/login-activity.service";
-import { hrReportsService, type HrReportQuery, type HrReportType } from "@/services/hrms/hr-reports.service";
 import type { AttendanceCheckPayload, EmploymentStatus, LeaveApplyPayload, LeaveStatus } from "@/types";
 import { POLL_FAST, POLL_SLOW } from "@/constants";
 import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
@@ -510,20 +509,6 @@ export function useLoginActivityList(params: LoginActivityQuery) {
   return useQuery({
     queryKey: ["login-activity", "list", params],
     queryFn: () => loginActivityService.list(params),
-    enabled,
-    refetchInterval: enabled ? POLL_SLOW : false,
-    retry: retrySkipAuth,
-  });
-}
-
-// ── HR Reports Hooks ─────────────────────────────────────────────────────────
-
-export function useHrReport(type: HrReportType, params: HrReportQuery = {}) {
-  const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["hrms:reports"]);
-  const enabled = !!type && hasPermission;
-  return useQuery({
-    queryKey: ["hr-reports", type, params],
-    queryFn: () => hrReportsService.getReport(type, params),
     enabled,
     refetchInterval: enabled ? POLL_SLOW : false,
     retry: retrySkipAuth,

@@ -137,6 +137,10 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
 
   // Activity Stream (Master-only)
   "/activity": { type: "master" },
+
+  // Reports (unified reporting platform)
+  "/reports": { type: "permission", requirement: { module: "reports", action: "view" } },
+  "/reports/[reportKey]": { type: "permission", requirement: { module: "reports", action: "view" } },
 };
 
 // ── Query / Read Requirements ────────────────────────────────────────────────
@@ -319,6 +323,11 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "teams:unassign": { module: "users", page: "teams", action: "unassign" },
 
   "leads:reports:export": { module: "lead_reports", action: "export" },
+
+  "reports:catalog": { module: "reports", action: "view" },
+  "reports:document": { module: "reports", action: "view" },
+  "reports:options": { module: "reports", action: "view" },
+  "reports:export": { module: "reports", action: "export" },
 };
 
 // ── Dashboard Widget Requirements ────────────────────────────────────────────

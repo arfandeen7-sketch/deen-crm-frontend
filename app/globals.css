@@ -74,3 +74,52 @@ nav.sidebar-nav-scroll::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
 }
+
+/* ── Print styles for reports ─────────────────────────────────────────────── */
+@media print {
+  /* Hide elements marked data-print="hide" */
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Show elements marked data-print="block" (overriding any display:none) */
+  [data-print="block"] {
+    display: block !important;
+  }
+
+  /* Reset page margins for printing */
+  @page {
+    margin: 12mm;
+  }
+
+  /* White background, black text for print */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Expand tables to show all rows when printing */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Avoid breaking inside chart containers */
+  section {
+    page-break-inside: avoid;
+  }
+
+  /* Remove shadows and borders that don't print well */
+  .shadow-lg, .shadow-md, .shadow-sm {
+    box-shadow: none !important;
+  }
+}
