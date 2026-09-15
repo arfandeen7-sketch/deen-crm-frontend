@@ -126,16 +126,19 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   // ── 5. Properties ───────────────────────────────────────────────────────
+  // CMA-gated: not visible to any non-master user until the master grants the
+  // `properties` module explicitly.
   {
     id: "properties",
     title: "Properties",
     icon: Building2,
     href: "/properties",
     isSingular: true,
+    moduleKey: "properties",
     section: "MENU",
     items: [
-      { label: "All Properties", href: "/properties", icon: Building2 },
-      { label: "Add Property", href: "/properties/create", icon: Plus },
+      { label: "All Properties", href: "/properties", icon: Building2, navAccess: { module: "properties", page: "all_properties", action: "view" } },
+      { label: "Add Property", href: "/properties/create", icon: Plus, navAccess: { module: "properties", page: "all_properties", action: "create" } },
       { label: "Submissions", href: "/properties/submissions", icon: ClipboardList, masterOnly: true },
     ],
   },

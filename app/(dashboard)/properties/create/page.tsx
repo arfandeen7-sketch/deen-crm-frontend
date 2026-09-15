@@ -7,9 +7,18 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AddPropertyForm } from "@/components/properties/AddPropertyForm";
 import { usePropertySubmissionMutations } from "@/hooks/usePropertySubmissions";
+import { AccessGuard } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/services/api/client";
 
 export default function CreatePropertyPage() {
+  return (
+    <AccessGuard module="properties" page="all_properties" action="create">
+      <CreatePropertyContent />
+    </AccessGuard>
+  );
+}
+
+function CreatePropertyContent() {
   const router = useRouter();
   const { create } = usePropertySubmissionMutations();
 

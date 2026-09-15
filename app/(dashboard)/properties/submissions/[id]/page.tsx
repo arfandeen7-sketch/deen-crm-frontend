@@ -25,11 +25,20 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Input";
 import { usePropertySubmission, usePropertySubmissionMutations } from "@/hooks/usePropertySubmissions";
 import { useAuth } from "@/hooks/useAuth";
+import { AccessGuard } from "@/components/shared/Guards";
 import { getErrorMessage } from "@/services/api/client";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
 import type { PropertySubmissionStatus } from "@/services/properties/propertySubmissions.service";
 
 export default function PropertySubmissionDetailPage() {
+  return (
+    <AccessGuard module="properties" page="all_properties" action="view">
+      <PropertySubmissionDetailContent />
+    </AccessGuard>
+  );
+}
+
+function PropertySubmissionDetailContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { isMaster, user } = useAuth();

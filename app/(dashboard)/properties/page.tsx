@@ -10,12 +10,21 @@ import { PropertyCard } from "@/components/properties/PropertyCard";
 import { usePropertiesList } from "@/hooks/useProperties";
 import { usePropertySubmissionsList } from "@/hooks/usePropertySubmissions";
 import { useAuth } from "@/hooks/useAuth";
+import { AccessGuard } from "@/components/shared/Guards";
 import { Select } from "@/components/ui/Input";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { Button } from "@/components/ui/Button";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 
 export default function PropertiesPage() {
+  return (
+    <AccessGuard module="properties" page="all_properties" action="view">
+      <PropertiesContent />
+    </AccessGuard>
+  );
+}
+
+function PropertiesContent() {
   const { isMaster } = useAuth();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);

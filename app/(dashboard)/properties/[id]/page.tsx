@@ -31,9 +31,18 @@ import { PropertyGallery } from "@/components/properties/PropertyGallery";
 import { PropertyActions } from "@/components/properties/PropertyActions";
 import { useProperty } from "@/hooks/useProperties";
 import { useAuth } from "@/hooks/useAuth";
+import { AccessGuard } from "@/components/shared/Guards";
 import { formatCurrency, formatDate, formatDateTime, displayValue } from "@/lib/utils";
 
 export default function PropertyDetailPage() {
+  return (
+    <AccessGuard module="properties" page="all_properties" action="view">
+      <PropertyDetailContent />
+    </AccessGuard>
+  );
+}
+
+function PropertyDetailContent() {
   const params = useParams<{ id: string }>();
   const { data: property, isLoading, isError, refetch } = useProperty(params.id);
   const { isMaster } = useAuth();
