@@ -86,6 +86,8 @@ export interface TenantQueryParams {
   agreementStart?: string;
   agreementEnd?: string;
   modeOfPayment?: string;
+  /** Derived from the agreement end date: "available" = expired, "rented" = active. */
+  status?: "available" | "rented";
 }
 
 export const tenantsService = {
@@ -115,6 +117,11 @@ export const tenantsService = {
       body,
     );
     return res.data.data;
+  },
+
+  /** DELETE /api/tenants/:leadId/history/:historyId — remove a previous agreement period */
+  async deleteHistory(leadId: string, historyId: string): Promise<void> {
+    await api.delete(`/tenants/${leadId}/history/${historyId}`);
   },
 
   /** PUT /api/tenants/:leadId — upsert text fields */

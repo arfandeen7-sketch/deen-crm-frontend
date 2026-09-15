@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Field, Input, Select } from "@/components/ui/Input";
 import { useTenantHistory, useTenantPropertyMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
@@ -126,6 +126,7 @@ export function TenantHistorySection({ leadId }: TenantHistorySectionProps) {
                   key={period.id}
                   period={period}
                   isLast={idx === sortedHistory.length - 1}
+                  leadId={leadId}
                 />
               ))}
             </div>
@@ -439,13 +440,27 @@ function AddHistoryModal({
 function PeriodRow({
   period,
   isLast,
+  leadId,
 }: {
   period: TenantAgreementHistory;
   isLast: boolean;
+  leadId: string;
 }) {
   const [open, setOpen] = useState(isLast);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { deleteHistory } = useTenantPropertyMutations();
 
   const daysLabel = durationLabel(period.agreementStartDate, period.agreementEndDate);
+
+  async function handleDelete() {
+    try {
+      await deleteHistory.mutateAsync({ leadId, historyId: period.id });
+      toast.success("History record deleted.");
+      setShowDeleteConfirm(false);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
 
   return (
     <div>
@@ -562,8 +577,40 @@ function PeriodRow({
               on {formatDateTime(period.renewedAt)}
             </p>
           )}
+
+          {/* Delete action */}
+          <div className="flex justify-end border-t border-neutral-100 pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete Record
+            </Button>
+          </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete history record?"
+        message={
+          <>
+            This will permanently remove <strong>Period {period.periodNumber}</strong>
+            {period.agreementStartDate || period.agreementEndDate
+              ? ` (${formatDate(period.agreementStartDate)} → ${formatDate(period.agreementEndDate)})`
+              : ""}
+            {" "}and its associated cheques. This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        loading={deleteHistory.isPending}
+        danger
+      />
     </div>
   );
 }

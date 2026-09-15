@@ -215,7 +215,13 @@ export function useTenantPropertyMutations() {
     onSuccess: invalidateAll,
   });
 
-  return { createFromProperty, endContract, renewContract, moveProperty, createHistory };
+  const deleteHistory = useMutation({
+    mutationFn: ({ leadId, historyId }: { leadId: string; historyId: string }) =>
+      tenantsService.deleteHistory(leadId, historyId),
+    onSuccess: invalidateAll,
+  });
+
+  return { createFromProperty, endContract, renewContract, moveProperty, createHistory, deleteHistory };
 }
 
 /** Delete one or many tenant records from the tenants table. */

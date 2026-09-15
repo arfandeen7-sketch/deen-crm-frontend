@@ -18,11 +18,14 @@ export type TenantFilters = Pick<
   | "agreementStart"
   | "agreementEnd"
   | "modeOfPayment"
+  | "status"
 >;
 
 const textInputClass =
   "h-9 w-40 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-800 shadow-2xs placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black";
 const dateInputClass =
+  "h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-800 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black";
+const selectInputClass =
   "h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-800 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black";
 
 export function TenantFiltersBar({
@@ -116,6 +119,15 @@ export function TenantFiltersBar({
           placeholder="Mode of Payment"
           className={textInputClass}
         />
+        <select
+          value={filters.status ?? ""}
+          onChange={(e) => onChange("status", (e.target.value || undefined) as TenantFilters["status"])}
+          className={selectInputClass}
+        >
+          <option value="">All Statuses</option>
+          <option value="rented">Rented</option>
+          <option value="available">Available</option>
+        </select>
 
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={onReset}>
