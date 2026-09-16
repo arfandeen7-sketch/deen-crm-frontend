@@ -61,6 +61,14 @@ describe("auth-manifest — resolveRouteRequirement", () => {
     expect(req.type).toBe("permission");
   });
 
+  it("resolves Bellaviu clients as a permission route", () => {
+    const req = resolveRouteRequirement("/bellaviu-clients");
+    expect(req.type).toBe("permission");
+    if (req.type === "permission") {
+      expect(req.requirement.module).toBe("bellaviu_client_data");
+    }
+  });
+
   it("falls back to authenticated for unknown routes", () => {
     const req = resolveRouteRequirement("/unknown-route");
     expect(req.type).toBe("authenticated");

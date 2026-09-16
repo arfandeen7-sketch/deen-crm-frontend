@@ -39,13 +39,11 @@ describe("403 Recovery — query cancellation", () => {
   });
 
   it("redirects to /dashboard/overview when 403 on protected route", () => {
-    // This test would verify the silent redirect behavior.
-    // TODO: Mock window.location, set pathname to /leads, trigger 403,
-    // assert window.location.href set to /dashboard/overview
+    // Covered by forbidden-redirect.test.ts — only matching page 403s redirect.
   });
 
   it("does not redirect when 403 on self-service route", () => {
-    // TODO: Mock window.location, set pathname to /my-hr/attendance,
-    // trigger 403, assert no redirect
+    // Covered by forbidden-redirect.test.ts — notifications 403 on
+    // /bellaviu-clients must not bounce the user to the dashboard.
   });
 });

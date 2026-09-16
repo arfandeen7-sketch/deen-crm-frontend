@@ -120,6 +120,9 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // Notifications
   "/notifications": { type: "authenticated" },
 
+  // Bellaviu Client Data
+  "/bellaviu-clients": { type: "permission", requirement: { module: "bellaviu_client_data", page: "all_bellaviu_clients", action: "view" } },
+
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
   "/my-hr/attendance-corrections": { type: "authenticated" },

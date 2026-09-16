@@ -24,7 +24,7 @@ export function AccessGuard({
 }) {
   const router = useRouter();
   const { hydrated, permissionStatus } = useAuth();
-  const { canModule, canPage, canAction } = usePermissions();
+  const { access, canModule, canPage, canAction } = usePermissions();
 
   const permissionsReady = permissionStatus === "ready";
 
@@ -34,12 +34,13 @@ export function AccessGuard({
     return canModule(module);
   }
 
+  const allowed = hasAccess();
+
   useEffect(() => {
-    if (hydrated && permissionsReady && !hasAccess()) {
+    if (hydrated && permissionsReady && !allowed) {
       router.replace("/dashboard/overview");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, permissionsReady, module, page, action]);
+  }, [hydrated, permissionsReady, allowed, access, module, page, action, router]);
 
   // Wait for auth hydration and permission readiness before rendering anything.
   if (!hydrated || !permissionsReady) {

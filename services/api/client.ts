@@ -5,6 +5,7 @@ import axios, {
 } from "axios";
 import { getStoredRefreshToken, getStoredToken, useAuthStore } from "@/store/auth.store";
 import { isDemoToken } from "@/services/auth/demo";
+import { shouldHardRedirectOn403 } from "@/lib/forbidden-redirect";
 import type { ApiError } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -102,26 +103,12 @@ api.interceptors.response.use(
         setTimeout(() => { isRefreshingPermissions = false; }, 3000);
       }
 
-      // Silent redirect: if the user is on a protected page they can no longer
-      // access, send them to the dashboard overview instead of showing an error.
+      // Only leave the page when the 403 is for *this* route's module/page.
+      // Header notifications, todos, and other shell queries must not bounce
+      // a limited user off Bellaviu / leads / etc.
       const pathname = window.location.pathname;
-      const isProtectedRoute =
-        pathname.startsWith("/leads") ||
-        pathname.startsWith("/brokers") ||
-        pathname.startsWith("/clients") ||
-        pathname.startsWith("/users") ||
-        pathname.startsWith("/hrms") ||
-        pathname.startsWith("/teams") ||
-        pathname.startsWith("/integrations") ||
-        pathname.startsWith("/dynamic-fields") ||
-        pathname.startsWith("/followup") ||
-        pathname.startsWith("/activity") ||
-        pathname.startsWith("/properties") ||
-        pathname.startsWith("/property-submissions") ||
-        pathname.startsWith("/owners") ||
-        pathname.startsWith("/bellaviu-clients");
-
-      if (isProtectedRoute) {
+      const required = error.response?.data?.required;
+      if (shouldHardRedirectOn403(pathname, required)) {
         window.location.href = "/dashboard/overview";
       }
     }
