@@ -11,6 +11,7 @@ import {
   User as UserIcon,
   Eye,
   X,
+  UserCheck,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LeadTabs } from "@/components/leads/LeadTabs";
@@ -165,6 +166,22 @@ function DealDetailsModal({
             </section>
           )}
 
+          {/* Owner Conversion */}
+          {data.convertedToOwnerId && data.convertedOwner && (
+            <section>
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+                Owner Record
+              </h3>
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                <UserCheck className="h-4 w-4 shrink-0" />
+                <span>
+                  Converted to Owner:{" "}
+                  <span className="font-semibold">{data.convertedOwner.fullName}</span>
+                </span>
+              </div>
+            </section>
+          )}
+
           {/* Actions */}
           <div className="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
             <Link
@@ -181,6 +198,15 @@ function DealDetailsModal({
               <UserIcon className="h-3.5 w-3.5" />
               View Client
             </Link>
+            {data.convertedToOwnerId && (
+              <Link
+                href={`/owners/${data.convertedToOwnerId}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                View Owner
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -456,6 +482,24 @@ function DealClosedPageContent() {
       render: (row) => <StatusBadge status={row.leadStatus} />,
     },
     {
+      key: "owner",
+      header: "Owner",
+      render: (row) =>
+        row.convertedToOwnerId && row.convertedOwner ? (
+          <Link
+            href={`/owners/${row.convertedToOwnerId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 hover:bg-emerald-100 transition-colors whitespace-nowrap max-w-[130px] truncate"
+            title={`View Owner: ${row.convertedOwner.fullName}`}
+          >
+            <UserCheck className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{row.convertedOwner.fullName}</span>
+          </Link>
+        ) : (
+          <span className="text-neutral-400 text-sm">—</span>
+        ),
+    },
+    {
       key: "actions",
       header: "",
       stickyRight: true,
@@ -487,6 +531,15 @@ function DealClosedPageContent() {
               title="View client"
             >
               <UserIcon className="h-4 w-4" />
+            </Link>
+          )}
+          {row.convertedToOwnerId && (
+            <Link
+              href={`/owners/${row.convertedToOwnerId}`}
+              className="rounded p-1.5 text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+              title={`View owner${row.convertedOwner ? `: ${row.convertedOwner.fullName}` : ""}`}
+            >
+              <UserCheck className="h-4 w-4" />
             </Link>
           )}
         </div>

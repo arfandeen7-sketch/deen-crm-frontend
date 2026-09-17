@@ -240,6 +240,9 @@ export interface Lead {
   pfTags?: string | null;
   /** User-defined field values, keyed by CustomField.key. */
   customFields?: Record<string, string> | null;
+  // ── Lead → Owner Conversion ──────────────────────────────────────────────
+  convertedToOwnerId?: string | null;
+  convertedOwner?: { id: string; fullName: string; mobileNumber: string } | null;
 }
 
 // ── Client Details ────────────────────────────────────────────────────────────
@@ -596,6 +599,9 @@ export interface ClosedDeal {
   leadCreatedAt: string;
   // client
   client?: ClosedDealClient | null;
+  // owner conversion
+  convertedToOwnerId?: string | null;
+  convertedOwner?: { id: string; fullName: string; mobileNumber: string } | null;
 }
 
 export interface DealClosedStats {

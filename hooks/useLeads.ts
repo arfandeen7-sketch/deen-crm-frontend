@@ -135,5 +135,15 @@ export function useLeadMutations() {
     mutationFn: (file: File) => leadsService.parseImport(file),
   });
 
-  return { create, update, remove, bulkAssign, bulkStatus, bulkDelete, bulkUpdate, importLeads, parseImport };
+  const convertToOwner = useMutation({
+    mutationFn: (leadId: string) => leadsService.convertToOwner(leadId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [KEY] });
+      qc.invalidateQueries({ queryKey: ["owners"] });
+      qc.invalidateQueries({ queryKey: ["deal-closed"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+
+  return { create, update, remove, bulkAssign, bulkStatus, bulkDelete, bulkUpdate, importLeads, parseImport, convertToOwner };
 }

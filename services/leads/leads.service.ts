@@ -104,6 +104,28 @@ export const leadsService = {
     const res = await api.get<{ data: { projectNames: string[]; communities: string[]; cities: string[]; localities: string[] } }>(`/leads/options`);
     return res.data.data;
   },
+
+  /** Convert a lead to an Owner record (and optionally mark it Deal Closed). */
+  async convertToOwner(leadId: string): Promise<{
+    success: boolean;
+    alreadyConverted: boolean;
+    ownerId: string;
+    owner: { id: string; fullName: string; mobileNumber: string };
+    ownerAlreadyExisted: boolean;
+    propertyCreated: boolean;
+    dealClosedNow: boolean;
+  }> {
+    const res = await api.post<{
+      success: boolean;
+      alreadyConverted: boolean;
+      ownerId: string;
+      owner: { id: string; fullName: string; mobileNumber: string };
+      ownerAlreadyExisted: boolean;
+      propertyCreated: boolean;
+      dealClosedNow: boolean;
+    }>(`/leads/${leadId}/convert-to-owner`);
+    return res.data;
+  },
 };
 
 export const followupService = {

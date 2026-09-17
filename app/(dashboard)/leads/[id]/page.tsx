@@ -25,6 +25,7 @@ import {
   MessageSquare,
   CheckCircle2,
   CalendarClock,
+  UserCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -82,10 +83,11 @@ function LeadDetailPageContent() {
   const router = useRouter();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: customFieldDefs = [] } = useLeadCustomFields();
-  const { remove } = useLeadMutations();
+  const { remove, convertToOwner } = useLeadMutations();
   const { data: activityData } = useLeadActivity(params.id);
   const { data: followupHistory } = useFollowupHistory(params.id);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"history" | "followups" | "activity">("history");
 
   async function handleDelete() {
@@ -93,6 +95,26 @@ function LeadDetailPageContent() {
       await remove.mutateAsync(params.id);
       toast.success("Lead deleted");
       router.push("/leads");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  async function handleConvertToOwner() {
+    try {
+      const result = await convertToOwner.mutateAsync(params.id);
+      if (result.alreadyConverted) {
+        toast.info("Lead was already converted to an Owner.");
+      } else if (result.ownerAlreadyExisted) {
+        toast.success(
+          `Linked to existing Owner "${result.owner.fullName}".${result.dealClosedNow ? " Deal marked as Closed." : ""}`,
+        );
+      } else {
+        toast.success(
+          `Owner "${result.owner.fullName}" created successfully.${result.dealClosedNow ? " Deal marked as Closed." : ""}${result.propertyCreated ? " Property added to Owner portfolio." : ""}`,
+        );
+      }
+      setConvertOpen(false);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -112,6 +134,24 @@ function LeadDetailPageContent() {
         subtitle={`${displayValue(lead.source)} · ${displayValue(getEffectiveServiceType(lead))}`}
         actions={
           <>
+            {/* Convert to Owner / View Owner */}
+            {lead.convertedToOwnerId ? (
+              <Link href={`/owners/${lead.convertedToOwnerId}`}>
+                <Button variant="outline">
+                  <UserCheck className="h-4 w-4" /> View Owner
+                </Button>
+              </Link>
+            ) : (
+              <CanAccess module="leads" page="all_leads" action="edit">
+                <Button
+                  variant="outline"
+                  onClick={() => setConvertOpen(true)}
+                  disabled={convertToOwner.isPending}
+                >
+                  <UserCheck className="h-4 w-4" /> Convert to Owner
+                </Button>
+              </CanAccess>
+            )}
             <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>
               <Pencil className="h-4 w-4" /> Edit
             </Button>
@@ -394,6 +434,28 @@ function LeadDetailPageContent() {
               <InfoRow icon={Calendar} label="Last Updated" value={formatDateTime(lead.updatedAt)} />
             </CardBody>
           </Card>
+
+          {/* Owner Conversion Status */}
+          {lead.convertedToOwnerId && lead.convertedOwner && (
+            <Card>
+              <CardHeader title="Owner Record" />
+              <CardBody className="space-y-2">
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  <UserCheck className="h-4 w-4 shrink-0" />
+                  <span className="font-medium">Converted to Owner</span>
+                </div>
+                <InfoRow icon={UserIcon} label="Owner Name" value={lead.convertedOwner.fullName} />
+                <InfoRow icon={Phone} label="Mobile" value={lead.convertedOwner.mobileNumber} />
+                <div className="pt-1">
+                  <Link href={`/owners/${lead.convertedToOwnerId}`}>
+                    <Button variant="outline" className="w-full">
+                      <ExternalLink className="h-4 w-4" /> View Owner Details
+                    </Button>
+                  </Link>
+                </div>
+              </CardBody>
+            </Card>
+          )}
         </div>
       </div>
 
@@ -405,6 +467,20 @@ function LeadDetailPageContent() {
         message="This will permanently remove the lead and its history."
         confirmLabel="Delete"
         loading={remove.isPending}
+      />
+
+      <ConfirmModal
+        open={convertOpen}
+        onClose={() => setConvertOpen(false)}
+        onConfirm={handleConvertToOwner}
+        title="Convert lead to Owner?"
+        message={
+          lead.leadStatus !== "Deal Closed"
+            ? `This will mark the lead as Deal Closed and create an Owner record for "${lead.leadName}". A valid property price must already be set on the lead.`
+            : `This will create an Owner record for "${lead.leadName}" and link it to this lead. If an Owner with the same mobile number already exists, it will be linked instead.`
+        }
+        confirmLabel="Convert to Owner"
+        loading={convertToOwner.isPending}
       />
     </div>
   );
