@@ -204,6 +204,7 @@ function LeadDetailPageContent() {
                 <InfoRow icon={Layers} label="Property Type" value={lead.projectType} />
                 <InfoRow icon={BedDouble} label="Configuration" value={lead.configuration} />
                 <InfoRow icon={Building2} label="Unit Number" value={lead.unitNumber} />
+                <InfoRow icon={Building2} label="Building No." value={lead.buildingNo} />
                 <InfoRow
                   icon={DollarSign}
                   label="Price (AED)"

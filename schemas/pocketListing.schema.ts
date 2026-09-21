@@ -145,8 +145,18 @@ export const pocketListingSchema = z.object({
   virtualTourUrl: optionalString,
   floorPlanUrl: optionalString,
 
-  // ── Notes ──────────────────────────────────────────────────────────────────
+  // ── Notes ────────────────────────────────────────────────────────────────────
   notes: optionalString,
+
+  // ── Owner Details ──────────────────────────────────────────────────────────
+  ownerName: optionalString,
+  ownerMobileNumber: optionalString,
+  ownerAlternateMobile: optionalString,
+  ownerNationality: optionalString,
+  ownerPassportNumber: optionalString,
+  ownerEmiratesId: optionalString,
+  ownerPassportStartDate: optionalString,
+  ownerPassportEndDate: optionalString,
 });
 
 export type PocketListingFormValues = z.input<typeof pocketListingSchema>;

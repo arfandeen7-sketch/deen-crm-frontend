@@ -77,3 +77,67 @@ export function usePocketListingMutations() {
 
   return { create, update, removeImage, remove };
 }
+
+// ── Owner Document Mutations ──────────────────────────────────────────────────
+
+export function usePocketListingOwnerDocMutations() {
+  const qc = useQueryClient();
+  const invalidate = (id: string) => {
+    qc.invalidateQueries({ queryKey: [KEY, "detail", id] });
+  };
+
+  const uploadOwnerPassport = useMutation({
+    mutationFn: ({ id, file, ownerPassportStartDate, ownerPassportEndDate }: {
+      id: string;
+      file: File;
+      ownerPassportStartDate?: string;
+      ownerPassportEndDate?: string;
+    }) =>
+      pocketListingsService.uploadOwnerPassport(id, file, {
+        ownerPassportStartDate,
+        ownerPassportEndDate,
+      }),
+    onSuccess: (_d, vars) => invalidate(vars.id),
+  });
+
+  const removeOwnerPassport = useMutation({
+    mutationFn: (id: string) => pocketListingsService.removeOwnerPassport(id),
+    onSuccess: (_d, id) => invalidate(id),
+  });
+
+  const uploadOwnerEmiratesId = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      pocketListingsService.uploadOwnerEmiratesId(id, file),
+    onSuccess: (_d, vars) => invalidate(vars.id),
+  });
+
+  const removeOwnerEmiratesId = useMutation({
+    mutationFn: (id: string) => pocketListingsService.removeOwnerEmiratesId(id),
+    onSuccess: (_d, id) => invalidate(id),
+  });
+
+  const uploadOwnerDoc = useMutation({
+    mutationFn: ({ id, file, type, label }: {
+      id: string;
+      file: File;
+      type: string;
+      label?: string;
+    }) => pocketListingsService.uploadOwnerDoc(id, file, { type, label }),
+    onSuccess: (_d, vars) => invalidate(vars.id),
+  });
+
+  const removeOwnerDoc = useMutation({
+    mutationFn: ({ id, docId }: { id: string; docId: string }) =>
+      pocketListingsService.removeOwnerDoc(id, docId),
+    onSuccess: (_d, vars) => invalidate(vars.id),
+  });
+
+  return {
+    uploadOwnerPassport,
+    removeOwnerPassport,
+    uploadOwnerEmiratesId,
+    removeOwnerEmiratesId,
+    uploadOwnerDoc,
+    removeOwnerDoc,
+  };
+}

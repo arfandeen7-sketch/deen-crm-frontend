@@ -184,6 +184,7 @@ export interface Lead {
   city?: string | null;
   locality?: string | null;
   unitNumber?: string | null;
+  buildingNo?: string | null;
   price?: string | null;
   propertySize?: string | null;
   projectType?: string | null;
@@ -582,6 +583,7 @@ export interface ClosedDeal {
   community?: string | null;
   propertyType?: string | null;
   unitNumber?: string | null;
+  buildingNo?: string | null;
   propertySize?: string | null;
   propertyPrice?: string | null;
   salesValue: number;
@@ -1476,6 +1478,18 @@ export interface PocketListingImage {
   url: string;
 }
 
+export interface PocketListingDocument {
+  id: string;
+  type: string;
+  label?: string | null;
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  uploader?: Pick<User, "id" | "fullName"> | null;
+  fileUrl?: string | null;
+}
+
 export interface PocketListing {
   id: string;
   reference: string;
@@ -1520,6 +1534,26 @@ export interface PocketListing {
   virtualTourUrl?: string | null;
   floorPlanUrl?: string | null;
   notes?: string | null;
+  // ── Owner Details ──────────────────────────────────────────────────────────
+  ownerName?: string | null;
+  ownerMobileNumber?: string | null;
+  ownerAlternateMobile?: string | null;
+  ownerNationality?: string | null;
+  ownerPassportNumber?: string | null;
+  ownerEmiratesId?: string | null;
+  ownerPassportStartDate?: string | null;
+  ownerPassportEndDate?: string | null;
+  ownerPassportFileName?: string | null;
+  ownerPassportMimeType?: string | null;
+  ownerPassportUploadedAt?: string | null;
+  ownerPassportUploadedBy?: string | null;
+  ownerPassportUrl?: string | null;
+  ownerEmiratesIdFileName?: string | null;
+  ownerEmiratesIdMimeType?: string | null;
+  ownerEmiratesIdUploadedAt?: string | null;
+  ownerEmiratesIdUploadedBy?: string | null;
+  ownerEmiratesIdUrl?: string | null;
+  documents?: PocketListingDocument[];
   createdById: string;
   createdAt: string;
   updatedAt: string;
@@ -1555,6 +1589,9 @@ export type PocketListingInput = Omit<
   | "imageCount"
   | "rentalAgreement"
   | "source"
+  | "ownerPassportUrl"
+  | "ownerEmiratesIdUrl"
+  | "documents"
 >;
 
 /** A system field the user can map a CSV column to. */

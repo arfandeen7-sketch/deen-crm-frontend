@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/Button";
 import { PropertyGallery } from "@/components/properties/PropertyGallery";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { usePocketListing, usePocketListingMutations } from "@/hooks/usePocketListings";
+import { PocketListingOwnerDetails } from "@/components/pocketListings/PocketListingOwnerDetails";
 import { useAuth } from "@/hooks/useAuth";
 import {
   formatCurrency,
@@ -525,6 +526,23 @@ function PocketListingDetailContent() {
                 <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-700">
                   {listing.notes}
                 </p>
+              </CardBody>
+            </Card>
+          )}
+
+          {/* Owner Details — restricted to the listing creator and Master users */}
+          {canModify && (
+            <Card>
+              <CardHeader
+                title={
+                  <span className="flex items-center gap-2">
+                    <User className="h-3.5 w-3.5" />
+                    Owner Details
+                  </span>
+                }
+              />
+              <CardBody>
+                <PocketListingOwnerDetails listing={listing} />
               </CardBody>
             </Card>
           )}

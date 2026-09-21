@@ -122,6 +122,7 @@ function DealDetailsModal({
               <DetailRow label="Community" value={data.community} />
               <DetailRow label="Property Type" value={data.propertyType} />
               <DetailRow label="Unit Number" value={data.unitNumber} />
+              <DetailRow label="Building No." value={data.buildingNo} />
               <DetailRow label="Size" value={data.propertySize} />
               <DetailRow label="Property Price" value={data.propertyPrice} />
             </dl>
@@ -411,6 +412,9 @@ function DealClosedPageContent() {
           <p className="text-sm text-neutral-700">{displayValue(row.propertyType)}</p>
           {row.unitNumber && (
             <p className="text-xs text-neutral-400">Unit {row.unitNumber}</p>
+          )}
+          {row.buildingNo && (
+            <p className="text-xs text-neutral-400">Bldg {row.buildingNo}</p>
           )}
         </div>
       ),

@@ -99,9 +99,8 @@ export function LeadFilters({
           className="h-10 w-auto"
         >
           <option value="">All service types</option>
-          <option value="Sales">Sales</option>
+          <option value="Sale">Sale</option>
           <option value="Rent">Rent</option>
-          <option value="Lease">Lease</option>
         </Select>
         <Select
           value={filters.leadPriority ?? ""}

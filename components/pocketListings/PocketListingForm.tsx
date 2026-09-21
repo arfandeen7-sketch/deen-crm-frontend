@@ -468,6 +468,59 @@ export function PocketListingForm({
         </Field>
       </FormSection>
 
+      {/* ── Owner Details ─────────────────────────────────────────────────── */}
+      <FormSection title="Owner Details">
+        <Field label="Owner Name" error={errors.ownerName?.message}>
+          <Input
+            {...register("ownerName")}
+            placeholder="e.g. Ahmed Al Mansoori"
+          />
+        </Field>
+
+        <Field label="Mobile Number" error={errors.ownerMobileNumber?.message}>
+          <Input
+            {...register("ownerMobileNumber")}
+            placeholder="e.g. +971 50 123 4567"
+          />
+        </Field>
+
+        <Field label="Alternative Mobile" error={errors.ownerAlternateMobile?.message}>
+          <Input
+            {...register("ownerAlternateMobile")}
+            placeholder="e.g. +971 55 987 6543"
+          />
+        </Field>
+
+        <Field label="Nationality" error={errors.ownerNationality?.message}>
+          <Input
+            {...register("ownerNationality")}
+            placeholder="e.g. UAE"
+          />
+        </Field>
+
+        <Field label="Passport Number" error={errors.ownerPassportNumber?.message}>
+          <Input
+            {...register("ownerPassportNumber")}
+            placeholder="e.g. A1234567"
+          />
+        </Field>
+
+        <Field label="Passport Expiry Date" error={errors.ownerPassportEndDate?.message}>
+          <Input {...register("ownerPassportEndDate")} type="date" />
+        </Field>
+
+        <Field label="Emirates ID" error={errors.ownerEmiratesId?.message}>
+          <Input
+            {...register("ownerEmiratesId")}
+            placeholder="e.g. 784-1234-5678901-2"
+          />
+        </Field>
+
+        <Field label="Passport Start Date" error={errors.ownerPassportStartDate?.message}>
+          <Input {...register("ownerPassportStartDate")} type="date" />
+        </Field>
+      </FormSection>
+
       {/* ── Images ─────────────────────────────────────────────────────────── */}
       <div>
         <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-100 pb-2">

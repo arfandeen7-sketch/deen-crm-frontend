@@ -238,6 +238,12 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
         l.unitNumber ? <span className="text-sm text-slate-700">{l.unitNumber}</span> : <Dash />,
     },
     {
+      key: "buildingNo",
+      header: "Building No.",
+      render: (l) =>
+        l.buildingNo ? <span className="text-sm text-slate-700">{l.buildingNo}</span> : <Dash />,
+    },
+    {
       key: "size",
       header: "Size",
       render: (l) =>

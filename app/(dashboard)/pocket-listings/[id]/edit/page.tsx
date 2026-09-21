@@ -114,6 +114,15 @@ function PocketListingEditContent() {
     floorPlanUrl: listing.floorPlanUrl ?? undefined,
     notes: listing.notes ?? undefined,
     reference: listing.reference,
+    // ── Owner Details ──────────────────────────────────────────────────────────
+    ownerName: listing.ownerName ?? undefined,
+    ownerMobileNumber: listing.ownerMobileNumber ?? undefined,
+    ownerAlternateMobile: listing.ownerAlternateMobile ?? undefined,
+    ownerNationality: listing.ownerNationality ?? undefined,
+    ownerPassportNumber: listing.ownerPassportNumber ?? undefined,
+    ownerEmiratesId: listing.ownerEmiratesId ?? undefined,
+    ownerPassportStartDate: listing.ownerPassportStartDate?.slice(0, 10) ?? undefined,
+    ownerPassportEndDate: listing.ownerPassportEndDate?.slice(0, 10) ?? undefined,
   } as Partial<PocketListingFormValues>;
 
   // ── Handlers ─────────────────────────────────────────────────────────────

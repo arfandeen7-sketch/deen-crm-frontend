@@ -52,6 +52,7 @@ export const leadSchema = z.object({
   city: optionalString,
   locality: optionalString,
   unitNumber: optionalString,
+  buildingNo: optionalString,
   price: optionalString,
   propertySize: optionalString,
   configuration: optionalString,

@@ -108,6 +108,7 @@ export function LeadForm({
       city: initial?.city ?? "",
       locality: initial?.locality ?? "",
       unitNumber: initial?.unitNumber ?? "",
+      buildingNo: initial?.buildingNo ?? "",
       price: initial?.price ?? "",
       propertySize: initial?.propertySize ?? "",
       configuration: initial?.configuration ?? "",
@@ -314,6 +315,9 @@ export function LeadForm({
             </Field>
             <Field label="Unit Number" error={errors.unitNumber?.message}>
               <Input placeholder="e.g. 1204" {...register("unitNumber")} />
+            </Field>
+            <Field label="Building No." error={errors.buildingNo?.message}>
+              <Input placeholder="e.g. Tower 1" {...register("buildingNo")} />
             </Field>
             <Field label="Price (AED)" error={errors.price?.message}>
               <Input type="text" placeholder="e.g. 1500000" {...register("price")} />
