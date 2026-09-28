@@ -58,7 +58,7 @@ function AttendanceRegularizationContent() {
   const [approveNote, setApproveNote] = useState("");
   const [detailTarget, setDetailTarget] = useState<AttendanceRegularization | null>(null);
 
-  const { canAction, role } = useAuth();
+  const { canAction } = useAuth();
   const { data, isLoading } = useRegularizationList({
     page,
     pageSize,
@@ -69,7 +69,6 @@ function AttendanceRegularizationContent() {
 
   const canReview = (reqStatus: string) =>
     reqStatus === "pending" &&
-    (role === "hr_manager" || role === "master") &&
     (canAction("hrms", "attendance_regularization", "approve") ||
       canAction("hrms", "attendance_regularization", "reject"));
 

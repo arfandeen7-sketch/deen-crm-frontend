@@ -76,8 +76,8 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
             <Field label="Employment Status" error={errors.employmentStatus?.message}>
               <Select {...register("employmentStatus")} defaultValue={defaultValues?.employmentStatus ?? "active"}>
                 <option value="active">Active</option>
-                <option value="probation">Probation</option>
-                <option value="on_notice">On Notice</option>
+                <option value="on_leave">On Leave</option>
+                <option value="suspended">Suspended</option>
                 <option value="resigned">Resigned</option>
                 <option value="terminated">Terminated</option>
               </Select>

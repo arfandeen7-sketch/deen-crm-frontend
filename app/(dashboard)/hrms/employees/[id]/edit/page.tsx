@@ -7,6 +7,7 @@ import { EmployeeForm } from "@/components/hrms/EmployeeForm";
 import { useEmployee, useEmployeeMutations } from "@/hooks/useHrms";
 import type { EmployeeFormValues } from "@/schemas/employee.schema";
 import { AccessGuard } from "@/components/shared/Guards";
+import { getErrorMessage } from "@/services/api/client";
 
 export default function EditEmployeePage() {
   const { id } = useParams<{ id: string }>();
@@ -48,7 +49,7 @@ export default function EditEmployeePage() {
                   toast.success("Employee updated");
                   router.push(`/hrms/employees/${id}`);
                 },
-                onError: () => toast.error("Failed to update employee"),
+                onError: (err: unknown) => toast.error(getErrorMessage(err)),
               },
             );
           }}
