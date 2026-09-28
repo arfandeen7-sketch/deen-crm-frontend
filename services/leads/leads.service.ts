@@ -100,8 +100,22 @@ export const leadsService = {
     return res.data as Blob;
   },
 
-  async options(): Promise<{ projectNames: string[]; communities: string[]; cities: string[]; localities: string[] }> {
-    const res = await api.get<{ data: { projectNames: string[]; communities: string[]; cities: string[]; localities: string[] } }>(`/leads/options`);
+  async options(): Promise<{
+    projectNames: string[];
+    communities: string[];
+    cities: string[];
+    localities: string[];
+    nationalities: string[];
+  }> {
+    const res = await api.get<{
+      data: {
+        projectNames: string[];
+        communities: string[];
+        cities: string[];
+        localities: string[];
+        nationalities: string[];
+      };
+    }>(`/leads/options`);
     return res.data.data;
   },
 

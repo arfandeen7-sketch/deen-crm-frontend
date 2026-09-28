@@ -51,6 +51,10 @@ export function LeadFilters({
     new Set(leadOptions?.communities ?? []),
   ).sort((a, b) => a.localeCompare(b));
 
+  const allNationalities = Array.from(
+    new Set(leadOptions?.nationalities ?? []),
+  ).sort((a, b) => a.localeCompare(b));
+
   const hasFilters = Boolean(
     filters.status ||
       filters.source ||
@@ -66,6 +70,7 @@ export function LeadFilters({
       filters.ingestionSource ||
       filters.leadPriority ||
       filters.brokerId ||
+      filters.nationality ||
       filters.serviceType ||
       filters.community,
   );
@@ -91,6 +96,16 @@ export function LeadFilters({
           <option value="">All sources</option>
           {sources.map((s) => (
             <option key={s} value={s}>{s}</option>
+          ))}
+        </Select>
+        <Select
+          value={filters.nationality ?? ""}
+          onChange={(e) => onChange("nationality", e.target.value || undefined)}
+          className="h-10 w-auto"
+        >
+          <option value="">All nationalities</option>
+          {allNationalities.map((n) => (
+            <option key={n} value={n}>{n}</option>
           ))}
         </Select>
         <Select

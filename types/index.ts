@@ -1641,6 +1641,7 @@ export interface LeadQueryParams {
   source?: string;
   status?: string;
   assignedTo?: string;
+  nationality?: string;
   serviceType?: string;
   projectName?: string;
   city?: string;
