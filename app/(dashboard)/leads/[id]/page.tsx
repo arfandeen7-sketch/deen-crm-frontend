@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   CalendarClock,
   UserCheck,
+  UserX,
 } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -83,11 +84,12 @@ function LeadDetailPageContent() {
   const router = useRouter();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: customFieldDefs = [] } = useLeadCustomFields();
-  const { remove, convertToOwner } = useLeadMutations();
+  const { remove, update, convertToOwner } = useLeadMutations();
   const { data: activityData } = useLeadActivity(params.id);
   const { data: followupHistory } = useFollowupHistory(params.id);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
+  const [unassignOpen, setUnassignOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"history" | "followups" | "activity">("history");
 
   async function handleDelete() {
@@ -95,6 +97,16 @@ function LeadDetailPageContent() {
       await remove.mutateAsync(params.id);
       toast.success("Lead deleted");
       router.push("/leads");
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  async function handleUnassign() {
+    try {
+      await update.mutateAsync({ id: params.id, body: { assignedTo: null } });
+      toast.success("Lead unassigned successfully");
+      setUnassignOpen(false);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -415,6 +427,18 @@ function LeadDetailPageContent() {
                   </p>
                 </div>
               </div>
+              {lead.assignedTo && (
+                <CanAccess module="leads" page="all_leads" action="assign">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setUnassignOpen(true)}
+                    disabled={update.isPending}
+                  >
+                    <UserX className="h-4 w-4" /> Unassign Lead
+                  </Button>
+                </CanAccess>
+              )}
               <InfoRow
                 icon={UserIcon}
                 label="Created By"
@@ -482,6 +506,16 @@ function LeadDetailPageContent() {
         }
         confirmLabel="Convert to Owner"
         loading={convertToOwner.isPending}
+      />
+
+      <ConfirmModal
+        open={unassignOpen}
+        onClose={() => setUnassignOpen(false)}
+        onConfirm={handleUnassign}
+        title="Unassign Lead?"
+        message={`This will remove the current assignment from "${lead.leadName}" and move it back to Unassigned Leads. All lead details and activity history will be kept.`}
+        confirmLabel="Unassign"
+        loading={update.isPending}
       />
     </div>
   );

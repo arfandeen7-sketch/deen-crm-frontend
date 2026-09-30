@@ -11,11 +11,12 @@ import {
   Calendar,
   CheckCircle2,
   UserCheck,
+  UserX,
   Phone,
   MessageCircle,
   Mail,
 } from "lucide-react";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field, Select, Textarea, Input } from "@/components/ui/Input";
 import { useLeadMutations } from "@/hooks/useLeads";
@@ -26,7 +27,7 @@ import { getErrorMessage } from "@/services/api/client";
 import { toDatetimeLocal, cn, isEmptyDisplayValue } from "@/lib/utils";
 import type { Lead } from "@/types";
 
-type ActiveModal = "status" | "comment" | "followup" | "assign" | null;
+type ActiveModal = "status" | "comment" | "followup" | "assign" | "unassign" | null;
 
 export function LeadQuickActions({ lead }: { lead: Lead }) {
   const [open, setOpen] = useState(false);
@@ -180,6 +181,16 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
     }
   }
 
+  async function handleUnassign() {
+    try {
+      await update.mutateAsync({ id: lead.id, body: { assignedTo: null } });
+      toast.success("Lead unassigned");
+      closeModal();
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
   const hasPhone = !isEmptyDisplayValue(lead.mobileNumber);
   const normalizedPhone = hasPhone ? lead.mobileNumber.replace(/\D/g, "") : "";
 
@@ -240,6 +251,14 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
               <UserCheck className="h-4 w-4 text-slate-400" /> Assign Lead
+            </button>
+          )}
+          {canAction("leads", "all_leads", "assign") && lead.assignedTo && (
+            <button
+              onClick={() => openModal("unassign")}
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <UserX className="h-4 w-4 text-amber-500" /> Unassign Lead
             </button>
           )}
           {((canAction("leads", "all_leads", "call") && hasPhone) ||
@@ -375,6 +394,17 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
           </Select>
         </Field>
       </Modal>
+
+      {/* Unassign Lead confirm modal */}
+      <ConfirmModal
+        open={active === "unassign"}
+        onClose={closeModal}
+        onConfirm={handleUnassign}
+        title="Unassign Lead?"
+        message={`This will remove the current assignment from "${lead.leadName}" and move it back to Unassigned Leads. All lead details and activity history will be kept.`}
+        confirmLabel="Unassign"
+        loading={update.isPending}
+      />
     </div>
   );
 }

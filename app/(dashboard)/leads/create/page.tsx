@@ -22,12 +22,17 @@ export default function CreateLeadPage() {
     try {
       const parsed = leadWithClientSchema.parse(values);
       const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
+      const leadPayload = {
+        ...leadValues,
+        // Always send an explicit clear signal when "No broker" is selected.
+        brokerId: leadValues.brokerId ?? null,
+      };
 
       // 1. Save the lead
-      const lead = await create.mutateAsync(leadValues);
+      const lead = await create.mutateAsync(leadPayload);
 
       // 2. Save Buyer (client) or Tenant details depending on service type
-      const isRent = leadValues.serviceType?.toLowerCase() === "rent";
+      const isRent = leadPayload.serviceType?.toLowerCase() === "rent";
 
       if (isRent) {
         const hasTenantData = Object.values(tenantValues).some(Boolean);

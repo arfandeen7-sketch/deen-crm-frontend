@@ -20,6 +20,17 @@ const assignedToSchema = z
   .or(z.literal(""))
   .transform((v) => (v === "" ? null : v));
 
+// "No broker" (the empty dropdown option) must serialize to `null`, NOT
+// `undefined`. Same reason as assignedToSchema above: `undefined` is dropped
+// by JSON.stringify so the backend would never receive the "clear" signal and
+// the previously assigned broker would remain on the lead.
+const brokerIdSchema = z
+  .string()
+  .uuid()
+  .nullable()
+  .or(z.literal(""))
+  .transform((v) => (v === "" ? null : v));
+
 export const leadSchema = z.object({
   leadName: z.string().min(1, "Lead name is required"),
   mobileNumber: z
@@ -40,7 +51,7 @@ export const leadSchema = z.object({
   leadStatus: z.string().min(1, "Status is required"),
   leadPriority: optionalString,
   assignedTo: assignedToSchema,
-  brokerId: optionalString,
+  brokerId: brokerIdSchema,
   followUpDate: optionalString,
   // Empty string clears the note on save (full form submit always includes this field).
   // Uses `.nullable()` (not `.optional()`) so input and output are both

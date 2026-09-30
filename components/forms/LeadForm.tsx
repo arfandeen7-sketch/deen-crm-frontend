@@ -285,7 +285,10 @@ export function LeadForm({
                 control={control}
                 name="brokerId"
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select
+                    {...field}
+                    value={field.value ?? ""}
+                  >
                     <option value="">No broker</option>
                     {brokers.map((b) => (
                       <option key={b.id} value={b.id}>{b.brokerName}</option>

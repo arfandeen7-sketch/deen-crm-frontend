@@ -29,19 +29,24 @@ export default function EditLeadPage() {
     try {
       const parsed = leadWithClientSchema.parse(values);
       const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
+      const leadPayload = {
+        ...leadValues,
+        // Always send an explicit clear signal when "No broker" is selected.
+        brokerId: leadValues.brokerId ?? null,
+      };
 
       // Save lead first, then the appropriate detail record (Buyer or Tenant)
-      await update.mutateAsync({ id: params.id, body: leadValues });
+      await update.mutateAsync({ id: params.id, body: leadPayload });
 
       // Save Buyer (client) details when service type is NOT Rent
       const hasClientData = Object.values(clientValues).some((v) => v !== undefined && v !== "");
-      if (hasClientData && leadValues.serviceType?.toLowerCase() !== "rent") {
+      if (hasClientData && leadPayload.serviceType?.toLowerCase() !== "rent") {
         await upsertClient.mutateAsync(clientValues);
       }
 
       // Save Tenant details when service type IS Rent
       const hasTenantData = Object.values(tenantValues).some((v) => v !== undefined && v !== "");
-      if (hasTenantData && leadValues.serviceType?.toLowerCase() === "rent") {
+      if (hasTenantData && leadPayload.serviceType?.toLowerCase() === "rent") {
         await upsertTenant.mutateAsync(tenantValues);
       }
 
