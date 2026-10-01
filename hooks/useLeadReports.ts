@@ -224,15 +224,17 @@ export function useEmployeePerformanceList(params: LeadReportParams) {
   };
 }
 
-export function useDailyEmployeePerformanceList(date?: string) {
+export function useDailyEmployeePerformanceList(range?: { dateFrom?: string; dateTo?: string }) {
   const today = useMemo(() => new Date(), []);
-  const targetDate = date ?? today.toISOString().slice(0, 10);
-  const range = useMemo(() => ({ dateFrom: targetDate, dateTo: targetDate }), [targetDate]);
+  const targetDate = today.toISOString().slice(0, 10);
+  const dateFrom = range?.dateFrom ?? range?.dateTo ?? targetDate;
+  const dateTo = range?.dateTo ?? range?.dateFrom ?? targetDate;
+  const resolvedRange = useMemo(() => ({ dateFrom, dateTo }), [dateFrom, dateTo]);
   const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:user-performance"]);
-  const enabled = Boolean(range.dateFrom && range.dateTo) && hasPermission;
+  const enabled = Boolean(resolvedRange.dateFrom && resolvedRange.dateTo) && hasPermission;
   const performance = useQuery({
-    queryKey: [KEY, "daily-user-performance", range],
-    queryFn: () => reportsService.dailyUserPerformance(range),
+    queryKey: [KEY, "daily-user-performance", resolvedRange],
+    queryFn: () => reportsService.dailyUserPerformance(resolvedRange),
     enabled,
     staleTime: 60_000,
     refetchInterval: enabled ? POLL_SLOW : false,

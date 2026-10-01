@@ -119,7 +119,10 @@ export default function LeadReportsPage() {
   const timeSeries = useLeadTimeSeries(timeSeriesParams);
   const priorityReport = usePriorityReport(params);
   const { kpis, isLoading: kpisLoading, summaryUnavailable } = useKpiComparison(params);
-  const employees = useDailyEmployeePerformanceList();
+  const employees = useDailyEmployeePerformanceList({
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+  });
   const sendReminder = useSendReminder();
 
   const prevRange = useMemo(() => previousPeriodRange(dateFrom || undefined, dateTo || undefined), [dateFrom, dateTo]);

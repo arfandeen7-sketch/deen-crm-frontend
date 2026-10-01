@@ -192,7 +192,7 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
                   {metric(stats.assigned)}
-                  <p className="text-[11px] text-slate-500">Assigned</p>
+                  <p className="text-[11px] text-slate-500">Manually Created</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
                   {metric(stats.touchRate, "%")}

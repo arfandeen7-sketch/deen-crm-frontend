@@ -144,6 +144,32 @@ export const reportsService = {
   },
 
   async employeeReport(params: LeadReportParams & { userId: string }): Promise<UserPerformanceItem | null> {
+    if (params.dateFrom && params.dateTo) {
+      const rows = await getData<UserPerformanceItem[]>(
+        `/leads/report/user${buildQuery({ dateFrom: params.dateFrom, dateTo: params.dateTo, userId: params.userId })}`,
+      );
+      const row = rows.find((r) => r.userId === params.userId) ?? rows[0];
+      if (!row) return null;
+      return {
+        userId: row.userId,
+        fullName: row.fullName,
+        assigned: row.assigned,
+        touched: row.touched,
+        untouched: row.untouched,
+        followedUp: row.followedUp,
+        missedFollowUps: row.missedFollowUps,
+        statusBreakdown: row.statusBreakdown ?? {},
+        lastActivityAt: row.lastActivityAt,
+        converted: row.converted ?? convertedCount(row.statusBreakdown),
+        dealsClosed: row.dealsClosed ?? 0,
+        salesAmount: row.salesAmount ?? 0,
+        avgDealValue: row.avgDealValue ?? 0,
+        manuallyCreated: row.manuallyCreated ?? 0,
+        masterAssigned: row.masterAssigned ?? 0,
+        masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
+      };
+    }
+
     const p: ReportQueryParams = {
       groupBy: "user",
       dateFrom: params.dateFrom,
