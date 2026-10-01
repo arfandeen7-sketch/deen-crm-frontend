@@ -53,12 +53,14 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
 
   const status = STATUS_BADGE[listing.listingStatus] ?? STATUS_BADGE.available;
 
-  const offeringLabel =
-    listing.offeringType?.toLowerCase() === "sale"
-      ? "For Sale"
-      : listing.offeringType?.toLowerCase() === "rent"
-        ? "For Rent"
-        : displayValue(listing.offeringType, "");
+  const offeringTypes = Array.isArray(listing.offeringType)
+    ? listing.offeringType
+    : listing.offeringType
+      ? [listing.offeringType]
+      : [];
+  const offeringLabel = offeringTypes
+    .map((t) => (t === "sale" ? "For Sale" : t === "rent" ? "For Rent" : t))
+    .join(" + ");
 
   const isClosed = listing.listingStatus === "sold" || listing.listingStatus === "rented";
   const dealBadge =
@@ -202,7 +204,7 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
         {/* Price */}
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-lg font-bold text-neutral-900">{priceLabel}</span>
-          {listing.offeringType?.toLowerCase() === "rent" &&
+          {offeringTypes.includes("rent") &&
             !listing.priceOnRequest &&
             listing.price != null && (
               <span className="text-[10px] font-medium text-neutral-400">

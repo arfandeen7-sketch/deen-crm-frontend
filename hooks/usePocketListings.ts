@@ -20,6 +20,17 @@ export function usePocketListingsList(params: PocketListingQueryParams) {
   });
 }
 
+export function usePocketListingCreators() {
+  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["pocket-listings:list"]);
+  return useQuery({
+    queryKey: [KEY, "creators"],
+    queryFn: () => pocketListingsService.creators(),
+    enabled,
+    refetchInterval: enabled ? POLL_FAST : false,
+    retry: retrySkipAuth,
+  });
+}
+
 export function usePocketListing(id: string | undefined) {
   const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["pocket-listings:detail"]);
   const enabled = !!id && hasPermission;

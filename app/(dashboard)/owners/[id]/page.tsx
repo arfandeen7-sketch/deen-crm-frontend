@@ -520,7 +520,10 @@ function PropertyRow({
   const building = pf?.building ?? pl?.building ?? property.building ?? null;
   const emirate = pf?.emirate ?? pl?.emirate ?? property.emirate ?? null;
   const furnishingType = pf?.furnishingType ?? pl?.furnishingType ?? "";
-  const offeringType = pf?.offeringType ?? pl?.offeringType ?? "";
+  const offeringType = (() => {
+    const raw = pf?.offeringType ?? pl?.offeringType ?? "";
+    return Array.isArray(raw) ? raw.join(", ") : raw;
+  })();
   const reference = pf?.reference ?? pl?.reference ?? property.reference ?? "";
   const imageCount = pf?.imageCount ?? pl?.imageCount ?? 0;
   const hasVideo = pf?.hasVideo ?? !!pl?.videoUrl;

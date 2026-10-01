@@ -5,10 +5,20 @@ import type { PocketListing, PocketListingDocument, PocketListingQueryParams, Pa
 const PUBLIC_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+export interface PocketListingCreator {
+  id: string;
+  fullName: string;
+}
+
 export const pocketListingsService = {
   async list(params: PocketListingQueryParams = {}): Promise<Paginated<PocketListing>> {
     const res = await api.get<Paginated<PocketListing>>(`/pocket-listings${buildQuery(params)}`);
     return res.data;
+  },
+
+  async creators(): Promise<PocketListingCreator[]> {
+    const res = await api.get<{ data: PocketListingCreator[] }>("/pocket-listings/creators");
+    return res.data.data;
   },
 
   get(id: string): Promise<PocketListing> {

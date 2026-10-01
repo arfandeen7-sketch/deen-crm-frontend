@@ -1497,7 +1497,7 @@ export interface PocketListing {
   description?: string | null;
   category: string;
   type: string;
-  offeringType: string;
+  offeringType: string[];
   furnishingType?: string | null;
   completionStatus?: string | null;
   developer?: string | null;
@@ -1573,6 +1573,7 @@ export interface PocketListingQueryParams {
   category?: string;
   type?: string;
   emirate?: string;
+  bedrooms?: string;
   offeringType?: string;
   createdById?: string;
 }

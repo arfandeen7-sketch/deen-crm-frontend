@@ -86,7 +86,7 @@ export function PocketListingForm({
       title: "",
       category: "residential",
       type: "",
-      offeringType: "sale",
+      offeringType: ["sale"],
       emirate: "",
       currency: "AED",
       priceOnRequest: false,
@@ -97,7 +97,7 @@ export function PocketListingForm({
   });
 
   const category = watch("category") as "residential" | "commercial";
-  const offeringType = watch("offeringType");
+  const offeringTypes = watch("offeringType") ?? [];
   const priceOnRequest = watch("priceOnRequest");
   const listingStatus = watch("listingStatus");
 
@@ -184,14 +184,20 @@ export function PocketListingForm({
           </Select>
         </Field>
 
-        <Field label="Offering Type" required error={errors.offeringType?.message}>
-          <Select {...register("offeringType")}>
+        <Field label="Offering Type" required error={errors.offeringType?.message as string | undefined}>
+          <div className="flex gap-4 pt-1">
             {OFFERING_TYPE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
+              <label key={o.value} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  value={o.value}
+                  {...register("offeringType")}
+                  className="h-4 w-4 rounded border-neutral-300 text-black focus:ring-black cursor-pointer"
+                />
+                <span className="text-sm text-neutral-700">{o.label}</span>
+              </label>
             ))}
-          </Select>
+          </div>
         </Field>
 
         <Field label="Listing Status" error={errors.listingStatus?.message}>
@@ -346,7 +352,7 @@ export function PocketListingForm({
         </Field>
 
         <Field label="Price Type" error={errors.priceType?.message}>
-          <Select {...register("priceType")} disabled={offeringType === "sale"}>
+          <Select {...register("priceType")} disabled={!offeringTypes.includes("rent")}>
             <option value="">— None —</option>
             {PRICE_TYPE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -382,7 +388,7 @@ export function PocketListingForm({
       </FormSection>
 
       {/* ── Rental Agreement (when rent offering or rented status) ────────── */}
-      {(offeringType === "rent" || listingStatus === "rented") && (
+      {(offeringTypes.includes("rent") || listingStatus === "rented") && (
         <FormSection title="Rental Agreement">
           <Field label="Rental Start Date" error={errors.rentalStartDate?.message}>
             <Input {...register("rentalStartDate")} type="date" />

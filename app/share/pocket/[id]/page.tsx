@@ -321,18 +321,20 @@ function NotFoundState({ message }: { message?: string | null }) {
 // ── Main content ─────────────────────────────────────────────────────────────
 
 function ShareContent({ listing }: { listing: PocketListing }) {
-  const offeringLabel =
-    listing.offeringType?.toLowerCase() === "sale"
-      ? "For Sale"
-      : listing.offeringType?.toLowerCase() === "rent"
-        ? "For Rent"
-        : displayValue(listing.offeringType, "");
+  const offeringTypes = Array.isArray(listing.offeringType)
+    ? listing.offeringType
+    : listing.offeringType
+      ? [listing.offeringType as string]
+      : [];
+  const offeringLabel = offeringTypes
+    .map((t) => (t === "sale" ? "For Sale" : t === "rent" ? "For Rent" : t))
+    .join(" + ") || "";
 
   const priceLabel =
     listing.priceOnRequest || listing.price == null
       ? "Price on Request"
       : formatCurrency(listing.price);
-  const isRent = listing.offeringType?.toLowerCase() === "rent";
+  const isRent = offeringTypes.includes("rent");
 
   const dealBadge =
     listing.listingStatus === "sold"

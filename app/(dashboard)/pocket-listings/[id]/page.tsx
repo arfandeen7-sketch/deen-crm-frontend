@@ -126,12 +126,14 @@ function PocketListingDetailContent() {
   const statusCfg =
     STATUS_CONFIG[listing.listingStatus] ?? STATUS_CONFIG.available;
 
-  const offeringLabel =
-    listing.offeringType?.toLowerCase() === "sale"
-      ? "For Sale"
-      : listing.offeringType?.toLowerCase() === "rent"
-        ? "For Rent"
-        : displayValue(listing.offeringType, "");
+  const offeringTypes = Array.isArray(listing.offeringType)
+    ? listing.offeringType
+    : listing.offeringType
+      ? [listing.offeringType as string]
+      : [];
+  const offeringLabel = offeringTypes
+    .map((t) => (t === "sale" ? "For Sale" : t === "rent" ? "For Rent" : t))
+    .join(" + ") || "—";
 
   const priceLabel =
     listing.priceOnRequest || listing.price == null

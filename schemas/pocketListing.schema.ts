@@ -88,9 +88,9 @@ export const pocketListingSchema = z.object({
     message: "Select a category",
   }),
   type: z.string().min(1, "Property type is required"),
-  offeringType: z.enum(["sale", "rent"], {
-    message: "Select an offering type",
-  }),
+  offeringType: z
+    .array(z.enum(["sale", "rent"]))
+    .min(1, "Select at least one offering type"),
   furnishingType: z
     .enum(["unfurnished", "semi-furnished", "furnished"])
     .optional()
