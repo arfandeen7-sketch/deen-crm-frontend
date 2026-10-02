@@ -6,6 +6,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** UAE calendar date as `YYYY-MM-DD`. `offsetDays` shifts that calendar date. */
+export function uaeDateISO(offsetDays = 0): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dubai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  const day = Number(parts.find((part) => part.type === "day")?.value);
+  const shifted = new Date(Date.UTC(year, month - 1, day + offsetDays));
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
+}
+
 /** Format an ISO date string as a short, locale-friendly date. */
 export function formatDate(value?: string | null): string {
   if (!value) return "—";

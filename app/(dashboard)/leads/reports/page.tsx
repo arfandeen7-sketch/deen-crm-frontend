@@ -48,7 +48,7 @@ import {
 } from "@/hooks/useLeadReports";
 import { reportsService } from "@/services/leads/reports.service";
 import { getErrorMessage } from "@/services/api/client";
-import { downloadBlob, cn } from "@/lib/utils";
+import { downloadBlob, cn, uaeDateISO } from "@/lib/utils";
 import { LEAD_FUNNEL_STAGES } from "@/constants";
 import type { EmployeePerformance, LeadReportParams, LeaderboardEntry } from "@/types";
 
@@ -119,10 +119,14 @@ export default function LeadReportsPage() {
   const timeSeries = useLeadTimeSeries(timeSeriesParams);
   const priorityReport = usePriorityReport(params);
   const { kpis, isLoading: kpisLoading, summaryUnavailable } = useKpiComparison(params);
-  const employees = useDailyEmployeePerformanceList({
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
-  });
+  const employeeRange = useMemo(() => {
+    const today = uaeDateISO();
+    return {
+      dateFrom: dateFrom || dateTo || today,
+      dateTo: dateTo || dateFrom || today,
+    };
+  }, [dateFrom, dateTo]);
+  const employees = useDailyEmployeePerformanceList(employeeRange);
   const sendReminder = useSendReminder();
 
   const prevRange = useMemo(() => previousPeriodRange(dateFrom || undefined, dateTo || undefined), [dateFrom, dateTo]);
@@ -550,6 +554,8 @@ export default function LeadReportsPage() {
         open={Boolean(reportEmployee)}
         onClose={() => setReportEmployee(null)}
         employee={reportEmployee ?? undefined}
+        dateFrom={employeeRange.dateFrom}
+        dateTo={employeeRange.dateTo}
       />
       <EmployeeLeadsModal
         open={Boolean(leadsModalEmployee)}

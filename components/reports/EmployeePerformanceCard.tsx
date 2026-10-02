@@ -1,26 +1,13 @@
 "use client";
 
-import { AlertTriangle, Bell, CheckCircle2, ClipboardList, Eye, PhoneCall, Star, Tag, UserMinus2, UserPlus2, FilePlus2 } from "lucide-react";
-import { cn, timeAgo } from "@/lib/utils";
+import { AlertTriangle, Bell, Star } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { Sparkline } from "@/components/charts/Sparkline";
-import type { EmployeePerformance, LeadActivityAction } from "@/types";
-
-const ACTIVITY_ICONS: Record<LeadActivityAction, typeof Tag> = {
-  created: UserPlus2,
-  status_changed: Tag,
-  comment_added: ClipboardList,
-  followup_scheduled: PhoneCall,
-  followup_completed: CheckCircle2,
-  assigned: UserPlus2,
-  unassigned: UserMinus2,
-  field_updated: ClipboardList,
-  imported: ClipboardList,
-  viewed: Eye,
-};
+import type { EmployeePerformance } from "@/types";
 
 function scoreColor(score: number): string {
   if (score >= 75) return "bg-emerald-100 text-emerald-700 ring-emerald-600/20";
@@ -47,14 +34,24 @@ export function EmployeePerformanceCard({
 }) {
   const lowTouch = item.touchRate < 50;
   const highMissed = item.missedFollowUps >= 5;
-
   const donutData = Object.entries(item.statusBreakdown ?? {}).map(([label, value]) => ({ label, value }));
   const masterAssigned = item.masterAssigned ?? 0;
   const masterDonutData = Object.entries(item.masterAssignedStatusBreakdown ?? {}).map(([label, value]) => ({
     label,
     value,
   }));
-  const masterTotal = masterDonutData.reduce((s, d) => s + d.value, 0);
+  const masterTotal = masterDonutData.reduce((sum, entry) => sum + entry.value, 0);
+  const metrics = [
+    { label: "Total Leads", value: item.assigned.toLocaleString(), className: "text-slate-900" },
+    { label: "Manually Created", value: (item.manuallyCreated ?? 0).toLocaleString(), className: "text-indigo-600" },
+    { label: "Master Assigned", value: (item.masterAssigned ?? 0).toLocaleString(), className: "text-violet-700" },
+    { label: "Touch Rate", value: `${item.touchRate.toFixed(0)}%`, className: "text-emerald-600" },
+    { label: "Conversion", value: `${item.conversionRate.toFixed(0)}%`, className: "text-slate-900" },
+    { label: "Follow Up", value: `${item.followUpCompletionRate.toFixed(0)}%`, className: "text-sky-600" },
+    { label: "Deal Closed", value: (item.dealsClosed ?? 0).toLocaleString(), className: "text-teal-700" },
+    { label: "Sales", value: formatCurrency(item.salesAmount ?? 0), className: "text-teal-800" },
+    { label: "Missed Follow Ups", value: item.missedFollowUps.toLocaleString(), className: "text-rose-600" },
+  ];
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -114,44 +111,12 @@ export function EmployeePerformanceCard({
       )}
 
       <div className="grid grid-cols-3 gap-3 p-4 text-center">
-        <div>
-          <p className="text-lg font-semibold text-slate-900">{item.assigned}</p>
-          <p className="text-[11px] text-slate-500">Assigned</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-emerald-600">{item.touchRate.toFixed(0)}%</p>
-          <p className="text-[11px] text-slate-500">Touch Rate</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-gray-900">{item.conversionRate.toFixed(0)}%</p>
-          <p className="text-[11px] text-slate-500">Conversion</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-sky-600">{item.followUpCompletionRate.toFixed(0)}%</p>
-          <p className="text-[11px] text-slate-500">Follow-up Rate</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-teal-700">{item.dealsClosed ?? 0}</p>
-          <p className="text-[11px] text-slate-500">Deals Closed</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-teal-800">
-            AED {Number(item.salesAmount ?? 0).toLocaleString()}
-          </p>
-          <p className="text-[11px] text-slate-500">Sales</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-indigo-600">{item.manuallyCreated ?? 0}</p>
-          <p className="text-[11px] text-slate-500">Manually Created</p>
-        </div>
-        <div>
-          <p className="text-lg font-semibold text-rose-600">{item.missedFollowUps}</p>
-          <p className="text-[11px] text-slate-500">Missed F/U</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-700">{timeAgo(item.lastActivityAt)}</p>
-          <p className="text-[11px] text-slate-500">Last Activity</p>
-        </div>
+        {metrics.map((metric) => (
+          <div key={metric.label}>
+            <p className={cn("text-lg font-semibold tabular-nums", metric.className)}>{metric.value}</p>
+            <p className="text-[11px] text-slate-500">{metric.label}</p>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4 border-t border-slate-100 px-4 py-3">
@@ -176,14 +141,14 @@ export function EmployeePerformanceCard({
           <div className="flex items-center gap-4">
             <DonutChart data={masterDonutData} size="sm" showLegend={false} />
             <ul className="flex-1 space-y-1">
-              {masterDonutData.map((d) => (
-                <li key={d.label} className="flex items-center justify-between text-xs text-slate-600">
-                  <span className="truncate pr-2">{d.label}</span>
+              {masterDonutData.map((entry) => (
+                <li key={entry.label} className="flex items-center justify-between text-xs text-slate-600">
+                  <span className="truncate pr-2">{entry.label}</span>
                   <span className="shrink-0 font-medium text-slate-700">
-                    {d.value}
+                    {entry.value}
                     {masterTotal > 0 && (
                       <span className="ml-1 text-slate-400">
-                        ({((d.value / masterTotal) * 100).toFixed(0)}%)
+                        ({((entry.value / masterTotal) * 100).toFixed(0)}%)
                       </span>
                     )}
                   </span>
@@ -191,26 +156,6 @@ export function EmployeePerformanceCard({
               ))}
             </ul>
           </div>
-        )}
-      </div>
-
-      <div className="border-t border-slate-100 px-4 py-3">
-        <p className="mb-2 text-[11px] font-medium uppercase text-slate-400">Recent Activity</p>
-        {item.recentActivity.length === 0 ? (
-          <p className="text-xs text-slate-400">No recent activity.</p>
-        ) : (
-          <ul className="space-y-1.5">
-            {item.recentActivity.slice(0, 5).map((a) => {
-              const Icon = ACTIVITY_ICONS[a.action] ?? Tag;
-              return (
-                <li key={a.id} className="flex items-center gap-2 text-xs text-slate-600">
-                  <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                  <span className="truncate">{a.action.replace(/_/g, " ")}</span>
-                  <span className="ml-auto shrink-0 text-slate-400">{timeAgo(a.createdAt)}</span>
-                </li>
-              );
-            })}
-          </ul>
         )}
       </div>
 

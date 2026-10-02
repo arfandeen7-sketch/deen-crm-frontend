@@ -118,12 +118,10 @@ function LeadDetailPageContent() {
       if (result.alreadyConverted) {
         toast.info("Lead was already converted to an Owner.");
       } else if (result.ownerAlreadyExisted) {
-        toast.success(
-          `Linked to existing Owner "${result.owner.fullName}".${result.dealClosedNow ? " Deal marked as Closed." : ""}`,
-        );
+        toast.success(`Linked to existing Owner "${result.owner.fullName}".`);
       } else {
         toast.success(
-          `Owner "${result.owner.fullName}" created successfully.${result.dealClosedNow ? " Deal marked as Closed." : ""}${result.propertyCreated ? " Property added to Owner portfolio." : ""}`,
+          `Owner "${result.owner.fullName}" created successfully.${result.propertyCreated ? " Property added to Owner portfolio." : ""}`,
         );
       }
       setConvertOpen(false);
@@ -499,11 +497,7 @@ function LeadDetailPageContent() {
         onClose={() => setConvertOpen(false)}
         onConfirm={handleConvertToOwner}
         title="Convert lead to Owner?"
-        message={
-          lead.leadStatus !== "Deal Closed"
-            ? `This will mark the lead as Deal Closed and create an Owner record for "${lead.leadName}". A valid property price must already be set on the lead.`
-            : `This will create an Owner record for "${lead.leadName}" and link it to this lead. If an Owner with the same mobile number already exists, it will be linked instead.`
-        }
+        message={`This will create an Owner record for "${lead.leadName}" and link it to this lead. If an Owner with the same mobile number already exists, it will be linked instead.`}
         confirmLabel="Convert to Owner"
         loading={convertToOwner.isPending}
       />

@@ -1817,6 +1817,7 @@ export type LeadActivityAction =
   | "assigned"
   | "unassigned"
   | "field_updated"
+  | "converted_to_owner"
   | "imported"
   | "viewed";
 

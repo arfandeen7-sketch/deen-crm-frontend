@@ -119,7 +119,7 @@ export const leadsService = {
     return res.data.data;
   },
 
-  /** Convert a lead to an Owner record (and optionally mark it Deal Closed). */
+  /** Convert a lead to an Owner record without changing lead status. */
   async convertToOwner(leadId: string): Promise<{
     success: boolean;
     alreadyConverted: boolean;

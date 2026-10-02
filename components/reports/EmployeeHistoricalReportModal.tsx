@@ -2,107 +2,118 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, RefreshCw, Handshake, Banknote, ExternalLink, TrendingUp } from "lucide-react";
+import { CalendarClock, RefreshCw, ExternalLink, Handshake, Banknote, TrendingUp } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { RoleBadge } from "@/components/ui/Badge";
 import { LoadingState, EmptyState } from "@/components/ui/States";
+import { Pagination } from "@/components/ui/Pagination";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { DistributionBarChart } from "@/components/charts/DistributionBarChart";
-import { timeAgo, formatCurrency, formatDateTime, displayValue } from "@/lib/utils";
+import { cn, formatCurrency, formatDateTime, displayValue, uaeDateISO } from "@/lib/utils";
 import { useEmployeeReport } from "@/hooks/useLeadReports";
 import { useDealClosedList } from "@/hooks/useDealClosed";
-import type { EmployeePerformance, LeadReportParams } from "@/types";
+import { CONVERTED_LEAD_STATUSES } from "@/constants";
+import type { EmployeePerformance, LeadReportParams, UserPerformanceItem } from "@/types";
 
 const QUICK_RANGES = [
+  { label: "Today", days: 1 },
   { label: "Last 7 days", days: 7 },
   { label: "Last 30 days", days: 30 },
 ];
 
-function buildDefaultRange(): Required<Pick<LeadReportParams, "dateFrom" | "dateTo">> {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(to.getDate() - 29);
-  return {
-    dateFrom: from.toISOString().slice(0, 10),
-    dateTo: to.toISOString().slice(0, 10),
-  };
+function metricValue(value: string, className: string) {
+  return <p className={cn("text-lg font-semibold tabular-nums", className)}>{value}</p>;
 }
 
-function metric(value: number, suffix = "") {
-  return (
-    <p className="text-lg font-semibold text-slate-900">
-      {Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : "—"}
-      {suffix}
-    </p>
-  );
+function reportMetrics(data: UserPerformanceItem | null | undefined) {
+  const assigned = data?.assigned ?? 0;
+  const converted =
+    data?.converted ??
+    CONVERTED_LEAD_STATUSES.reduce((sum, status) => sum + (data?.statusBreakdown?.[status] ?? 0), 0);
+  const followedUp = data?.followedUp ?? 0;
+  const missedFollowUps = data?.missedFollowUps ?? 0;
+  const followUpTotal = followedUp + missedFollowUps;
+  const dealsClosed = data?.dealsClosed ?? 0;
+  const salesAmount = data?.salesAmount ?? 0;
+  return {
+    totalLeads: assigned,
+    manuallyCreated: data?.manuallyCreated ?? 0,
+    masterAssigned: data?.masterAssigned ?? 0,
+    touchRate: assigned > 0 ? ((data?.touched ?? 0) / assigned) * 100 : 0,
+    conversionRate: assigned > 0 ? (converted / assigned) * 100 : 0,
+    followUpRate: followUpTotal > 0 ? (followedUp / followUpTotal) * 100 : 0,
+    dealsClosed,
+    salesAmount,
+    avgDealValue: data?.avgDealValue ?? (dealsClosed > 0 ? salesAmount / dealsClosed : 0),
+    missedFollowUps,
+  };
 }
 
 export interface EmployeeHistoricalReportModalProps {
   open: boolean;
   onClose: () => void;
   employee?: EmployeePerformance;
+  /** Range currently applied to the employee cards. The report opens on this range. */
+  dateFrom?: string;
+  dateTo?: string;
 }
 
-export function EmployeeHistoricalReportModal({ open, onClose, employee }: EmployeeHistoricalReportModalProps) {
-  const [range, setRange] = useState(buildDefaultRange);
+export function EmployeeHistoricalReportModal({
+  open,
+  onClose,
+  employee,
+  dateFrom,
+  dateTo,
+}: EmployeeHistoricalReportModalProps) {
+  const cardRange = useMemo(
+    () => ({
+      dateFrom: dateFrom || uaeDateISO(),
+      dateTo: dateTo || dateFrom || uaeDateISO(),
+    }),
+    [dateFrom, dateTo],
+  );
+  const [range, setRange] = useState(cardRange);
+  const [dealPage, setDealPage] = useState(1);
+  const [dealPageSize, setDealPageSize] = useState(25);
 
   useEffect(() => {
     if (open) {
-      setRange(buildDefaultRange());
+      setRange(cardRange);
+      setDealPage(1);
     }
-  }, [open, employee?.userId]);
+  }, [open, employee?.userId, cardRange]);
 
-  const params = useMemo<LeadReportParams>(() => ({
-    dateFrom: range.dateFrom,
-    dateTo: range.dateTo,
-  }), [range]);
+  useEffect(() => {
+    setDealPage(1);
+  }, [range.dateFrom, range.dateTo]);
+
+  const params = useMemo<LeadReportParams>(
+    () => ({
+      dateFrom: range.dateFrom,
+      dateTo: range.dateTo,
+    }),
+    [range],
+  );
 
   const report = useEmployeeReport(employee?.userId, params);
+  const stats = useMemo(() => reportMetrics(report.data), [report.data]);
 
-  // Fetch this employee's closed deals within the same date range
   const deals = useDealClosedList({
     employeeId: employee?.userId,
     closedFrom: range.dateFrom,
     closedTo: range.dateTo,
-    pageSize: 200,
+    page: dealPage,
+    pageSize: dealPageSize,
   });
   const dealRows = deals.data?.data ?? [];
-  const totalDeals = deals.data?.total ?? 0;
-  const totalSalesValue = useMemo(
-    () => dealRows.reduce((sum, d) => sum + d.salesValue, 0),
-    [dealRows],
-  );
-  const avgDealValue = totalDeals > 0 ? totalSalesValue / totalDeals : 0;
+  const dealTotal = deals.data?.total ?? 0;
+  const dealTotalPages = deals.data?.totalPages ?? 0;
 
-  const stats = useMemo(() => {
-    const data = report.data;
-    if (!data) {
-      return {
-        assigned: 0,
-        touchRate: 0,
-        conversionRate: 0,
-        followUpRate: 0,
-        missedFollowUps: 0,
-        masterAssigned: 0,
-        lastActivityAt: undefined as string | undefined,
-      };
-    }
-    const assigned = data.assigned;
-    const touched = data.touched;
-    const converted = data.converted ?? 0;
-    const fuTotal = data.followedUp + data.missedFollowUps;
-    return {
-      assigned,
-      touchRate: assigned > 0 ? (touched / assigned) * 100 : 0,
-      conversionRate: assigned > 0 ? (converted / assigned) * 100 : 0,
-      followUpRate: fuTotal > 0 ? (data.followedUp / fuTotal) * 100 : 0,
-      missedFollowUps: data.missedFollowUps,
-      masterAssigned: data.masterAssigned ?? 0,
-      lastActivityAt: data.lastActivityAt ?? undefined,
-    };
-  }, [report.data]);
+  const handleQuickRange = (days: number) => {
+    setRange({ dateFrom: uaeDateISO(-(days - 1)), dateTo: uaeDateISO() });
+  };
 
   const statusMix = useMemo(() => {
     const breakdown = report.data?.statusBreakdown ?? {};
@@ -111,25 +122,29 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
 
   const statusBars = useMemo(() => {
     const breakdown = report.data?.statusBreakdown ?? {};
-    const entries = Object.entries(breakdown).map(([status, count]) => ({ label: status, value: count }));
-    return entries.sort((a, b) => b.value - a.value);
+    return Object.entries(breakdown)
+      .map(([label, value]) => ({ label, value }))
+      .sort((a, b) => b.value - a.value);
   }, [report.data?.statusBreakdown]);
 
-  const handleQuickRange = (days: number) => {
-    const to = new Date();
-    const from = new Date();
-    from.setDate(to.getDate() - (days - 1));
-    setRange({ dateFrom: from.toISOString().slice(0, 10), dateTo: to.toISOString().slice(0, 10) });
-  };
-
-  const handleReset = () => setRange(buildDefaultRange());
+  const tiles = [
+    { label: "Total Leads", value: stats.totalLeads.toLocaleString(), className: "text-slate-900" },
+    { label: "Manually Created", value: stats.manuallyCreated.toLocaleString(), className: "text-indigo-600" },
+    { label: "Master Assigned", value: stats.masterAssigned.toLocaleString(), className: "text-violet-700" },
+    { label: "Touch Rate", value: `${stats.touchRate.toFixed(0)}%`, className: "text-emerald-600" },
+    { label: "Conversion", value: `${stats.conversionRate.toFixed(0)}%`, className: "text-slate-900" },
+    { label: "Follow Up", value: `${stats.followUpRate.toFixed(0)}%`, className: "text-sky-600" },
+    { label: "Deal Closed", value: stats.dealsClosed.toLocaleString(), className: "text-teal-700" },
+    { label: "Sales", value: formatCurrency(stats.salesAmount), className: "text-teal-800" },
+    { label: "Missed Follow Ups", value: stats.missedFollowUps.toLocaleString(), className: "text-rose-600" },
+  ];
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={`Historical Report · ${employee?.fullName ?? ""}`}
-      description="Review performance trends across any date range."
+      title={`Full Report · ${employee?.fullName ?? ""}`}
+      description="Same performance figures as the employee card, for any date range."
       size="xl"
     >
       {!employee ? (
@@ -160,7 +175,7 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
                   {preset.label}
                 </Button>
               ))}
-              <Button size="sm" variant="outline" onClick={handleReset}>
+              <Button size="sm" variant="outline" onClick={() => setRange(cardRange)}>
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span className="ml-2">Reset</span>
               </Button>
@@ -177,47 +192,21 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
                 {employee.designation && <span>· {employee.designation}</span>}
               </div>
             </div>
-            <div className="ml-auto text-right text-sm text-slate-500">
-              <p className="font-medium text-slate-600">Last activity</p>
-              <p>{stats.lastActivityAt ? timeAgo(stats.lastActivityAt) : "—"}</p>
-            </div>
           </div>
 
           {report.isLoading ? (
-            <LoadingState label="Loading historical stats…" />
-          ) : !report.data ? (
-            <EmptyState title="No data for this range" message="Try a different date range to view this employee's performance." />
+            <LoadingState label="Loading report…" />
+          ) : report.isError ? (
+            <EmptyState title="Couldn't load this report" message="Try a different date range." />
           ) : (
             <>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.assigned)}
-                  <p className="text-[11px] text-slate-500">Manually Created</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.touchRate, "%")}
-                  <p className="text-[11px] text-slate-500">Touch Rate</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.conversionRate, "%")}
-                  <p className="text-[11px] text-slate-500">Conversion</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.followUpRate, "%")}
-                  <p className="text-[11px] text-slate-500">Follow-up Rate</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.missedFollowUps)}
-                  <p className="text-[11px] text-slate-500">Missed F/U</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  {metric(stats.masterAssigned)}
-                  <p className="text-[11px] text-slate-500">Master-Assigned</p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-                  <p className="text-lg font-semibold text-slate-900">{range.dateFrom} → {range.dateTo}</p>
-                  <p className="text-[11px] text-slate-500">Range</p>
-                </div>
+                {tiles.map((tile) => (
+                  <div key={tile.label} className="rounded-xl border border-slate-200 bg-white p-4 text-center">
+                    {metricValue(tile.value, tile.className)}
+                    <p className="text-[11px] text-slate-500">{tile.label}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -249,9 +238,9 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
                       <span className="font-medium text-slate-700">{row.label}</span>
                       <div className="ml-auto flex items-center gap-2 text-slate-500">
                         <span>{row.value.toLocaleString()}</span>
-                        {stats.assigned > 0 && (
+                        {stats.totalLeads > 0 && (
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">
-                            {((row.value / stats.assigned) * 100).toFixed(1)}%
+                            {((row.value / stats.totalLeads) * 100).toFixed(1)}%
                           </span>
                         )}
                       </div>
@@ -262,143 +251,145 @@ export function EmployeeHistoricalReportModal({ open, onClose, employee }: Emplo
                   )}
                 </div>
               </div>
-
-              {/* ── Sales / Deals Closed Section ─────────────────────────────── */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                  <Handshake className="h-4 w-4 text-emerald-600" />
-                  <h3 className="text-sm font-semibold text-slate-800">Sales Performance</h3>
-                  <span className="ml-auto text-xs text-slate-400">
-                    {range.dateFrom} → {range.dateTo}
-                  </span>
-                </div>
-
-                {/* Sales summary cards */}
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-emerald-700">
-                      <Handshake className="h-4 w-4" />
-                    </div>
-                    <p className="mt-1 text-2xl font-bold text-emerald-700">{totalDeals}</p>
-                    <p className="text-[11px] text-slate-500">Total Deals Closed</p>
-                  </div>
-                  <div className="rounded-xl border border-teal-200 bg-teal-50/50 p-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-teal-700">
-                      <Banknote className="h-4 w-4" />
-                    </div>
-                    <p className="mt-1 text-2xl font-bold text-teal-700">
-                      {formatCurrency(totalSalesValue)}
-                    </p>
-                    <p className="text-[11px] text-slate-500">Total Sales Value</p>
-                  </div>
-                  <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5 text-indigo-700">
-                      <TrendingUp className="h-4 w-4" />
-                    </div>
-                    <p className="mt-1 text-2xl font-bold text-indigo-700">
-                      {formatCurrency(avgDealValue)}
-                    </p>
-                    <p className="text-[11px] text-slate-500">Avg Deal Value</p>
-                  </div>
-                </div>
-
-                {/* Deals table */}
-                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <p className="text-sm font-semibold text-slate-700">
-                      All Closed Deals
-                      {totalDeals > 0 && (
-                        <span className="ml-2 text-xs font-normal text-slate-400">
-                          ({totalDeals} {totalDeals === 1 ? "deal" : "deals"})
-                        </span>
-                      )}
-                    </p>
-                  </div>
-
-                  {deals.isLoading ? (
-                    <LoadingState label="Loading sales…" />
-                  ) : dealRows.length === 0 ? (
-                    <p className="px-4 py-8 text-center text-sm text-slate-400">
-                      No deals closed in this date range.
-                    </p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-100 bg-slate-50/50 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                            <th className="px-4 py-2.5">Lead</th>
-                            <th className="px-4 py-2.5">Client</th>
-                            <th className="px-4 py-2.5">Project / Property</th>
-                            <th className="px-4 py-2.5 text-right">Sales Value</th>
-                            <th className="px-4 py-2.5">Closed Date</th>
-                            <th className="px-4 py-2.5"></th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {dealRows.map((deal) => (
-                            <tr key={deal.id} className="hover:bg-slate-50/50 transition-colors">
-                              <td className="px-4 py-3">
-                                <p className="font-medium text-slate-800">{deal.leadName}</p>
-                                <p className="text-xs text-slate-400">{deal.leadSource}</p>
-                              </td>
-                              <td className="px-4 py-3">
-                                <p className="text-slate-700">{displayValue(deal.client?.fullName)}</p>
-                                <p className="text-xs text-slate-400">{displayValue(deal.client?.mobileNumber)}</p>
-                              </td>
-                              <td className="px-4 py-3">
-                                <p className="text-slate-700">{displayValue(deal.projectName)}</p>
-                                <p className="text-xs text-slate-400">
-                                  {[
-                                    deal.community,
-                                    deal.propertyType,
-                                    deal.unitNumber && `Unit ${deal.unitNumber}`,
-                                    deal.propertySize && `${deal.propertySize} sqft`,
-                                  ].filter(Boolean).join(" · ") || "—"}
-                                </p>
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                <p className="font-semibold text-emerald-700">
-                                  {formatCurrency(deal.salesValue)}
-                                </p>
-                                <p className="text-xs text-slate-400">{deal.currency}</p>
-                              </td>
-                              <td className="px-4 py-3">
-                                <p className="text-slate-700">{formatDateTime(deal.closedAt)}</p>
-                                <p className="text-xs text-slate-400">
-                                  by {displayValue(deal.closedBy?.fullName)}
-                                </p>
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                <Link
-                                  href={`/leads/${deal.leadId}`}
-                                  onClick={onClose}
-                                  className="inline-flex items-center gap-1 rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                  title="View lead"
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                </Link>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr className="border-t border-slate-200 bg-slate-50/50 font-semibold">
-                            <td className="px-4 py-3 text-slate-700" colSpan={3}>
-                              Total ({totalDeals} {totalDeals === 1 ? "deal" : "deals"})
-                            </td>
-                            <td className="px-4 py-3 text-right text-emerald-700">
-                              {formatCurrency(totalSalesValue)}
-                            </td>
-                            <td className="px-4 py-3" colSpan={2}></td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
             </>
           )}
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <Handshake className="h-4 w-4 text-emerald-600" />
+              <h3 className="text-sm font-semibold text-slate-800">Sales Performance</h3>
+              <span className="ml-auto text-xs text-slate-400">
+                {range.dateFrom} → {range.dateTo}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-center">
+                <div className="flex items-center justify-center text-emerald-700">
+                  <Handshake className="h-4 w-4" />
+                </div>
+                <p className="mt-1 text-2xl font-bold text-emerald-700">{stats.dealsClosed}</p>
+                <p className="text-[11px] text-slate-500">Total Deals Closed</p>
+              </div>
+              <div className="rounded-xl border border-teal-200 bg-teal-50/50 p-4 text-center">
+                <div className="flex items-center justify-center text-teal-700">
+                  <Banknote className="h-4 w-4" />
+                </div>
+                <p className="mt-1 text-2xl font-bold text-teal-700">{formatCurrency(stats.salesAmount)}</p>
+                <p className="text-[11px] text-slate-500">Total Sales Value</p>
+              </div>
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-center">
+                <div className="flex items-center justify-center text-indigo-700">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+                <p className="mt-1 text-2xl font-bold text-indigo-700">{formatCurrency(stats.avgDealValue)}</p>
+                <p className="text-[11px] text-slate-500">Avg Deal Value</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+            <div className="border-b border-slate-100 px-4 py-3">
+              <p className="text-sm font-semibold text-slate-700">
+                Closed Deals
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  {range.dateFrom} → {range.dateTo}
+                  {!report.isLoading && stats.dealsClosed > 0 && ` · ${stats.dealsClosed} ${stats.dealsClosed === 1 ? "deal" : "deals"}`}
+                </span>
+              </p>
+            </div>
+
+            {deals.isLoading ? (
+              <LoadingState label="Loading sales…" />
+            ) : dealRows.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-slate-400">
+                No deals closed in this date range.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/50 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-4 py-2.5">Lead</th>
+                      <th className="px-4 py-2.5">Client</th>
+                      <th className="px-4 py-2.5">Project / Property</th>
+                      <th className="px-4 py-2.5 text-right">Sales Value</th>
+                      <th className="px-4 py-2.5">Closed Date</th>
+                      <th className="px-4 py-2.5"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {dealRows.map((deal) => (
+                      <tr key={deal.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-800">{deal.leadName}</p>
+                          <p className="text-xs text-slate-400">{deal.leadSource}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-slate-700">{displayValue(deal.client?.fullName)}</p>
+                          <p className="text-xs text-slate-400">{displayValue(deal.client?.mobileNumber)}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-slate-700">{displayValue(deal.projectName)}</p>
+                          <p className="text-xs text-slate-400">
+                            {[
+                              deal.community,
+                              deal.propertyType,
+                              deal.unitNumber && `Unit ${deal.unitNumber}`,
+                              deal.propertySize && `${deal.propertySize} sqft`,
+                            ].filter(Boolean).join(" · ") || "—"}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <p className="font-semibold text-emerald-700">{formatCurrency(deal.salesValue)}</p>
+                          <p className="text-xs text-slate-400">{deal.currency}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-slate-700">{formatDateTime(deal.closedAt)}</p>
+                          <p className="text-xs text-slate-400">by {displayValue(deal.closedBy?.fullName)}</p>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/leads/${deal.leadId}`}
+                            onClick={onClose}
+                            className="inline-flex items-center gap-1 rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                            title="View lead"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  {!report.isLoading && (
+                    <tfoot>
+                      <tr className="border-t border-slate-200 bg-slate-50/50 font-semibold">
+                        <td className="px-4 py-3 text-slate-700" colSpan={3}>
+                          Total ({stats.dealsClosed} {stats.dealsClosed === 1 ? "deal" : "deals"})
+                        </td>
+                        <td className="px-4 py-3 text-right text-emerald-700">
+                          {formatCurrency(stats.salesAmount)}
+                        </td>
+                        <td className="px-4 py-3" colSpan={2}></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            )}
+            {dealTotal > dealPageSize && (
+              <Pagination
+                page={dealPage}
+                pageSize={dealPageSize}
+                total={dealTotal}
+                totalPages={dealTotalPages}
+                onPageChange={setDealPage}
+                onPageSizeChange={(size) => {
+                  setDealPageSize(size);
+                  setDealPage(1);
+                }}
+              />
+            )}
+          </div>
         </div>
       )}
     </Modal>

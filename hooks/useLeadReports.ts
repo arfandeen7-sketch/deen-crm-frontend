@@ -6,6 +6,7 @@ import { reportsService } from "@/services/leads/reports.service";
 import { activityService } from "@/services/leads/activity.service";
 import { usersService } from "@/services/users/users.service";
 import { CONVERTED_LEAD_STATUSES, POLL_SLOW } from "@/constants";
+import { uaeDateISO } from "@/lib/utils";
 import { useQueryEnabled, retrySkipAuth } from "@/lib/query-gate";
 import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 import type {
@@ -225,10 +226,9 @@ export function useEmployeePerformanceList(params: LeadReportParams) {
 }
 
 export function useDailyEmployeePerformanceList(range?: { dateFrom?: string; dateTo?: string }) {
-  const today = useMemo(() => new Date(), []);
-  const targetDate = today.toISOString().slice(0, 10);
-  const dateFrom = range?.dateFrom ?? range?.dateTo ?? targetDate;
-  const dateTo = range?.dateTo ?? range?.dateFrom ?? targetDate;
+  const today = uaeDateISO();
+  const dateFrom = range?.dateFrom ?? range?.dateTo ?? today;
+  const dateTo = range?.dateTo ?? range?.dateFrom ?? today;
   const resolvedRange = useMemo(() => ({ dateFrom, dateTo }), [dateFrom, dateTo]);
   const hasPermission = useQueryEnabled(QUERY_REQUIREMENTS["lead-reports:user-performance"]);
   const enabled = Boolean(resolvedRange.dateFrom && resolvedRange.dateTo) && hasPermission;
