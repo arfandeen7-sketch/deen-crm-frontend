@@ -118,6 +118,7 @@ export const reportsService = {
       manuallyCreated: r.manuallyCreated ?? 0,
       masterAssigned: r.masterAssigned ?? 0,
       masterAssignedStatusBreakdown: r.masterAssignedStatusBreakdown ?? {},
+      owners: r.owners ?? 0,
     }));
   },
 
@@ -140,6 +141,7 @@ export const reportsService = {
       manuallyCreated: row.manuallyCreated ?? 0,
       masterAssigned: row.masterAssigned ?? 0,
       masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
+      owners: row.owners ?? 0,
     }));
   },
 
@@ -167,6 +169,7 @@ export const reportsService = {
         manuallyCreated: row.manuallyCreated ?? 0,
         masterAssigned: row.masterAssigned ?? 0,
         masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
+        owners: row.owners ?? 0,
       };
     }
 
@@ -196,6 +199,7 @@ export const reportsService = {
       manuallyCreated: row.manuallyCreated ?? 0,
       masterAssigned: row.masterAssigned ?? 0,
       masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
+      owners: row.owners ?? 0,
     };
   },
 

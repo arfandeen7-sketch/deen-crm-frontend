@@ -1701,6 +1701,8 @@ export interface LeadReportRow {
   masterAssigned?: number;
   /** Current status breakdown of the Master-assigned leads. */
   masterAssignedStatusBreakdown?: Record<string, number>;
+  /** Manually created owners plus owners from Convert to Owner. */
+  owners?: number;
 }
 
 export interface LeadReportResponse {
@@ -1727,6 +1729,8 @@ export interface UserPerformanceItem {
   masterAssigned?: number;
   /** Current status breakdown of the Master-assigned leads. */
   masterAssignedStatusBreakdown?: Record<string, number>;
+  /** Manually created owners plus owners from Convert to Owner. */
+  owners?: number;
 }
 
 export interface LeadTimeSeriesItem {

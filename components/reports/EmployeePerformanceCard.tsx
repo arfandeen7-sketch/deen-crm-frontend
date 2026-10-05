@@ -35,16 +35,11 @@ export function EmployeePerformanceCard({
   const lowTouch = item.touchRate < 50;
   const highMissed = item.missedFollowUps >= 5;
   const donutData = Object.entries(item.statusBreakdown ?? {}).map(([label, value]) => ({ label, value }));
-  const masterAssigned = item.masterAssigned ?? 0;
-  const masterDonutData = Object.entries(item.masterAssignedStatusBreakdown ?? {}).map(([label, value]) => ({
-    label,
-    value,
-  }));
-  const masterTotal = masterDonutData.reduce((sum, entry) => sum + entry.value, 0);
   const metrics = [
     { label: "Total Leads", value: item.assigned.toLocaleString(), className: "text-slate-900" },
     { label: "Manually Created", value: (item.manuallyCreated ?? 0).toLocaleString(), className: "text-indigo-600" },
     { label: "Master Assigned", value: (item.masterAssigned ?? 0).toLocaleString(), className: "text-violet-700" },
+    { label: "Owners", value: (item.owners ?? 0).toLocaleString(), className: "text-amber-700" },
     { label: "Touch Rate", value: `${item.touchRate.toFixed(0)}%`, className: "text-emerald-600" },
     { label: "Conversion", value: `${item.conversionRate.toFixed(0)}%`, className: "text-slate-900" },
     { label: "Follow Up", value: `${item.followUpCompletionRate.toFixed(0)}%`, className: "text-sky-600" },
@@ -128,35 +123,6 @@ export function EmployeePerformanceCard({
           <p className="mb-1 text-[11px] font-medium uppercase text-slate-400">Last 7 Days</p>
           <Sparkline data={item.weeklyActivity} />
         </div>
-      </div>
-
-      <div className="border-t border-slate-100 px-4 py-3">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-[11px] font-medium uppercase text-slate-400">Master-Assigned Leads</p>
-          <span className="text-sm font-semibold text-slate-900">{masterAssigned}</span>
-        </div>
-        {masterAssigned === 0 ? (
-          <p className="text-xs text-slate-400">No leads assigned by Master.</p>
-        ) : (
-          <div className="flex items-center gap-4">
-            <DonutChart data={masterDonutData} size="sm" showLegend={false} />
-            <ul className="flex-1 space-y-1">
-              {masterDonutData.map((entry) => (
-                <li key={entry.label} className="flex items-center justify-between text-xs text-slate-600">
-                  <span className="truncate pr-2">{entry.label}</span>
-                  <span className="shrink-0 font-medium text-slate-700">
-                    {entry.value}
-                    {masterTotal > 0 && (
-                      <span className="ml-1 text-slate-400">
-                        ({((entry.value / masterTotal) * 100).toFixed(0)}%)
-                      </span>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
       <div className="flex items-center gap-2 border-t border-slate-100 p-3">
