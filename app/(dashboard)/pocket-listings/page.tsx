@@ -2,14 +2,15 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { BookLock, Plus, Search, SlidersHorizontal } from "lucide-react";
+import { BookLock, Plus, SlidersHorizontal } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
 import { LoadingState, ErrorState, EmptyState } from "@/components/ui/States";
 import { PocketListingCard } from "@/components/pocketListings/PocketListingCard";
 import { usePocketListingCreators, usePocketListingsList } from "@/hooks/usePocketListings";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Button } from "@/components/ui/Button";
 import {
   UAE_EMIRATES,
@@ -118,18 +119,15 @@ function PocketListingsContent() {
 
       {/* Search + Filter toggle bar */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-          <Input
-            placeholder="Search by title, reference, or location…"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Search by title, reference, or location…"
+          className="flex-1"
+        />
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
