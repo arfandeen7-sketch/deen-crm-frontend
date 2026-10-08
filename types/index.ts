@@ -1649,6 +1649,8 @@ export interface LeadQueryParams {
   locality?: string;
   dateFrom?: string;
   dateTo?: string;
+  /** Which date the dateFrom/dateTo range applies to. Defaults to enquiry (lead date). */
+  dateField?: "assignment" | "creation" | "enquiry";
   search?: string;
   category?: "fresh" | "untouched" | "imported" | "assigned" | "unassigned";
   projectType?: string;

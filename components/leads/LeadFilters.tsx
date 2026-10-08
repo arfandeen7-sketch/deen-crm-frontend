@@ -62,6 +62,7 @@ export function LeadFilters({
       filters.category ||
       filters.dateFrom ||
       filters.dateTo ||
+      (filters.dateField && filters.dateField !== "enquiry") ||
       filters.projectType ||
       filters.configuration ||
       filters.projectName ||
@@ -247,6 +248,18 @@ export function LeadFilters({
         <span className="flex items-center gap-1.5 font-medium text-neutral-500">
           <SlidersHorizontal className="h-3.5 w-3.5" /> Lead date
         </span>
+        <Select
+          value={filters.dateField ?? "enquiry"}
+          onChange={(e) => {
+            const value = e.target.value as LeadQueryParams["dateField"];
+            onChange("dateField", value && value !== "enquiry" ? value : undefined);
+          }}
+          className="h-10 w-auto min-w-[9.5rem]"
+        >
+          <option value="assignment">Assignment</option>
+          <option value="creation">Creation</option>
+          <option value="enquiry">Enquiry</option>
+        </Select>
         <input
           type="date"
           value={filters.dateFrom ?? ""}
