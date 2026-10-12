@@ -9,6 +9,12 @@ import { DonutChart } from "@/components/charts/DonutChart";
 import { Sparkline } from "@/components/charts/Sparkline";
 import type { EmployeePerformance } from "@/types";
 
+function activeConvertedHint(total: number, converted: number): string | undefined {
+  if (converted <= 0) return undefined;
+  const active = Math.max(0, total - converted);
+  return `${active.toLocaleString()} active · ${converted.toLocaleString()} converted to owner`;
+}
+
 function scoreColor(score: number): string {
   if (score >= 75) return "bg-emerald-100 text-emerald-700 ring-emerald-600/20";
   if (score >= 50) return "bg-amber-100 text-amber-700 ring-amber-600/20";
@@ -37,10 +43,14 @@ export function EmployeePerformanceCard({
   const donutData = Object.entries(item.statusBreakdown ?? {}).map(([label, value]) => ({ label, value }));
   const convertedInPeriod = item.ownersFromConvert ?? 0;
   const convertedOutsidePeriod = item.ownersConvertedOutsideRange ?? 0;
+  const manualTotal = item.manuallyCreated ?? 0;
+  const manualConverted = item.manuallyCreatedConverted ?? 0;
+  const masterTotal = item.masterAssigned ?? 0;
+  const masterConverted = item.masterAssignedConverted ?? 0;
   const metrics = [
     { label: "Total Leads", value: item.assigned.toLocaleString(), className: "text-slate-900", hint: "Selected period" },
-    { label: "Manually Created", value: (item.manuallyCreated ?? 0).toLocaleString(), className: "text-indigo-600" },
-    { label: "Master Assigned", value: (item.masterAssigned ?? 0).toLocaleString(), className: "text-violet-700" },
+    { label: "Manually Created", value: manualTotal.toLocaleString(), className: "text-indigo-600", hint: activeConvertedHint(manualTotal, manualConverted) },
+    { label: "Master Assigned", value: masterTotal.toLocaleString(), className: "text-violet-700", hint: activeConvertedHint(masterTotal, masterConverted) },
     { label: "Owners Created Manually", value: (item.ownersCreatedManually ?? 0).toLocaleString(), className: "text-amber-700" },
     { label: "Converted in period", value: convertedInPeriod.toLocaleString(), className: "text-orange-700", hint: "Part of the lead count" },
     { label: "Outside this period", value: convertedOutsidePeriod.toLocaleString(), className: "text-slate-600", hint: "Assigned before these dates" },

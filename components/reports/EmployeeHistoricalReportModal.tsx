@@ -27,6 +27,12 @@ function metricValue(value: string, className: string) {
   return <p className={cn("text-lg font-semibold tabular-nums", className)}>{value}</p>;
 }
 
+function activeConvertedHint(total: number, converted: number): string | undefined {
+  if (converted <= 0) return undefined;
+  const active = Math.max(0, total - converted);
+  return `${active.toLocaleString()} active · ${converted.toLocaleString()} converted to owner`;
+}
+
 function reportMetrics(data: UserPerformanceItem | null | undefined) {
   const assigned = data?.assigned ?? 0;
   const converted =
@@ -40,7 +46,9 @@ function reportMetrics(data: UserPerformanceItem | null | undefined) {
   return {
     totalLeads: assigned,
     manuallyCreated: data?.manuallyCreated ?? 0,
+    manuallyCreatedConverted: data?.manuallyCreatedConverted ?? 0,
     masterAssigned: data?.masterAssigned ?? 0,
+    masterAssignedConverted: data?.masterAssignedConverted ?? 0,
     ownersCreatedManually: data?.ownersCreatedManually ?? 0,
     ownersFromConvert: data?.ownersFromConvert ?? 0,
     ownersConvertedOutsideRange: data?.ownersConvertedOutsideRange ?? 0,
@@ -132,8 +140,8 @@ export function EmployeeHistoricalReportModal({
 
   const tiles = [
     { label: "Total Leads", value: stats.totalLeads.toLocaleString(), className: "text-slate-900", hint: "Selected period" },
-    { label: "Manually Created", value: stats.manuallyCreated.toLocaleString(), className: "text-indigo-600" },
-    { label: "Master Assigned", value: stats.masterAssigned.toLocaleString(), className: "text-violet-700" },
+    { label: "Manually Created", value: stats.manuallyCreated.toLocaleString(), className: "text-indigo-600", hint: activeConvertedHint(stats.manuallyCreated, stats.manuallyCreatedConverted) },
+    { label: "Master Assigned", value: stats.masterAssigned.toLocaleString(), className: "text-violet-700", hint: activeConvertedHint(stats.masterAssigned, stats.masterAssignedConverted) },
     { label: "Owners Created Manually", value: stats.ownersCreatedManually.toLocaleString(), className: "text-amber-700" },
     { label: "Converted in period", value: stats.ownersFromConvert.toLocaleString(), className: "text-orange-700", hint: "Part of the lead count" },
     { label: "Outside this period", value: stats.ownersConvertedOutsideRange.toLocaleString(), className: "text-slate-600", hint: "Assigned before these dates" },

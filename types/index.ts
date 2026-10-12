@@ -1649,8 +1649,12 @@ export interface LeadQueryParams {
   locality?: string;
   dateFrom?: string;
   dateTo?: string;
-  /** Which date the dateFrom/dateTo range applies to. Defaults to enquiry (lead date). */
-  dateField?: "assignment" | "creation" | "enquiry";
+  /**
+   * Lead-date dropdown. Defaults to pf_enquiry on All Leads.
+   * master_assigned: assigned by a Master user. manual: created by hand.
+   * pf_enquiry: Property Finder's enquiry date.
+   */
+  dateField?: "master_assigned" | "manual" | "pf_enquiry";
   search?: string;
   category?: "fresh" | "untouched" | "imported" | "assigned" | "unassigned";
   projectType?: string;
@@ -1699,8 +1703,12 @@ export interface LeadReportRow {
   salesAmount?: number;
   avgDealValue?: number;
   manuallyCreated?: number;
+  /** Manually created leads included above that were converted to an owner. */
+  manuallyCreatedConverted?: number;
   /** Leads whose latest assignment was performed by a Master-role user. */
   masterAssigned?: number;
+  /** Master-assigned leads included above that were converted to an owner. */
+  masterAssignedConverted?: number;
   /** Current status breakdown of the Master-assigned leads. */
   masterAssignedStatusBreakdown?: Record<string, number>;
   /** Owners added from the Owners form. File imports are excluded. */
@@ -1731,8 +1739,12 @@ export interface UserPerformanceItem {
   salesAmount?: number;
   avgDealValue?: number;
   manuallyCreated?: number;
+  /** Manually created leads included above that were converted to an owner. */
+  manuallyCreatedConverted?: number;
   /** Leads whose latest assignment was performed by a Master-role user. */
   masterAssigned?: number;
+  /** Master-assigned leads included above that were converted to an owner. */
+  masterAssignedConverted?: number;
   /** Current status breakdown of the Master-assigned leads. */
   masterAssignedStatusBreakdown?: Record<string, number>;
   /** Owners added from the Owners form. File imports are excluded. */

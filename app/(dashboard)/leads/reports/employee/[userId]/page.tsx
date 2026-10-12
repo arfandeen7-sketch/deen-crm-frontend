@@ -158,7 +158,7 @@ function EmployeeReportPageContent() {
           accent="indigo"
           value={employee.assigned}
         />
-        <KpiCard label="Manually Created" icon={FilePlus2} accent="violet" value={employee.manuallyCreated ?? 0} />
+        <KpiCard label="Manually Created" hint={hasDateFilter && (employee.manuallyCreatedConverted ?? 0) > 0 ? `${Math.max(0, (employee.manuallyCreated ?? 0) - (employee.manuallyCreatedConverted ?? 0)).toLocaleString()} active · ${(employee.manuallyCreatedConverted ?? 0).toLocaleString()} converted to owner` : undefined} icon={FilePlus2} accent="violet" value={employee.manuallyCreated ?? 0} />
         <KpiCard label="Owners Created Manually" icon={UserPlus} accent="amber" value={employee.ownersCreatedManually ?? 0} />
         <KpiCard
           label="Converted in period"

@@ -62,7 +62,7 @@ export function LeadFilters({
       filters.category ||
       filters.dateFrom ||
       filters.dateTo ||
-      (filters.dateField && filters.dateField !== "enquiry") ||
+      (filters.dateField && filters.dateField !== "pf_enquiry") ||
       filters.projectType ||
       filters.configuration ||
       filters.projectName ||
@@ -249,16 +249,16 @@ export function LeadFilters({
           <SlidersHorizontal className="h-3.5 w-3.5" /> Lead date
         </span>
         <Select
-          value={filters.dateField ?? "enquiry"}
+          value={filters.dateField ?? "pf_enquiry"}
           onChange={(e) => {
             const value = e.target.value as LeadQueryParams["dateField"];
-            onChange("dateField", value && value !== "enquiry" ? value : undefined);
+            onChange("dateField", value && value !== "pf_enquiry" ? value : undefined);
           }}
-          className="h-10 w-auto min-w-[9.5rem]"
+          className="h-10 w-auto min-w-[19rem]"
         >
-          <option value="assignment">Assignment</option>
-          <option value="creation">Creation</option>
-          <option value="enquiry">Enquiry</option>
+          <option value="master_assigned">Master Assigned</option>
+          <option value="manual">Manually Created</option>
+          <option value="pf_enquiry">Property Finder Enquiry Date</option>
         </Select>
         <input
           type="date"

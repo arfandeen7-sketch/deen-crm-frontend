@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -44,7 +44,13 @@ function LeadsPageContent() {
   const searchParams = useSearchParams();
   const { canAction } = useAuth();
   const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
-  const { data, isLoading, isError, refetch } = useLeadsList(filters);
+  // The dropdown always has a selection. Property Finder enquiry is the default,
+  // so a date range on this page uses that enquiry date unless another option is chosen.
+  const listFilters = useMemo(
+    () => ({ ...filters, dateField: filters.dateField ?? ("pf_enquiry" as const) }),
+    [filters],
+  );
+  const { data, isLoading, isError, refetch } = useLeadsList(listFilters);
   const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
 
@@ -72,7 +78,7 @@ function LeadsPageContent() {
   async function handleExport() {
     setExporting(true);
     try {
-      const blob = await leadsService.export(filters);
+      const blob = await leadsService.export(listFilters);
       downloadBlob(blob, `leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
       toast.success("Leads exported");
     } catch (e) {
@@ -146,7 +152,20 @@ function LeadsPageContent() {
         </div>
       ),
     },
-    { key: "status", header: "Status", render: (l) => <StatusBadge status={l.leadStatus} /> },
+    { key: "status", header: "Status", render: (l) => (
+      <div className="flex flex-wrap items-center gap-1">
+        <StatusBadge status={l.leadStatus} />
+        {l.convertedToOwnerId ? (
+          <span className="inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-800">
+            Converted to owner
+          </span>
+        ) : filters.dateField === "manual" || filters.dateField === "master_assigned" || filters.dateField === "creation" || filters.dateField === "assignment" ? (
+          <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+            Active
+          </span>
+        ) : null}
+      </div>
+    ) },
     {
       key: "assigned",
       header: "Assigned To",
@@ -395,7 +414,15 @@ function LeadsPageContent() {
       <LeadTabs />
       <PageHeader
         title="All Leads"
-        subtitle={data ? `${data.total} total leads` : "Manage and track your leads"}
+        subtitle={
+          data
+            ? `${data.total} total leads${
+                filters.dateField === "manual" || filters.dateField === "master_assigned" || filters.dateField === "creation" || filters.dateField === "assignment"
+                  ? " · includes leads converted to owners"
+                  : ""
+              }`
+            : "Manage and track your leads"
+        }
         actions={
           <>
             <CanAccess module="leads" page="all_leads" action="export">
