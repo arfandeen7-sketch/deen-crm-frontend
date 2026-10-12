@@ -115,10 +115,12 @@ function LeadDetailPageContent() {
   async function handleConvertToOwner() {
     try {
       const result = await convertToOwner.mutateAsync(params.id);
+      if (result.ownerAlreadyExisted) {
+        toast.error("This owner already exists in the database.");
+        return;
+      }
       if (result.alreadyConverted) {
         toast.info("Lead was already converted to an Owner.");
-      } else if (result.ownerAlreadyExisted) {
-        toast.success(`Linked to existing Owner "${result.owner.fullName}".`);
       } else {
         toast.success(
           `Owner "${result.owner.fullName}" created successfully.${result.propertyCreated ? " Property added to Owner portfolio." : ""}`,
@@ -497,7 +499,7 @@ function LeadDetailPageContent() {
         onClose={() => setConvertOpen(false)}
         onConfirm={handleConvertToOwner}
         title="Convert lead to Owner?"
-        message={`This will create an Owner record for "${lead.leadName}" and link it to this lead. If an Owner with the same mobile number already exists, it will be linked instead.`}
+        message={`This will create an Owner record for "${lead.leadName}" and remove this lead from All Leads. If this owner already exists, conversion is blocked and the lead stays in All Leads.`}
         confirmLabel="Convert to Owner"
         loading={convertToOwner.isPending}
       />
