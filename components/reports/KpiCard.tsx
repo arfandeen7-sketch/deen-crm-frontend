@@ -32,6 +32,7 @@ export function KpiCard({
   comparison,
   invertTrend = false,
   history,
+  hint,
 }: {
   label: string;
   value?: number | string | null; // Allow null to represent missing data
@@ -43,6 +44,7 @@ export function KpiCard({
   /** Set true for metrics where a decrease is "good" (e.g. missed follow-ups). */
   invertTrend?: boolean;
   history?: SparklineDatum[];
+  hint?: string;
 }) {
   const delta = comparison?.deltaPct ?? null;
   const isUp = delta !== null && delta > 0.5;
@@ -82,6 +84,7 @@ export function KpiCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
+            {hint ? <p className="mt-1 text-xs font-normal normal-case tracking-normal text-neutral-500">{hint}</p> : null}
             {loading ? (
               <Skeleton className="mt-2 h-7 w-16" />
             ) : hasValue ? (

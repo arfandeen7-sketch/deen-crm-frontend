@@ -43,6 +43,7 @@ function reportMetrics(data: UserPerformanceItem | null | undefined) {
     masterAssigned: data?.masterAssigned ?? 0,
     ownersCreatedManually: data?.ownersCreatedManually ?? 0,
     ownersFromConvert: data?.ownersFromConvert ?? 0,
+    ownersConvertedOutsideRange: data?.ownersConvertedOutsideRange ?? 0,
     touchRate: assigned > 0 ? ((data?.touched ?? 0) / assigned) * 100 : 0,
     conversionRate: assigned > 0 ? (converted / assigned) * 100 : 0,
     followUpRate: followUpTotal > 0 ? (followedUp / followUpTotal) * 100 : 0,
@@ -130,11 +131,12 @@ export function EmployeeHistoricalReportModal({
   }, [report.data?.statusBreakdown]);
 
   const tiles = [
-    { label: "Total Leads", value: stats.totalLeads.toLocaleString(), className: "text-slate-900" },
+    { label: "Total Leads", value: stats.totalLeads.toLocaleString(), className: "text-slate-900", hint: "Selected period" },
     { label: "Manually Created", value: stats.manuallyCreated.toLocaleString(), className: "text-indigo-600" },
     { label: "Master Assigned", value: stats.masterAssigned.toLocaleString(), className: "text-violet-700" },
     { label: "Owners Created Manually", value: stats.ownersCreatedManually.toLocaleString(), className: "text-amber-700" },
-    { label: "Owners from Convert", value: stats.ownersFromConvert.toLocaleString(), className: "text-orange-700" },
+    { label: "Converted in period", value: stats.ownersFromConvert.toLocaleString(), className: "text-orange-700", hint: "Part of the lead count" },
+    { label: "Outside this period", value: stats.ownersConvertedOutsideRange.toLocaleString(), className: "text-slate-600", hint: "Assigned before these dates" },
     { label: "Touch Rate", value: `${stats.touchRate.toFixed(0)}%`, className: "text-emerald-600" },
     { label: "Conversion", value: `${stats.conversionRate.toFixed(0)}%`, className: "text-slate-900" },
     { label: "Follow Up", value: `${stats.followUpRate.toFixed(0)}%`, className: "text-sky-600" },
@@ -209,9 +211,18 @@ export function EmployeeHistoricalReportModal({
                   <div key={tile.label} className="rounded-xl border border-slate-200 bg-white p-4 text-center">
                     {metricValue(tile.value, tile.className)}
                     <p className="text-[11px] text-slate-500">{tile.label}</p>
+                    {"hint" in tile && tile.hint ? (
+                      <p className="text-[10px] leading-tight text-slate-400">{tile.hint}</p>
+                    ) : null}
                   </div>
                 ))}
               </div>
+              {stats.ownersConvertedOutsideRange > 0 && (
+                <p className="text-xs leading-snug text-slate-500">
+                  {stats.ownersFromConvert.toLocaleString()} of the {stats.totalLeads.toLocaleString()} leads in this period were converted to owners.{" "}
+                  {stats.ownersConvertedOutsideRange.toLocaleString()} more were converted during these dates from leads assigned before the period, so they are not part of that lead count.
+                </p>
+              )}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <div className="rounded-xl border border-slate-200 bg-white p-4">

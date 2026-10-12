@@ -1705,8 +1705,10 @@ export interface LeadReportRow {
   masterAssignedStatusBreakdown?: Record<string, number>;
   /** Owners added from the Owners form. File imports are excluded. */
   ownersCreatedManually?: number;
-  /** Owners created or linked by the Convert to Owner button. */
+  /** Leads in the selected period that were converted to an owner in that period. */
   ownersFromConvert?: number;
+  /** Conversions during the selected dates of leads that fall outside that period. */
+  ownersConvertedOutsideRange?: number;
 }
 
 export interface LeadReportResponse {
@@ -1735,8 +1737,10 @@ export interface UserPerformanceItem {
   masterAssignedStatusBreakdown?: Record<string, number>;
   /** Owners added from the Owners form. File imports are excluded. */
   ownersCreatedManually?: number;
-  /** Owners created or linked by the Convert to Owner button. */
+  /** Leads in the selected period that were converted to an owner in that period. */
   ownersFromConvert?: number;
+  /** Conversions during the selected dates of leads that fall outside that period. */
+  ownersConvertedOutsideRange?: number;
 }
 
 export interface LeadTimeSeriesItem {

@@ -120,6 +120,7 @@ export const reportsService = {
       masterAssignedStatusBreakdown: r.masterAssignedStatusBreakdown ?? {},
       ownersCreatedManually: r.ownersCreatedManually ?? 0,
       ownersFromConvert: r.ownersFromConvert ?? 0,
+      ownersConvertedOutsideRange: r.ownersConvertedOutsideRange ?? 0,
     }));
   },
 
@@ -144,6 +145,7 @@ export const reportsService = {
       masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
       ownersCreatedManually: row.ownersCreatedManually ?? 0,
       ownersFromConvert: row.ownersFromConvert ?? 0,
+      ownersConvertedOutsideRange: row.ownersConvertedOutsideRange ?? 0,
     }));
   },
 
@@ -173,6 +175,7 @@ export const reportsService = {
         masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
         ownersCreatedManually: row.ownersCreatedManually ?? 0,
         ownersFromConvert: row.ownersFromConvert ?? 0,
+        ownersConvertedOutsideRange: row.ownersConvertedOutsideRange ?? 0,
       };
     }
 
@@ -204,6 +207,7 @@ export const reportsService = {
       masterAssignedStatusBreakdown: row.masterAssignedStatusBreakdown ?? {},
       ownersCreatedManually: row.ownersCreatedManually ?? 0,
       ownersFromConvert: row.ownersFromConvert ?? 0,
+      ownersConvertedOutsideRange: row.ownersConvertedOutsideRange ?? 0,
     };
   },
 

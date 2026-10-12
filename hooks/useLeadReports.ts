@@ -336,6 +336,7 @@ function useEnhancedEmployeePerformance(
         masterAssignedStatusBreakdown: {},
         ownersCreatedManually: 0,
         ownersFromConvert: 0,
+        ownersConvertedOutsideRange: 0,
         role: user.role,
         department: user.department,
         designation: user.designation,

@@ -35,12 +35,15 @@ export function EmployeePerformanceCard({
   const lowTouch = item.touchRate < 50;
   const highMissed = item.missedFollowUps >= 5;
   const donutData = Object.entries(item.statusBreakdown ?? {}).map(([label, value]) => ({ label, value }));
+  const convertedInPeriod = item.ownersFromConvert ?? 0;
+  const convertedOutsidePeriod = item.ownersConvertedOutsideRange ?? 0;
   const metrics = [
-    { label: "Total Leads", value: item.assigned.toLocaleString(), className: "text-slate-900" },
+    { label: "Total Leads", value: item.assigned.toLocaleString(), className: "text-slate-900", hint: "Selected period" },
     { label: "Manually Created", value: (item.manuallyCreated ?? 0).toLocaleString(), className: "text-indigo-600" },
     { label: "Master Assigned", value: (item.masterAssigned ?? 0).toLocaleString(), className: "text-violet-700" },
     { label: "Owners Created Manually", value: (item.ownersCreatedManually ?? 0).toLocaleString(), className: "text-amber-700" },
-    { label: "Owners from Convert", value: (item.ownersFromConvert ?? 0).toLocaleString(), className: "text-orange-700" },
+    { label: "Converted in period", value: convertedInPeriod.toLocaleString(), className: "text-orange-700", hint: "Part of the lead count" },
+    { label: "Outside this period", value: convertedOutsidePeriod.toLocaleString(), className: "text-slate-600", hint: "Assigned before these dates" },
     { label: "Touch Rate", value: `${item.touchRate.toFixed(0)}%`, className: "text-emerald-600" },
     { label: "Conversion", value: `${item.conversionRate.toFixed(0)}%`, className: "text-slate-900" },
     { label: "Follow Up", value: `${item.followUpCompletionRate.toFixed(0)}%`, className: "text-sky-600" },
@@ -111,9 +114,18 @@ export function EmployeePerformanceCard({
           <div key={metric.label}>
             <p className={cn("text-lg font-semibold tabular-nums", metric.className)}>{metric.value}</p>
             <p className="text-[11px] text-slate-500">{metric.label}</p>
+            {"hint" in metric && metric.hint ? (
+              <p className="text-[10px] leading-tight text-slate-400">{metric.hint}</p>
+            ) : null}
           </div>
         ))}
       </div>
+      {convertedOutsidePeriod > 0 && (
+        <p className="border-t border-slate-100 px-4 py-2 text-[11px] leading-snug text-slate-500">
+          {convertedInPeriod.toLocaleString()} of the {item.assigned.toLocaleString()} leads in this period were converted to owners.{" "}
+          {convertedOutsidePeriod.toLocaleString()} more were converted during these dates from leads assigned before the period, so they are not part of that lead count.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-4 border-t border-slate-100 px-4 py-3">
         <div>
