@@ -159,7 +159,7 @@ function LeadsPageContent() {
           <span className="inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-800">
             Converted to owner
           </span>
-        ) : filters.dateField === "manual" || filters.dateField === "master_assigned" || filters.dateField === "creation" || filters.dateField === "assignment" ? (
+        ) : filters.dateField === "manual" || filters.dateField === "master_assigned" ? (
           <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
             Active
           </span>
@@ -417,7 +417,7 @@ function LeadsPageContent() {
         subtitle={
           data
             ? `${data.total} total leads${
-                filters.dateField === "manual" || filters.dateField === "master_assigned" || filters.dateField === "creation" || filters.dateField === "assignment"
+                filters.dateField === "manual" || filters.dateField === "master_assigned"
                   ? " · includes leads converted to owners"
                   : ""
               }`
