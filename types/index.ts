@@ -244,6 +244,14 @@ export interface Lead {
   // ── Lead → Owner Conversion ──────────────────────────────────────────────
   convertedToOwnerId?: string | null;
   convertedOwner?: { id: string; fullName: string; mobileNumber: string } | null;
+  /** Sale display fields attached to Deal Closed table rows. */
+  saleId?: string | null;
+  salesValue?: number | null;
+  currency?: string | null;
+  closedAt?: string | null;
+  closedBy?: Pick<User, "id" | "fullName"> | null;
+  salesUser?: Pick<User, "id" | "fullName"> | null;
+  salesManager?: Pick<User, "id" | "fullName"> | null;
 }
 
 // ── Client Details ────────────────────────────────────────────────────────────
@@ -623,18 +631,33 @@ export interface DealEmployeeSummary {
   totalSalesValue: number;
 }
 
-export interface DealClosedQueryParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
+export interface DealClosedQueryParams extends LeadQueryParams {
   closedFrom?: string;
   closedTo?: string;
   employeeId?: string;
   managerId?: string;
-  projectName?: string;
-  community?: string;
-  source?: string;
-  propertyType?: string;
+  userId?: string;
+  sortBy?: "closedAt" | "updatedAt" | "leadName" | "source" | "createdAt" | "price" | "salesValue" | "status";
+  sortDir?: "asc" | "desc";
+}
+
+export interface DealClosedListItem extends ClosedDeal {
+  /** Full lead row, same shape as All Leads, plus sale display fields. */
+  lead: Lead;
+}
+
+export interface DealClosedFilterOptions {
+  projectNames: string[];
+  communities: string[];
+  cities: string[];
+  localities: string[];
+  nationalities: string[];
+}
+
+export interface DealClosedUserOption {
+  id: string;
+  fullName: string;
+  role: UserRole;
 }
 
 // ── HRMS: Attendance ─────────────────────────────────────────────────────────
@@ -1654,7 +1677,7 @@ export interface LeadQueryParams {
    * master_assigned: assigned by a Master user. manual: created by hand.
    * pf_enquiry: Property Finder's enquiry date.
    */
-  dateField?: "master_assigned" | "manual" | "pf_enquiry";
+  dateField?: "master_assigned" | "manual" | "pf_enquiry" | "closed";
   search?: string;
   category?: "fresh" | "untouched" | "imported" | "assigned" | "unassigned";
   projectType?: string;

@@ -8,16 +8,22 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useAuth } from "@/hooks/useAuth";
 import { useLeadOptions } from "@/hooks/useLeads";
 import { useBrokerOptions } from "@/hooks/useBrokers";
-import type { LeadQueryParams } from "@/types";
+import type { DealClosedFilterOptions, LeadQueryParams } from "@/types";
 
 export function LeadFilters({
   filters,
   onChange,
   onReset,
+  variant = "active",
+  userOptions,
+  filterOptions,
 }: {
   filters: LeadQueryParams;
   onChange: <K extends keyof LeadQueryParams>(key: K, value: LeadQueryParams[K]) => void;
   onReset: () => void;
+  variant?: "active" | "dealClosed";
+  userOptions?: { id: string; fullName: string }[];
+  filterOptions?: DealClosedFilterOptions;
 }) {
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
@@ -27,7 +33,8 @@ export function LeadFilters({
   const { users } = useAssignableUsers();
   const brokers = useBrokerOptions();
   const { canPage } = useAuth();
-  const { data: leadOptions } = useLeadOptions();
+  const { data: fetchedOptions } = useLeadOptions(variant !== "dealClosed");
+  const leadOptions = filterOptions ?? fetchedOptions;
 
   // Project Name filter shows ONLY values that actually exist on leads
   // (from GET /api/leads/options — distinct projectName + pfBuildingName).
@@ -55,6 +62,7 @@ export function LeadFilters({
     new Set(leadOptions?.nationalities ?? []),
   ).sort((a, b) => a.localeCompare(b));
 
+  const defaultDateField = variant === "dealClosed" ? "closed" : "pf_enquiry";
   const hasFilters = Boolean(
     filters.status ||
       filters.source ||
@@ -62,7 +70,7 @@ export function LeadFilters({
       filters.category ||
       filters.dateFrom ||
       filters.dateTo ||
-      (filters.dateField && filters.dateField !== "pf_enquiry") ||
+      (filters.dateField && filters.dateField !== defaultDateField) ||
       filters.projectType ||
       filters.configuration ||
       filters.projectName ||
@@ -136,7 +144,7 @@ export function LeadFilters({
           className="h-10 w-auto"
         >
           <option value="">All categories</option>
-          <option value="fresh">Fresh</option>
+          {variant !== "dealClosed" && <option value="fresh">Fresh</option>}
           <option value="untouched">Untouched</option>
           <option value="imported">Imported</option>
           <option value="assigned">Assigned</option>
@@ -225,14 +233,14 @@ export function LeadFilters({
             <option key={b.id} value={b.id}>{b.brokerName}</option>
           ))}
         </Select>
-        {canPage("leads", "all_leads") && (
+        {(variant === "dealClosed" ? userOptions != null : canPage("leads", "all_leads")) && (
           <Select
             value={filters.assignedTo ?? ""}
             onChange={(e) => onChange("assignedTo", e.target.value || undefined)}
             className="h-10 w-auto"
           >
             <option value="">All users</option>
-            {users.map((u) => (
+            {(variant === "dealClosed" ? userOptions ?? [] : users).map((u) => (
               <option key={u.id} value={u.id}>{u.fullName}</option>
             ))}
           </Select>
@@ -249,13 +257,14 @@ export function LeadFilters({
           <SlidersHorizontal className="h-3.5 w-3.5" /> Lead date
         </span>
         <Select
-          value={filters.dateField ?? "pf_enquiry"}
+          value={filters.dateField ?? defaultDateField}
           onChange={(e) => {
             const value = e.target.value as LeadQueryParams["dateField"];
-            onChange("dateField", value && value !== "pf_enquiry" ? value : undefined);
+            onChange("dateField", value && value !== defaultDateField ? value : undefined);
           }}
           className="h-10 w-auto min-w-[19rem]"
         >
+          {variant === "dealClosed" && <option value="closed">Deal Closed Date</option>}
           <option value="master_assigned">Master Assigned</option>
           <option value="manual">Manually Created</option>
           <option value="pf_enquiry">Property Finder Enquiry Date</option>

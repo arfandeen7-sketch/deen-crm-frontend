@@ -36,6 +36,7 @@ interface Props {
   permissionPage: string;
   permissionAction: string;
   emptyHint?: string;
+  readOnly?: boolean;
 }
 
 export function GenericDocumentSection({
@@ -47,6 +48,7 @@ export function GenericDocumentSection({
   permissionPage,
   permissionAction,
   emptyHint = "No documents uploaded yet.",
+  readOnly = false,
 }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -67,16 +69,19 @@ export function GenericDocumentSection({
               permissionPage={permissionPage}
               permissionAction={permissionAction}
               onDelete={() => setDeleteId(doc.id)}
+              readOnly={readOnly}
             />
           ))}
         </div>
       )}
 
+      {!readOnly && (
       <CanAccess module={permissionModule} page={permissionPage} action={permissionAction}>
         <Button type="button" variant="outline" size="sm" onClick={() => setAddOpen(true)}>
           <Plus className="h-3.5 w-3.5" /> Add Document
         </Button>
       </CanAccess>
+      )}
 
       <AddDocumentModal
         open={addOpen}
@@ -116,6 +121,7 @@ function DocumentRow({
   permissionPage,
   permissionAction,
   onDelete,
+  readOnly = false,
 }: {
   doc: GenericDocument;
   viewUrl: string | null;
@@ -123,6 +129,7 @@ function DocumentRow({
   permissionPage: string;
   permissionAction: string;
   onDelete: () => void;
+  readOnly?: boolean;
 }) {
   const typeLabel = doc.label && doc.label.trim() ? doc.label : doc.type;
   return (
@@ -156,6 +163,7 @@ function DocumentRow({
             <ExternalLink className="h-3.5 w-3.5" /> View
           </a>
         )}
+        {!readOnly && (
         <CanAccess module={permissionModule} page={permissionPage} action={permissionAction}>
           <button
             type="button"
@@ -166,6 +174,7 @@ function DocumentRow({
             <Trash2 className="h-4 w-4" />
           </button>
         </CanAccess>
+        )}
       </div>
     </div>
   );

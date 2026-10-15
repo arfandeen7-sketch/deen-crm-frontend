@@ -19,6 +19,7 @@ interface ClientDocumentCardProps {
   passportEndDate?: string | null;
   onUpload: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
+  readOnly?: boolean;
 }
 
 const MAX_PDF_MB = 5;
@@ -33,6 +34,7 @@ export function ClientDocumentCard({
   passportEndDate,
   onUpload,
   onDelete,
+  readOnly = false,
 }: ClientDocumentCardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -127,6 +129,7 @@ export function ClientDocumentCard({
         )}
 
         <CanAccess module="client_details" page="all_clients" action="upload_documents">
+          {!readOnly && (
           <>
             <Button
               type="button"
@@ -157,6 +160,7 @@ export function ClientDocumentCard({
               </Button>
             )}
           </>
+          )}
         </CanAccess>
       </div>
 

@@ -27,6 +27,8 @@ import { useClientByLeadId, useClientMutations, useClientDocumentMutations } fro
 import { clientsService } from "@/services/clients/clients.service";
 import { getErrorMessage } from "@/services/api/client";
 import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 
 function InfoRow({
   icon: Icon,
@@ -62,6 +64,8 @@ function ClientDetailPageContent() {
   const { uploadPassport, deletePassport, uploadEmiratesId, deleteEmiratesId } =
     useClientMutations(params.leadId);
   const documentMutations = useClientDocumentMutations(params.leadId);
+  const { role } = useAuth();
+  const locked = !canMutateDealClosedLead(role, client?.lead?.leadStatus);
   const [passportModalOpen, setPassportModalOpen] = useState(false);
   const pendingPassportFile = useRef<File | null>(null);
 
@@ -180,6 +184,7 @@ function ClientDetailPageContent() {
                 passportEndDate={client.passportEndDate}
                 onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
+                readOnly={locked}
               />
               <ClientDocumentCard
                 label="Emirates ID PDF"
@@ -189,6 +194,7 @@ function ClientDetailPageContent() {
                 signedUrl={client.emiratesIdUrl}
                 onUpload={async (file) => { await uploadEmiratesId.mutateAsync(file); }}
                 onDelete={async () => { await deleteEmiratesId.mutateAsync(); }}
+                readOnly={locked}
               />
             </CardBody>
           </Card>
@@ -208,6 +214,7 @@ function ClientDetailPageContent() {
                 permissionModule="client_details"
                 permissionPage="all_clients"
                 permissionAction="upload_documents"
+                readOnly={locked}
               />
             </CardBody>
           </Card>

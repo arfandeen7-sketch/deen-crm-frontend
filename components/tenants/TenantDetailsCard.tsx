@@ -23,6 +23,7 @@ import Link from "next/link";
 interface TenantDetailsCardProps {
   leadId: string;
   leadName?: string;
+  readOnly?: boolean;
 }
 
 function InfoRow({
@@ -45,7 +46,7 @@ function InfoRow({
   );
 }
 
-export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) {
+export function TenantDetailsCard({ leadId, leadName, readOnly = false }: TenantDetailsCardProps) {
   const { data: tenant, isLoading } = useTenantByLeadId(leadId);
   const {
     upsert,
@@ -164,7 +165,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
               </Link>
             )}
             <CanAccess module="tenant_details" page="all_tenants" action="edit">
-              {editing ? (
+              {!readOnly && (editing ? (
                 <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)}>
                   <X className="h-3.5 w-3.5" /> Cancel
                 </Button>
@@ -172,7 +173,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
                 <Button type="button" variant="outline" size="sm" onClick={startEdit}>
                   <Pencil className="h-3.5 w-3.5" /> {tenant ? "Edit" : "Add"}
                 </Button>
-              )}
+              ))}
             </CanAccess>
           </div>
         }
@@ -281,6 +282,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
                 passportEndDate={tenant.passportEndDate}
                 onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
+                readOnly={readOnly}
               />
               <ClientDocumentCard
                 label="Emirates ID PDF"
@@ -290,6 +292,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
                 signedUrl={tenant.emiratesIdUrl}
                 onUpload={async (file) => { await uploadEmiratesId.mutateAsync(file); }}
                 onDelete={async () => { await deleteEmiratesId.mutateAsync(); }}
+                readOnly={readOnly}
               />
               <ClientDocumentCard
                 label="Tenant Agreement PDF"
@@ -299,6 +302,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
                 signedUrl={tenant.agreementUrl}
                 onUpload={async (file) => { await uploadAgreement.mutateAsync(file); }}
                 onDelete={async () => { await deleteAgreement.mutateAsync(); }}
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -306,6 +310,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
           <p className="text-sm text-slate-500">
             No tenant details recorded yet.{" "}
             <CanAccess module="tenant_details" page="all_tenants" action="edit">
+              {!readOnly && (
               <button
                 type="button"
                 onClick={startEdit}
@@ -313,6 +318,7 @@ export function TenantDetailsCard({ leadId, leadName }: TenantDetailsCardProps) 
               >
                 Add now
               </button>
+              )}
             </CanAccess>
           </p>
         )}

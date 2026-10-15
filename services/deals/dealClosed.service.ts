@@ -2,16 +2,19 @@ import { api, getData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
   ClosedDeal,
+  DealClosedFilterOptions,
+  DealClosedListItem,
   DealClosedQueryParams,
   DealClosedStats,
+  DealClosedUserOption,
   DealEmployeeSummary,
   Paginated,
 } from "@/types";
 
 export const dealClosedService = {
   /** GET /api/leads/deal-closed — paginated list */
-  async list(params: DealClosedQueryParams = {}): Promise<Paginated<ClosedDeal>> {
-    const res = await api.get<Paginated<ClosedDeal>>(
+  async list(params: DealClosedQueryParams = {}): Promise<Paginated<DealClosedListItem>> {
+    const res = await api.get<Paginated<DealClosedListItem>>(
       `/leads/deal-closed${buildQuery(params)}`
     );
     return res.data;
@@ -32,5 +35,13 @@ export const dealClosedService = {
   /** GET /api/leads/deal-closed/:saleId — single sale detail */
   getById(saleId: string): Promise<ClosedDeal> {
     return getData<ClosedDeal>(`/leads/deal-closed/${saleId}`);
+  },
+
+  users(): Promise<DealClosedUserOption[]> {
+    return getData<DealClosedUserOption[]>("/leads/deal-closed/users");
+  },
+
+  options(): Promise<DealClosedFilterOptions> {
+    return getData<DealClosedFilterOptions>("/leads/deal-closed/options");
   },
 };

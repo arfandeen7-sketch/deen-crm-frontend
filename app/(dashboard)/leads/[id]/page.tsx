@@ -27,6 +27,7 @@ import {
   CalendarClock,
   UserCheck,
   UserX,
+  Lock,
 } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -38,6 +39,8 @@ import { StatusBadge, PriorityBadge, Badge } from "@/components/ui/Badge";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
+import { useAuth } from "@/hooks/useAuth";
+import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { useLeadCustomFields } from "@/hooks/useCustomFields";
 import { useLeadActivity, useFollowupHistory } from "@/hooks/useLeadActivity";
 import { getErrorMessage } from "@/services/api/client";
@@ -82,6 +85,7 @@ export default function LeadDetailPage() {
 function LeadDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { role } = useAuth();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: customFieldDefs = [] } = useLeadCustomFields();
   const { remove, update, convertToOwner } = useLeadMutations();
@@ -135,10 +139,12 @@ function LeadDetailPageContent() {
   if (isLoading) return <LoadingState />;
   if (isError || !lead) return <ErrorState onRetry={refetch} />;
 
+  const locked = !canMutateDealClosedLead(role, lead.leadStatus);
+
   return (
     <div className="space-y-5">
-      <Link href="/leads" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
-        <ArrowLeft className="h-4 w-4" /> Back to leads
+      <Link href={locked ? "/leads/deal-closed" : "/leads"} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+        <ArrowLeft className="h-4 w-4" /> {locked ? "Back to Deal Closed" : "Back to leads"}
       </Link>
 
       <PageHeader
@@ -153,7 +159,7 @@ function LeadDetailPageContent() {
                   <UserCheck className="h-4 w-4" /> View Owner
                 </Button>
               </Link>
-            ) : (
+            ) : locked ? null : (
               <CanAccess module="leads" page="all_leads" action="edit">
                 <Button
                   variant="outline"
@@ -164,20 +170,29 @@ function LeadDetailPageContent() {
                 </Button>
               </CanAccess>
             )}
+            {!locked && (
             <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>
               <Pencil className="h-4 w-4" /> Edit
             </Button>
+            )}
+            {!locked && (
             <CanAccess module="leads" page="all_leads" action="delete">
               <Button variant="danger" onClick={() => setDeleteOpen(true)}>
                 <Trash2 className="h-4 w-4" /> Delete
               </Button>
             </CanAccess>
+            )}
           </>
         }
       />
 
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={lead.leadStatus} />
+        {locked && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+            <Lock className="h-3.5 w-3.5" /> Locked · Master only
+          </span>
+        )}
         <PriorityBadge priority={lead.leadPriority} />
         <Badge>{humanize(lead.ingestionSource)}</Badge>
         {lead.isImported && <Badge>Imported</Badge>}
@@ -279,11 +294,11 @@ function LeadDetailPageContent() {
 
           {isRentalLead(lead) ? (
             <CanAccess module="tenant_details" page="all_tenants" action="view">
-              <TenantDetailsCard leadId={lead.id} leadName={lead.leadName} />
+              <TenantDetailsCard leadId={lead.id} leadName={lead.leadName} readOnly={locked} />
             </CanAccess>
           ) : (
             <CanAccess module="client_details" page="all_clients" action="view">
-              <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} />
+              <ClientDetailsCard leadId={lead.id} leadName={lead.leadName} readOnly={locked} />
             </CanAccess>
           )}
 
@@ -427,7 +442,7 @@ function LeadDetailPageContent() {
                   </p>
                 </div>
               </div>
-              {lead.assignedTo && (
+              {lead.assignedTo && !locked && (
                 <CanAccess module="leads" page="all_leads" action="assign">
                   <Button
                     variant="outline"

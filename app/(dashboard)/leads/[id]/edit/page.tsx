@@ -3,13 +3,16 @@
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardBody } from "@/components/ui/Card";
 import { LoadingState, ErrorState } from "@/components/ui/States";
 import { LeadForm } from "@/components/forms/LeadForm";
 import { AccessGuard } from "@/components/shared/Guards";
 import { useLead, useLeadMutations } from "@/hooks/useLeads";
+import { useAuth } from "@/hooks/useAuth";
+import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
+import { Button } from "@/components/ui/Button";
 import { useClientByLeadId, useClientMutations } from "@/hooks/useClients";
 import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
@@ -18,6 +21,7 @@ import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormVal
 export default function EditLeadPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { role } = useAuth();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: client } = useClientByLeadId(params.id);
   const { data: tenant } = useTenantByLeadId(params.id);
@@ -70,6 +74,19 @@ export default function EditLeadPage() {
             <LoadingState />
           ) : isError || !lead ? (
             <ErrorState onRetry={refetch} />
+          ) : !canMutateDealClosedLead(role, lead.leadStatus) ? (
+            <div className="flex flex-col items-start gap-3 py-6">
+              <div className="flex items-center gap-2 text-sm font-medium text-amber-800">
+                <Lock className="h-4 w-4" />
+                This deal is closed and locked.
+              </div>
+              <p className="max-w-lg text-sm text-slate-600">
+                Only a Master user can edit this lead or change its status. Master can unlock it by choosing a different status, which returns the lead to All Leads.
+              </p>
+              <Button variant="outline" onClick={() => router.push(`/leads/${params.id}`)}>
+                Back to lead
+              </Button>
+            </div>
           ) : (
             <LeadForm
               initial={lead}

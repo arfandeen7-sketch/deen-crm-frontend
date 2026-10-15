@@ -54,12 +54,12 @@ export function useLead(id: string | undefined) {
   return query;
 }
 
-export function useLeadOptions() {
-  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
+export function useLeadOptions(enabled = true) {
+  const permitted = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
   return useQuery({
     queryKey: [KEY, "options"],
     queryFn: () => leadsService.options(),
-    enabled,
+    enabled: enabled && permitted,
     staleTime: 5 * 60_000,
     retry: retrySkipAuth,
   });

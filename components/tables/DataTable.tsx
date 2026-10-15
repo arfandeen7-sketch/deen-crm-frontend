@@ -12,6 +12,8 @@ export interface Column<T> {
   headerClassName?: string;
   /** Pin this column to the right side of a horizontally scrolling table. */
   stickyRight?: boolean;
+  /** Server sort key. The header becomes a button only when the table receives onSort. */
+  sortKey?: string;
 }
 
 export interface DataTableProps<T> {
@@ -32,6 +34,8 @@ export interface DataTableProps<T> {
   onToggleAll?: (checked: boolean) => void;
   /** Optional per-row additional CSS classes. */
   rowClassName?: (row: T) => string;
+  sort?: { key: string; direction: "asc" | "desc" } | null;
+  onSort?: (key: string) => void;
 }
 
 export function DataTable<T>({
@@ -50,6 +54,8 @@ export function DataTable<T>({
   onToggleRow,
   onToggleAll,
   rowClassName,
+  sort,
+  onSort,
 }: DataTableProps<T>) {
   const pageIds = rows.map(rowKey);
   const allChecked = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
@@ -85,7 +91,18 @@ export function DataTable<T>({
                     col.headerClassName,
                   )}
                 >
-                  {col.header}
+                  {col.sortKey && onSort ? (
+                    <button
+                      type="button"
+                      onClick={() => onSort(col.sortKey as string)}
+                      className="inline-flex items-center gap-1 uppercase tracking-wider"
+                    >
+                      {col.header}
+                      {sort?.key === col.sortKey ? (sort.direction === "asc" ? "↑" : "↓") : ""}
+                    </button>
+                  ) : (
+                    col.header
+                  )}
                 </th>
               ))}
             </tr>

@@ -29,7 +29,7 @@ import type { Lead } from "@/types";
 
 type ActiveModal = "status" | "comment" | "followup" | "assign" | "unassign" | null;
 
-export function LeadQuickActions({ lead }: { lead: Lead }) {
+export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?: boolean }) {
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [active, setActive] = useState<ActiveModal>(null);
@@ -218,25 +218,31 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
           >
             <Eye className="h-4 w-4 text-slate-400" /> View Details
           </Link>
+          {!locked && (
           <button
             onClick={() => openModal("status")}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Tag className="h-4 w-4 text-slate-400" /> Update Status
           </button>
+          )}
+          {!locked && (
           <button
             onClick={() => openModal("comment")}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
             <MessageSquare className="h-4 w-4 text-slate-400" /> Add Comment
           </button>
+          )}
+          {!locked && (
           <button
             onClick={() => openModal("followup")}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Calendar className="h-4 w-4 text-slate-400" /> Schedule Follow-Up
           </button>
-          {lead.followUpDate && (
+          )}
+          {!locked && lead.followUpDate && (
             <button
               onClick={handleMarkFollowUpDone}
               disabled={update.isPending}
@@ -245,7 +251,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Mark Follow-Up Done
             </button>
           )}
-          {canAction("leads", "all_leads", "assign") && (
+          {canAction("leads", "all_leads", "assign") && !locked && (
             <button
               onClick={() => openModal("assign")}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -253,7 +259,7 @@ export function LeadQuickActions({ lead }: { lead: Lead }) {
               <UserCheck className="h-4 w-4 text-slate-400" /> Assign Lead
             </button>
           )}
-          {canAction("leads", "all_leads", "assign") && lead.assignedTo && (
+          {canAction("leads", "all_leads", "assign") && lead.assignedTo && !locked && (
             <button
               onClick={() => openModal("unassign")}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"

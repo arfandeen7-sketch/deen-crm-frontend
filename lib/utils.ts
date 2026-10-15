@@ -164,6 +164,17 @@ export function formatCurrency(value?: number | string | null): string {
   }).format(num);
 }
 
+/** Grouped amount without a currency code, for figures that need to stay fully visible. */
+export function formatAmount(value?: number | string | null): string {
+  if (value === null || value === undefined || value === "") return "—";
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (!Number.isFinite(num)) return "—";
+  return new Intl.NumberFormat("en-AE", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
 /** Extract error message from API error response. */
 export function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;

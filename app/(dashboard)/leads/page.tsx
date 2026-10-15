@@ -1,24 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Download, Upload, Pencil, Trash2, ExternalLink, Calendar, History } from "lucide-react";
+import { Plus, Download, Upload } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/Modal";
-import { DataTable, type Column } from "@/components/tables/DataTable";
+import { DataTable } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
-import { StatusBadge, PriorityBadge } from "@/components/ui/Badge";
-import { UserAvatar } from "@/components/ui/Avatar";
 import { LeadFilters } from "@/components/leads/LeadFilters";
 import { LeadTableToolbar, useVisibleLeadColumns } from "@/components/leads/LeadTableToolbar";
 import { BulkActions } from "@/components/leads/BulkActions";
 import { LeadTabs } from "@/components/leads/LeadTabs";
-import { LeadQuickActions } from "@/components/leads/LeadQuickActions";
-import { OfferingTypeBadge } from "@/components/leads/OfferingTypeBadge";
+import { buildLeadColumns } from "@/components/leads/leadTableColumns";
 import { AssignmentHistoryModal } from "@/components/leads/AssignmentHistoryModal";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useLeadFilterStore } from "@/store/filter.store";
@@ -28,8 +24,7 @@ import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
 import { useAuth } from "@/hooks/useAuth";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
-import { downloadBlob, formatDate, formatDateTime, displayValue, isEmptyDisplayValue } from "@/lib/utils";
-import type { Lead } from "@/types";
+import { downloadBlob } from "@/lib/utils";
 
 export default function LeadsPage() {
   return (
@@ -99,310 +94,11 @@ function LeadsPageContent() {
     }
   }
 
-  const isPFLead = (l: Lead) => l.source === "Property Finder";
-
-  const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
-
-  const columns: Column<Lead>[] = [
-    {
-      key: "name",
-      header: "Name",
-      render: (l) => (
-        <div className="flex items-center gap-2.5">
-          <UserAvatar name={displayValue(l.leadName, "Lead")} size="sm" />
-          <div>
-            <p className="font-medium text-slate-900">
-              {displayValue(l.leadName)}
-              {!isEmptyDisplayValue(l.lastName) ? ` ${l.lastName}` : ""}
-            </p>
-            {l.email && <p className="text-xs text-slate-400">{l.email}</p>}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "contact",
-      header: "Contact",
-      render: (l) => (
-        <div>
-          <p className="text-sm text-slate-700">{displayValue(l.mobileNumber)}</p>
-          {!isEmptyDisplayValue(l.alternateMobile) && (
-            <p className="text-xs text-slate-400">{displayValue(l.alternateMobile)}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "nationality",
-      header: "Nationality",
-      render: (l) =>
-        !isEmptyDisplayValue(l.nationality) ? (
-          <span className="text-sm text-slate-700">{displayValue(l.nationality)}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "source",
-      header: "Source",
-      render: (l) => (
-        <div className="space-y-0.5">
-          <p className="text-sm text-slate-700">{displayValue(l.source)}</p>
-          {l.ingestionSource !== "manual" && l.ingestionSource !== "import"}
-        </div>
-      ),
-    },
-    { key: "status", header: "Status", render: (l) => (
-      <div className="flex flex-wrap items-center gap-1">
-        <StatusBadge status={l.leadStatus} />
-        {l.convertedToOwnerId ? (
-          <span className="inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-800">
-            Converted to owner
-          </span>
-        ) : filters.dateField === "manual" || filters.dateField === "master_assigned" ? (
-          <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-            Active
-          </span>
-        ) : null}
-      </div>
-    ) },
-    {
-      key: "assigned",
-      header: "Assigned To",
-      render: (l) =>
-        l.assignedUser ? (
-          <span className="text-sm text-slate-700">{l.assignedUser.fullName}</span>
-        ) : (
-          <span className="text-xs text-slate-400">Unassigned</span>
-        ),
-    },
-    {
-      key: "assignmentHistory",
-      header: "Assignment History",
-      render: (l) => {
-        // Shows the latest assignment ("Assigner → Assignee") with a
-        // "(+N more)" indicator. Clicking the history icon opens a modal
-        // with the complete assignment timeline (newest first).
-        // Reuses LeadActivity (action='assigned') as the permanent audit trail.
-        const hasAssignment = l.assignedByUser || l.assignedUser || l.assignedAt;
-        if (!hasAssignment) return <Dash />;
-
-        const assigner = l.assignedByUser?.fullName;
-        const assignee = l.assignedUser?.fullName;
-        const flow = assigner && assignee
-          ? `${assigner} → ${assignee}`
-          : assigner ?? assignee ?? null;
-        if (!flow) return <Dash />;
-
-        const moreCount = Math.max(0, (l.assignmentCount ?? 0) - 1);
-
-        return (
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium text-slate-800 truncate">{flow}</p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHistoryLead({ id: l.id, name: `${l.leadName}${l.lastName ? ` ${l.lastName}` : ""}` });
-                }}
-                className="shrink-0 rounded p-0.5 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
-                title="View assignment history"
-              >
-                <History className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            {l.assignedAt && (
-              <p className="text-xs text-slate-400">{formatDateTime(l.assignedAt)}</p>
-            )}
-            {moreCount > 0 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setHistoryLead({ id: l.id, name: `${l.leadName}${l.lastName ? ` ${l.lastName}` : ""}` });
-                }}
-                className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-              >
-                (+{moreCount} more)
-              </button>
-            )}
-          </div>
-        );
-      },
-    },
-    { key: "priority", header: "Priority", render: (l) => <PriorityBadge priority={l.leadPriority} /> },
-    {
-      key: "broker",
-      header: "Broker",
-      render: (l) =>
-        l.broker ? (
-          <span className="text-sm text-slate-700">{l.broker.brokerName}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "project",
-      header: "Project",
-      render: (l) =>
-        l.pfBuildingName ? (
-          <span className="text-sm text-slate-700">{l.pfBuildingName}</span>
-        ) : l.projectName ? (
-          <span className="text-sm text-slate-700">{l.projectName}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "community",
-      header: "Community",
-      render: (l) =>
-        l.pfCommunityName ? (
-          <span className="text-sm text-slate-700">{l.pfCommunityName}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "type",
-      header: "Type",
-      render: (l) =>
-        l.pfPropertyType ? (
-          <span className="text-sm capitalize text-slate-700">{l.pfPropertyType}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "category",
-      header: "Category",
-      render: (l) =>
-        l.pfPropertyCategory ? (
-          <span className="text-sm capitalize text-slate-700">{l.pfPropertyCategory}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "offering",
-      header: "For Sale / Rent",
-      render: (l) => <OfferingTypeBadge lead={l} />,
-    },
-    {
-      key: "price",
-      header: "Price",
-      render: (l) =>
-        l.price ? (
-          <span className="text-sm font-medium text-slate-800">
-            AED {Number(l.price).toLocaleString()}
-          </span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "unit",
-      header: "Unit",
-      render: (l) =>
-        l.unitNumber ? <span className="text-sm text-slate-700">{l.unitNumber}</span> : <Dash />,
-    },
-    {
-      key: "buildingNo",
-      header: "Building No.",
-      render: (l) =>
-        l.buildingNo ? <span className="text-sm text-slate-700">{l.buildingNo}</span> : <Dash />,
-    },
-    {
-      key: "size",
-      header: "Size",
-      render: (l) =>
-        l.propertySize ? (
-          <span className="text-sm text-slate-700">{l.propertySize} sqft</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "configuration",
-      header: "Configuration",
-      render: (l) =>
-        l.configuration ? (
-          <span className="text-sm text-slate-700">{l.configuration}</span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "inquiry",
-      header: "Inquiry Date",
-      render: (l) => (
-        <div className="space-y-0.5">
-          <p className="flex items-center gap-1 text-xs text-slate-600">
-            <Calendar className="h-3 w-3 text-slate-400" />
-            {formatDate(isPFLead(l) ? l.createdAt : l.leadDate)}
-          </p>
-          {l.followUpDate && (
-            <p className="text-xs text-slate-400">Follow up: {formatDate(l.followUpDate)}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "createdBy",
-      header: "Created By",
-      render: (l) => (
-        <div>
-          <p className="text-sm text-slate-700">{l.creator?.fullName ?? "—"}</p>
-          <p className="text-xs text-slate-400">{formatDateTime(l.createdAt)}</p>
-        </div>
-      ),
-    },
-    {
-      key: "comments",
-      header: "Comments",
-      render: (l) =>
-        l.comments ? (
-          <span className="text-sm text-slate-600 line-clamp-2 max-w-[200px] truncate" title={l.comments}>
-            {l.comments}
-          </span>
-        ) : (
-          <Dash />
-        ),
-    },
-    {
-      key: "actions",
-      header: "",
-      stickyRight: true,
-      headerClassName: "text-right",
-      className: "text-right",
-      render: (l) => (
-        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-          {l.responseLink && (
-            <a
-              href={l.responseLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="View in Property Finder"
-              className="rounded p-1.5 text-slate-400 hover:text-blue-600"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          )}
-          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
-            <Pencil className="h-4 w-4" />
-          </Link>
-          <CanAccess module="leads" page="all_leads" action="delete">
-            <button
-              onClick={() => setDeleteId(l.id)}
-              className="rounded p-1.5 text-slate-400 hover:text-rose-600"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </CanAccess>
-          <LeadQuickActions lead={l} />
-        </div>
-      ),
-    },
-  ];
+  const columns = buildLeadColumns({
+    dateField: filters.dateField,
+    onOpenHistory: (lead) => setHistoryLead(lead),
+    onDelete: (id) => setDeleteId(id),
+  });
 
   const customCols = buildCustomFieldColumns(customFieldDefs);
   const actionCol = columns[columns.length - 1];

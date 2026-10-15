@@ -17,6 +17,8 @@ import { cn, formatDate } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { useFollowup, type FollowupVariant } from "@/hooks/useFollowup";
 import { useLeadMutations } from "@/hooks/useLeads";
+import { useAuth } from "@/hooks/useAuth";
+import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { getErrorMessage } from "@/services/api/client";
 import type { Lead, LeadQueryParams } from "@/types";
 
@@ -36,6 +38,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
   });
   const { data, isLoading, isError, refetch } = useFollowup(variant, params);
   const { update } = useLeadMutations();
+  const { role } = useAuth();
   const rows = data?.data ?? [];
 
   async function handleMarkDone(lead: Lead) {
@@ -104,6 +107,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
       className: "text-right",
       render: (l) => (
         <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+          {canMutateDealClosedLead(role, l.leadStatus) ? (
           <Button
             size="sm"
             variant="outline"
@@ -115,6 +119,9 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
             <Check className="h-3.5 w-3.5" />
             Mark Done
           </Button>
+          ) : (
+            <span className="text-xs text-amber-700">Locked</span>
+          )}
         </div>
       ),
     },

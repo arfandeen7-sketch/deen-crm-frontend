@@ -20,6 +20,7 @@ import Link from "next/link";
 interface ClientDetailsCardProps {
   leadId: string;
   leadName?: string;
+  readOnly?: boolean;
 }
 
 function InfoRow({
@@ -42,7 +43,7 @@ function InfoRow({
   );
 }
 
-export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) {
+export function ClientDetailsCard({ leadId, leadName, readOnly = false }: ClientDetailsCardProps) {
   const { data: client, isLoading } = useClientByLeadId(leadId);
   const { upsert, uploadPassport, deletePassport, uploadEmiratesId, deleteEmiratesId } =
     useClientMutations(leadId);
@@ -137,7 +138,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
               </Link>
             )}
             <CanAccess module="client_details" page="all_clients" action="edit">
-              {editing ? (
+              {!readOnly && (editing ? (
                 <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)}>
                   <X className="h-3.5 w-3.5" /> Cancel
                 </Button>
@@ -145,7 +146,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
                 <Button type="button" variant="outline" size="sm" onClick={startEdit}>
                   <Pencil className="h-3.5 w-3.5" /> {client ? "Edit" : "Add"}
                 </Button>
-              )}
+              ))}
             </CanAccess>
           </div>
         }
@@ -206,6 +207,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
                 passportEndDate={client.passportEndDate}
                 onUpload={onPassportFilePicked}
                 onDelete={async () => { await deletePassport.mutateAsync(); }}
+                readOnly={readOnly}
               />
               <ClientDocumentCard
                 label="Emirates ID PDF"
@@ -215,6 +217,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
                 signedUrl={client.emiratesIdUrl}
                 onUpload={async (file) => { await uploadEmiratesId.mutateAsync(file); }}
                 onDelete={async () => { await deleteEmiratesId.mutateAsync(); }}
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -222,6 +225,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
           <p className="text-sm text-slate-500">
             No client details recorded yet.{" "}
             <CanAccess module="client_details" page="all_clients" action="edit">
+              {!readOnly && (
               <button
                 type="button"
                 onClick={startEdit}
@@ -229,6 +233,7 @@ export function ClientDetailsCard({ leadId, leadName }: ClientDetailsCardProps) 
               >
                 Add now
               </button>
+              )}
             </CanAccess>
           </p>
         )}

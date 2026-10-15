@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   TrendingUp,
   Award,
@@ -10,28 +12,40 @@ import {
   ExternalLink,
   User as UserIcon,
   Eye,
-  X,
   UserCheck,
+  Lock,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LeadTabs } from "@/components/leads/LeadTabs";
-import { Card, CardHeader, CardBody } from "@/components/ui/Card";
-import { SearchInput } from "@/components/ui/SearchInput";
+import { Card, CardHeader } from "@/components/ui/Card";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { Pagination } from "@/components/ui/Pagination";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { StatusBadge } from "@/components/ui/Badge";
-import { Select } from "@/components/ui/Input";
 import { AccessGuard } from "@/components/shared/Guards";
+import { LeadFilters } from "@/components/leads/LeadFilters";
+import { LeadTableToolbar, useVisibleLeadColumns } from "@/components/leads/LeadTableToolbar";
+import { BulkActions } from "@/components/leads/BulkActions";
+import { AssignmentHistoryModal } from "@/components/leads/AssignmentHistoryModal";
+import { buildLeadColumns } from "@/components/leads/leadTableColumns";
+import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
+import { useLeadCustomFields } from "@/hooks/useCustomFields";
+import { useLeadMutations } from "@/hooks/useLeads";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useDealClosedList,
   useDealClosedStats,
   useDealClosedEmployeeSummary,
   useDealClosedDetail,
+  useDealClosedUsers,
+  useDealClosedOptions,
 } from "@/hooks/useDealClosed";
-import { formatCurrency, formatDateTime, formatDate, displayValue } from "@/lib/utils";
+import { formatCurrency, formatAmount, formatDateTime, formatDate, displayValue } from "@/lib/utils";
+import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
-import type { ClosedDeal, DealClosedQueryParams } from "@/types";
+import { getErrorMessage } from "@/services/api/client";
+import type { DealClosedQueryParams, Lead } from "@/types";
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
@@ -39,29 +53,41 @@ function StatCard({
   icon: Icon,
   label,
   value,
+  currency,
   sub,
   iconClass,
+  className,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
+  /** When set, the figure is the grouped amount and this code sits beside it. */
+  currency?: string;
   sub?: string;
   iconClass?: string;
+  className?: string;
 }) {
   return (
-    <Card className="flex items-start gap-4 p-5">
-      <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass ?? "bg-emerald-50 text-emerald-600"}`}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0">
+    <Card className={`flex flex-col gap-3 p-4 sm:p-5 ${className ?? ""}`}>
+      <div className="flex items-center gap-2.5">
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconClass ?? "bg-emerald-50 text-emerald-600"}`}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
           {label}
         </p>
-        <p className="mt-0.5 text-xl font-bold text-neutral-900 truncate">{value}</p>
-        {sub && <p className="mt-0.5 text-xs text-neutral-400">{sub}</p>}
       </div>
+      <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5" title={currency && value !== "—" ? `${currency} ${value}` : value}>
+        <span className="text-xl font-bold tabular-nums tracking-tight text-neutral-900 sm:text-2xl">
+          {value}
+        </span>
+        {currency && value !== "—" && (
+          <span className="text-xs font-semibold text-neutral-400">{currency}</span>
+        )}
+      </p>
+      {sub && <p className="text-xs text-neutral-400">{sub}</p>}
     </Card>
   );
 }
@@ -255,8 +281,14 @@ function DetailRow({
 
 // ── Employee Summary Table ─────────────────────────────────────────────────────
 
-function EmployeeSummaryTable() {
-  const { data = [], isLoading, isError } = useDealClosedEmployeeSummary();
+function EmployeeSummaryTable({
+  closedFrom,
+  closedTo,
+}: {
+  closedFrom?: string;
+  closedTo?: string;
+}) {
+  const { data = [], isLoading, isError } = useDealClosedEmployeeSummary({ closedFrom, closedTo });
 
   if (isLoading) {
     return (
@@ -309,354 +341,227 @@ function EmployeeSummaryTable() {
   );
 }
 
-// ── Filters bar ───────────────────────────────────────────────────────────────
-
-function FilterSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { label: string; value: string }[];
-  placeholder: string;
-}) {
-  return (
-    <Select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="min-w-[9rem] [&_button]:h-9 [&_button]:text-xs"
-      placeholder={placeholder}
-    >
-      <option value="">{placeholder}</option>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </Select>
-  );
-}
-
-// ── Main page content ─────────────────────────────────────────────────────────
-
 function DealClosedPageContent() {
+  const router = useRouter();
+  const { role, canAction } = useAuth();
+  const isMaster = role === "master";
   const [params, setParams] = useState<DealClosedQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
     search: "",
+    sortBy: "updatedAt",
+    sortDir: "desc",
   });
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [historyLead, setHistoryLead] = useState<{ id: string; name: string } | null>(null);
 
   const { data, isLoading, isError, refetch } = useDealClosedList(params);
   const { data: stats } = useDealClosedStats();
+  const { data: users = [] } = useDealClosedUsers();
+  const { data: filterOptions } = useDealClosedOptions();
+  const { data: customFieldDefs } = useLeadCustomFields();
+  const { remove } = useLeadMutations();
 
-  const rows = data?.data ?? [];
+  const rows = (data?.data ?? []).map((item) => item.lead);
+  const summaryDates =
+    !params.dateField || params.dateField === "closed"
+      ? { closedFrom: params.dateFrom ?? params.closedFrom, closedTo: params.dateTo ?? params.closedTo }
+      : {};
 
-  function setFilter(key: keyof DealClosedQueryParams, value: string) {
-    setParams((p) => ({ ...p, [key]: value || undefined, page: 1 }));
+  function setFilter<K extends keyof DealClosedQueryParams>(key: K, value: DealClosedQueryParams[K]) {
+    setParams((current) => ({ ...current, [key]: value, page: 1 }));
   }
 
-  const columns: Column<ClosedDeal>[] = [
-    {
-      key: "lead",
-      header: "Lead",
-      render: (row) => (
-        <div>
-          <p className="font-medium text-neutral-900">{row.leadName}</p>
-          <p className="text-xs text-neutral-400">{row.mobileNumber}</p>
-        </div>
-      ),
-    },
-    {
-      key: "client",
-      header: "Client Name",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">
-          {row.client?.fullName ?? <span className="text-neutral-400">—</span>}
-        </span>
-      ),
-    },
+  function onSort(key: string) {
+    setParams((current) => ({
+      ...current,
+      page: 1,
+      sortBy: key as DealClosedQueryParams["sortBy"],
+      sortDir: current.sortBy === key && current.sortDir === "desc" ? "asc" : "desc",
+    }));
+  }
+
+  function toggleRow(id: string) {
+    setSelected((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  }
+
+  async function handleDelete() {
+    if (!deleteId) return;
+    try {
+      await remove.mutateAsync(deleteId);
+      toast.success("Lead deleted");
+      setDeleteId(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  }
+
+  const columns = buildLeadColumns({
+    dateField: params.dateField === "closed" ? undefined : params.dateField,
+    onOpenHistory: (lead) => setHistoryLead(lead),
+    onDelete: (id) => setDeleteId(id),
+    canMutate: (lead) => canMutateDealClosedLead(role, lead.leadStatus),
+  });
+  const closedColumns: Column<Lead>[] = [
     {
       key: "salesUser",
       header: "Sales User",
-      render: (row) => (
+      render: (lead) => (
         <div>
-          <p className="font-medium text-neutral-900">
-            {row.salesUser?.fullName ?? <span className="text-neutral-400">—</span>}
-          </p>
-          {row.salesManager && (
-            <p className="text-xs text-neutral-400">{row.salesManager.fullName}</p>
-          )}
+          <p className="text-sm text-slate-800">{lead.salesUser?.fullName ?? "—"}</p>
+          {lead.salesManager && <p className="text-xs text-slate-400">{lead.salesManager.fullName}</p>}
         </div>
-      ),
-    },
-    {
-      key: "project",
-      header: "Project / Community",
-      render: (row) => (
-        <div>
-          <p className="text-sm text-neutral-900">{displayValue(row.projectName)}</p>
-          {row.community && (
-            <p className="text-xs text-neutral-400">{row.community}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "property",
-      header: "Type / Unit",
-      render: (row) => (
-        <div>
-          <p className="text-sm text-neutral-700">{displayValue(row.propertyType)}</p>
-          {row.unitNumber && (
-            <p className="text-xs text-neutral-400">Unit {row.unitNumber}</p>
-          )}
-          {row.buildingNo && (
-            <p className="text-xs text-neutral-400">Bldg {row.buildingNo}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "size",
-      header: "Size",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">{displayValue(row.propertySize)}</span>
-      ),
-    },
-    {
-      key: "salesValue",
-      header: "Sales Value",
-      headerClassName: "text-right",
-      className: "text-right",
-      render: (row) => (
-        <span className="font-bold text-emerald-700">
-          {formatCurrency(row.salesValue)}
-        </span>
-      ),
-    },
-    {
-      key: "source",
-      header: "Source",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">{displayValue(row.leadSource)}</span>
-      ),
-    },
-    {
-      key: "createdBy",
-      header: "Created By",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">
-          {row.createdBy?.fullName ?? <span className="text-neutral-400">—</span>}
-        </span>
-      ),
-    },
-    {
-      key: "assignedTo",
-      header: "Assigned To",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">
-          {row.assignedTo?.fullName ?? <span className="text-neutral-400">—</span>}
-        </span>
       ),
     },
     {
       key: "closedBy",
       header: "Closed By",
-      render: (row) => (
-        <span className="text-sm text-neutral-700">
-          {row.closedBy?.fullName ?? <span className="text-neutral-400">—</span>}
-        </span>
-      ),
+      render: (lead) => <span className="text-sm text-slate-700">{lead.closedBy?.fullName ?? "—"}</span>,
     },
     {
       key: "closedAt",
       header: "Deal Closed",
-      render: (row) => (
-        <span className="whitespace-nowrap text-sm text-neutral-700">
-          {formatDateTime(row.closedAt)}
+      sortKey: "closedAt",
+      render: (lead) => (
+        <span className="whitespace-nowrap text-sm text-slate-700">
+          {lead.closedAt ? formatDateTime(lead.closedAt) : "—"}
         </span>
       ),
     },
     {
-      key: "status",
-      header: "Status",
-      render: (row) => <StatusBadge status={row.leadStatus} />,
-    },
-    {
-      key: "owner",
-      header: "Owner",
-      render: (row) =>
-        row.convertedToOwnerId && row.convertedOwner ? (
-          <Link
-            href={`/owners/${row.convertedToOwnerId}`}
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 hover:bg-emerald-100 transition-colors whitespace-nowrap max-w-[130px] truncate"
-            title={`View Owner: ${row.convertedOwner.fullName}`}
-          >
-            <UserCheck className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{row.convertedOwner.fullName}</span>
-          </Link>
+      key: "salesValue",
+      header: "Sales Value",
+      sortKey: "salesValue",
+      render: (lead) =>
+        lead.salesValue != null ? (
+          <span className="font-semibold text-emerald-700">{formatCurrency(lead.salesValue)}</span>
         ) : (
-          <span className="text-neutral-400 text-sm">—</span>
+          <span className="text-slate-400">—</span>
         ),
     },
-    {
-      key: "actions",
-      header: "",
-      stickyRight: true,
-      headerClassName: "text-right",
-      className: "text-right",
-      render: (row) => (
-        <div
-          className="flex items-center justify-end gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={() => setSelectedSaleId(row.id)}
-            className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
-            title="View deal details"
-          >
-            <Eye className="h-4 w-4" />
-          </button>
-          <Link
-            href={`/leads/${row.leadId}`}
-            className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
-            title="View lead"
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Link>
-          {row.client && (
-            <Link
-              href={`/clients/${row.leadId}`}
-              className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
-              title="View client"
-            >
-              <UserIcon className="h-4 w-4" />
-            </Link>
-          )}
-          {row.convertedToOwnerId && (
-            <Link
-              href={`/owners/${row.convertedToOwnerId}`}
-              className="rounded p-1.5 text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-              title={`View owner${row.convertedOwner ? `: ${row.convertedOwner.fullName}` : ""}`}
-            >
-              <UserCheck className="h-4 w-4" />
-            </Link>
-          )}
-        </div>
-      ),
-    },
   ];
+  const actionCol = columns[columns.length - 1];
+  const allColumns = [
+    ...columns.slice(0, -1),
+    ...buildCustomFieldColumns(customFieldDefs),
+    ...closedColumns,
+    actionCol,
+  ];
+  const displayColumns = useVisibleLeadColumns(allColumns);
+  const canSelect =
+    isMaster &&
+    (canAction("leads", "all_leads", "bulk_assign") ||
+      canAction("leads", "all_leads", "bulk_status") ||
+      canAction("leads", "all_leads", "bulk_update") ||
+      canAction("leads", "all_leads", "delete"));
 
   return (
     <div className="space-y-5">
       <LeadTabs />
       <PageHeader
         title="Deal Closed"
-        subtitle="All closed deals and sales performance"
+        subtitle={data ? `${data.total} closed deals` : "Closed deals and sales performance"}
       />
 
-      {/* ── Summary Stats ── */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>
+          {isMaster
+            ? "You can see every closed deal. These leads are locked for every other user. Only a Master user can edit a lead or change its status. Moving it to another status returns it to All Leads."
+            : "You can see closed deals credited to you or closed by you. These leads are locked. Only a Master user can edit them or change their status."}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
         <StatCard
           icon={TrendingUp}
           label="Total Sales Value"
-          value={stats ? formatCurrency(stats.totalSalesValue) : "—"}
+          value={stats ? formatAmount(stats.totalSalesValue) : "—"}
+          currency="AED"
           iconClass="bg-emerald-50 text-emerald-600"
+          className="col-span-2 lg:col-span-1"
         />
         <StatCard
           icon={Award}
           label="Total Closed Deals"
-          value={stats ? String(stats.totalDeals) : "—"}
+          value={stats ? new Intl.NumberFormat("en-AE").format(stats.totalDeals) : "—"}
           iconClass="bg-blue-50 text-blue-600"
         />
         <StatCard
           icon={BarChart2}
           label="Avg Deal Value"
-          value={stats ? formatCurrency(stats.avgDealValue) : "—"}
+          value={stats ? formatAmount(stats.avgDealValue) : "—"}
+          currency="AED"
           iconClass="bg-violet-50 text-violet-600"
+          className="col-span-2 lg:col-span-1"
         />
         <StatCard
           icon={CalendarDays}
           label="This Month Sales"
-          value={stats ? formatCurrency(stats.thisMonthSalesValue) : "—"}
+          value={stats ? formatAmount(stats.thisMonthSalesValue) : "—"}
+          currency="AED"
           iconClass="bg-amber-50 text-amber-600"
+          className="col-span-2 lg:col-span-1"
         />
         <StatCard
           icon={CalendarDays}
           label="This Month Deals"
-          value={stats ? String(stats.thisMonthDeals) : "—"}
+          value={stats ? new Intl.NumberFormat("en-AE").format(stats.thisMonthDeals) : "—"}
           iconClass="bg-rose-50 text-rose-600"
         />
       </div>
 
-      {/* ── Employee Summary ── */}
       <Card>
         <CardHeader title="Sales by Employee" subtitle="Sorted by total sales value" />
-        <EmployeeSummaryTable />
+        <EmployeeSummaryTable closedFrom={summaryDates.closedFrom} closedTo={summaryDates.closedTo} />
       </Card>
 
-      {/* ── Filters ── */}
-      <Card className="flex flex-wrap items-center gap-2 p-4">
-        <SearchInput
-          value={params.search ?? ""}
-          onChange={(v) => setParams((p) => ({ ...p, search: v, page: 1 }))}
-          placeholder="Search lead, client, project, mobile…"
-          className="w-full sm:w-72"
-        />
-        <div className="flex flex-wrap gap-2">
-          <input
-            type="date"
-            value={params.closedFrom ?? ""}
-            onChange={(e) => setFilter("closedFrom", e.target.value)}
-            className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all"
-            placeholder="From"
-            title="Closed from"
-          />
-          <input
-            type="date"
-            value={params.closedTo ?? ""}
-            onChange={(e) => setFilter("closedTo", e.target.value)}
-            className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 shadow-2xs focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all"
-            placeholder="To"
-            title="Closed to"
-          />
-        </div>
-        {(params.search || params.closedFrom || params.closedTo || params.source || params.propertyType) && (
-          <button
-            onClick={() =>
-              setParams((p) => ({
-                ...p,
-                search: "",
-                closedFrom: undefined,
-                closedTo: undefined,
-                source: undefined,
-                propertyType: undefined,
+      <Card className="p-4">
+        <LeadTableToolbar
+          search={params.search ?? ""}
+          onSearch={(value) => setParams((current) => ({ ...current, search: value, page: 1 }))}
+          columns={allColumns}
+          searchPlaceholder="Search lead, client, project, mobile…"
+        >
+          <LeadFilters
+            variant="dealClosed"
+            filters={params}
+            onChange={setFilter}
+            onReset={() =>
+              setParams((current) => ({
                 page: 1,
+                pageSize: current.pageSize ?? DEFAULT_PAGE_SIZE,
+                search: "",
+                sortBy: current.sortBy,
+                sortDir: current.sortDir,
               }))
             }
-            className="flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-500 hover:bg-neutral-50 transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-            Clear filters
-          </button>
-        )}
+            userOptions={isMaster ? users : undefined}
+            filterOptions={filterOptions}
+          />
+        </LeadTableToolbar>
       </Card>
 
-      {/* ── Main Table ── */}
+      <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
+
       <DataTable
-        columns={columns}
+        columns={displayColumns}
         rows={rows}
-        rowKey={(r) => r.id}
+        rowKey={(lead) => lead.id}
         loading={isLoading}
         error={isError}
         onRetry={refetch}
         emptyTitle="No closed deals"
-        emptyMessage="Deals will appear here when a lead status is set to Deal Closed."
-        onRowClick={(r) => setSelectedSaleId(r.id)}
+        emptyMessage="Deals appear here when a lead status is set to Deal Closed."
+        onRowClick={(lead) => router.push(`/leads/${lead.id}`)}
+        selectable={canSelect}
+        selectedIds={selected}
+        onToggleRow={toggleRow}
+        onToggleAll={(checked) => setSelected(checked ? rows.map((lead) => lead.id) : [])}
+        sort={{ key: params.sortBy ?? "updatedAt", direction: params.sortDir ?? "desc" }}
+        onSort={onSort}
       />
 
       {data && data.total > 0 && (
@@ -665,15 +570,26 @@ function DealClosedPageContent() {
           pageSize={data.pageSize}
           total={data.total}
           totalPages={data.totalPages}
-          onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-          onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
+          onPageChange={(page) => setParams((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setParams((current) => ({ ...current, pageSize, page: 1 }))}
         />
       )}
 
-      {/* ── Deal Details Modal ── */}
-      <DealDetailsModal
-        saleId={selectedSaleId}
-        onClose={() => setSelectedSaleId(null)}
+      <DealDetailsModal saleId={selectedSaleId} onClose={() => setSelectedSaleId(null)} />
+      <AssignmentHistoryModal
+        leadId={historyLead?.id ?? null}
+        leadName={historyLead?.name}
+        open={!!historyLead}
+        onClose={() => setHistoryLead(null)}
+      />
+      <ConfirmModal
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete lead?"
+        message="This will permanently remove the lead and its history."
+        confirmLabel="Delete"
+        loading={remove.isPending}
       />
     </div>
   );

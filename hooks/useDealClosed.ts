@@ -45,3 +45,23 @@ export function useDealClosedDetail(saleId: string | null) {
     retry: retrySkipAuth,
   });
 }
+
+/** Every active CRM user, for the Deal Closed user filter. */
+export function useDealClosedUsers() {
+  return useQuery({
+    queryKey: [KEY, "users"],
+    queryFn: () => dealClosedService.users(),
+    staleTime: 5 * 60_000,
+    retry: retrySkipAuth,
+  });
+}
+
+/** Distinct filter values taken from Deal Closed leads. */
+export function useDealClosedOptions() {
+  return useQuery({
+    queryKey: [KEY, "options"],
+    queryFn: () => dealClosedService.options(),
+    staleTime: 60_000,
+    retry: retrySkipAuth,
+  });
+}
