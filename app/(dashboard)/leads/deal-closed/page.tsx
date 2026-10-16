@@ -544,7 +544,11 @@ function DealClosedPageContent() {
         </LeadTableToolbar>
       </Card>
 
-      <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
+      <BulkActions
+        selectedIds={selected}
+        selectedLeads={rows.filter((row) => selected.includes(row.id))}
+        onClear={() => setSelected([])}
+      />
 
       <DataTable
         columns={displayColumns}

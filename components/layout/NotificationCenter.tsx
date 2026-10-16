@@ -8,6 +8,7 @@ import { useUnreadCount, useNotifications, useNotificationMutations } from "@/ho
 import { toast } from "sonner";
 import { getErrorMessage } from "@/services/api/client";
 import { timeAgo } from "@/lib/utils";
+import { ASSIGNMENT_NOTIFICATION_PREVIEW, assignmentNotificationHref } from "@/lib/assignmentNotification";
 import type { AppNotification, AssignmentNotificationLead } from "@/types";
 
 function LeadChip({
@@ -51,13 +52,15 @@ function NotificationRow({
   onRead,
 }: {
   n: AppNotification;
-  onRead: (id: string, leadId?: string | null) => void;
+  onRead: (id: string, leadId?: string | null, leads?: AssignmentNotificationLead[] | null) => void;
 }) {
   const showLeads = n.type === "assignment" && n.leads && n.leads.length > 0;
+  const previewLeads = showLeads ? n.leads!.slice(0, ASSIGNMENT_NOTIFICATION_PREVIEW) : [];
+  const hiddenLeadCount = showLeads ? n.leads!.length - previewLeads.length : 0;
 
   return (
     <div
-      onClick={() => onRead(n.id, n.leadId)}
+      onClick={() => onRead(n.id, n.leadId, n.leadId ? undefined : n.leads)}
       className={`w-full cursor-pointer px-4 py-3 text-left hover:bg-zinc-50 transition-colors ${!n.isRead ? "bg-amber-50/50" : ""}`}
     >
       <div className="flex items-start gap-2.5">
@@ -80,13 +83,26 @@ function NotificationRow({
 
           {showLeads && (
             <div className="mt-2 space-y-1.5">
-              {n.leads!.map((lead) => (
+              {previewLeads.map((lead) => (
                 <LeadChip
                   key={lead.id}
                   lead={lead}
                   onClick={(leadId) => onRead(n.id, leadId)}
                 />
               ))}
+              {n.leads!.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRead(n.id, null, n.leads);
+                  }}
+                  className="w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-zinc-700 hover:bg-zinc-100"
+                >
+                  View all {n.leads!.length} leads
+                  {hiddenLeadCount > 0 ? ` · ${hiddenLeadCount} more` : ""}
+                </button>
+              )}
             </div>
           )}
 
@@ -113,14 +129,15 @@ export function NotificationCenter() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  async function handleRead(id: string, leadId?: string | null) {
+  async function handleRead(id: string, leadId?: string | null, leads?: AssignmentNotificationLead[] | null) {
     try {
       await markRead.mutateAsync(id);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
     setOpen(false);
-    if (leadId) router.push(`/leads/${leadId}`);
+    const href = assignmentNotificationHref(leadId, leads);
+    if (href) router.push(href);
   }
 
   function handleMarkAllRead() {

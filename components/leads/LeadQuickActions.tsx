@@ -24,6 +24,7 @@ import { useAssignableUsers } from "@/hooks/useUsers";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
+import { alreadyAssignedMessage, alreadyAssignedMessageFromError } from "@/lib/alreadyAssigned";
 import { toDatetimeLocal, cn, isEmptyDisplayValue } from "@/lib/utils";
 import type { Lead } from "@/types";
 
@@ -45,6 +46,7 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
   const [followUpDate, setFollowUpDate] = useState(toDatetimeLocal(lead.followUpDate));
   const [followUpNote, setFollowUpNote] = useState(lead.followUpNote ?? "");
   const [assignTo, setAssignTo] = useState(lead.assignedTo ?? "");
+  const [reassignAlert, setReassignAlert] = useState<string | null>(null);
 
   // Close other dropdowns when this one opens (one-at-a-time)
   useEffect(() => {
@@ -118,6 +120,7 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
     setActive(null);
     setComment("");
     setFollowUpNote(lead.followUpNote ?? "");
+    setReassignAlert(null);
   }
 
   async function handleStatus() {
@@ -170,14 +173,35 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
     }
   }
 
-  async function handleAssign() {
+  async function handleAssign(confirmReassign = false) {
     if (!assignTo) return toast.error("Select a user");
+    const alreadyAssigned = Boolean(lead.assignedTo && lead.assignedTo !== assignTo);
+    if (!confirmReassign && alreadyAssigned) {
+      const message = alreadyAssignedMessage([{
+        assignedToName: lead.assignedUser?.fullName || "another user",
+      }]);
+      if (!canAction("leads", "all_leads", "assign") && !canAction("leads", "all_leads", "bulk_assign")) {
+        toast.error(message);
+        return;
+      }
+      setReassignAlert(message);
+      return;
+    }
     try {
-      await bulkAssign.mutateAsync({ ids: [lead.id], assignedTo: assignTo });
+      await bulkAssign.mutateAsync({
+        ids: [lead.id],
+        assignedTo: assignTo,
+        confirmReassign,
+      });
       toast.success("Lead assigned");
       closeModal();
     } catch (e) {
-      toast.error(getErrorMessage(e));
+      const alert = alreadyAssignedMessageFromError(e);
+      if (alert && (canAction("leads", "all_leads", "assign") || canAction("leads", "all_leads", "bulk_assign"))) {
+        setReassignAlert(alert);
+        return;
+      }
+      toast.error(alert ?? getErrorMessage(e));
     }
   }
 
@@ -387,12 +411,25 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
         footer={
           <>
             <Button variant="outline" onClick={closeModal}>Cancel</Button>
-            <Button onClick={handleAssign} loading={bulkAssign.isPending}>Assign</Button>
+            <Button onClick={() => handleAssign(Boolean(reassignAlert))} loading={bulkAssign.isPending}>
+              {reassignAlert ? "Reassign" : "Assign"}
+            </Button>
           </>
         }
       >
+        {reassignAlert && (
+          <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+            {reassignAlert}
+          </p>
+        )}
         <Field label="Assign to">
-          <Select value={assignTo} onChange={(e) => setAssignTo(e.target.value)}>
+          <Select
+            value={assignTo}
+            onChange={(e) => {
+              setAssignTo(e.target.value);
+              setReassignAlert(null);
+            }}
+          >
             <option value="">Select user</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>{u.fullName}</option>

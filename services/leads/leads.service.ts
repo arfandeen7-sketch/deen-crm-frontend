@@ -31,16 +31,23 @@ export const leadsService = {
     return postData<Lead>("/leads", body);
   },
 
-  update(id: string, body: LeadInput): Promise<Lead> {
-    return putData<Lead>(`/leads/${id}`, body);
+  update(id: string, body: LeadInput, options?: { confirmReassign?: boolean }): Promise<Lead> {
+    return putData<Lead>(`/leads/${id}`, {
+      ...body,
+      ...(options?.confirmReassign ? { confirmReassign: true } : {}),
+    });
   },
 
   remove(id: string): Promise<{ success: true }> {
     return deleteData<{ success: true }>(`/leads/${id}`);
   },
 
-  bulkAssign(leadIds: string[], assignedTo: string): Promise<{ updated: number }> {
-    return postData<{ updated: number }>("/leads/bulk-assign", { leadIds, assignedTo });
+  bulkAssign(leadIds: string[], assignedTo: string, confirmReassign = false): Promise<{ updated: number }> {
+    return postData<{ updated: number }>("/leads/bulk-assign", {
+      leadIds,
+      assignedTo,
+      ...(confirmReassign ? { confirmReassign: true } : {}),
+    });
   },
 
   bulkStatus(leadIds: string[], status: string): Promise<{ matched: number; updated: number }> {

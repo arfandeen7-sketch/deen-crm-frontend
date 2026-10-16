@@ -16,9 +16,12 @@ import { MassUpdateModal } from "@/components/leads/MassUpdateModal";
 export function BulkActions({
   selectedIds,
   onClear,
+  onAssigned,
 }: {
   selectedIds: string[];
   onClear: () => void;
+  /** Called with the ids that were just assigned, before the selection is cleared. */
+  onAssigned?: (ids: string[]) => void;
 }) {
   const { bulkAssign, bulkStatus, bulkDelete } = useLeadMutations();
   const { users } = useAssignableUsers();
@@ -44,6 +47,7 @@ export function BulkActions({
       const res = await bulkAssign.mutateAsync({ ids: selectedIds, assignedTo: assignTo });
       toast.success(`Assigned ${res.updated} lead(s)`);
       setAssignOpen(false);
+      onAssigned?.(selectedIds);
       onClear();
     } catch (e) {
       toast.error(getErrorMessage(e));

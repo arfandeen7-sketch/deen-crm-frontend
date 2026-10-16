@@ -1686,6 +1686,8 @@ export interface LeadQueryParams {
   leadPriority?: string;
   brokerId?: string;
   community?: string;
+  /** Comma-separated lead ids, used when opening a batch assignment notification. */
+  leadIds?: string;
 }
 
 // ── Lead Report types ────────────────────────────────────────────────────────

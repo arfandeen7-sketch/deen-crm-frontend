@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -13,51 +14,72 @@ import { useLead, useLeadMutations } from "@/hooks/useLeads";
 import { useAuth } from "@/hooks/useAuth";
 import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { useClientByLeadId, useClientMutations } from "@/hooks/useClients";
 import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
+import { alreadyAssignedMessage, alreadyAssignedMessageFromError } from "@/lib/alreadyAssigned";
 import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormValues } from "@/schemas/lead.schema";
 
 export default function EditLeadPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { role } = useAuth();
+  const { role, canAction } = useAuth();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: client } = useClientByLeadId(params.id);
   const { data: tenant } = useTenantByLeadId(params.id);
   const { update } = useLeadMutations();
   const { upsert: upsertClient } = useClientMutations(params.id);
   const { upsert: upsertTenant } = useTenantMutations(params.id);
+  const [pendingReassign, setPendingReassign] = useState<LeadWithClientFormValues | null>(null);
+  const canReassign = canAction("leads", "all_leads", "assign") || canAction("leads", "all_leads", "bulk_assign");
+
+  async function saveLead(values: LeadWithClientFormValues, confirmReassign = false) {
+    const parsed = leadWithClientSchema.parse(values);
+    const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
+    const leadPayload = {
+      ...leadValues,
+      brokerId: leadValues.brokerId ?? null,
+    };
+
+    await update.mutateAsync({ id: params.id, body: leadPayload, confirmReassign });
+
+    const hasClientData = Object.values(clientValues).some((v) => v !== undefined && v !== "");
+    if (hasClientData && leadPayload.serviceType?.toLowerCase() !== "rent") {
+      await upsertClient.mutateAsync(clientValues);
+    }
+
+    const hasTenantData = Object.values(tenantValues).some((v) => v !== undefined && v !== "");
+    if (hasTenantData && leadPayload.serviceType?.toLowerCase() === "rent") {
+      await upsertTenant.mutateAsync(tenantValues);
+    }
+
+    toast.success("Lead updated");
+    router.push(`/leads/${params.id}`);
+  }
 
   async function onSubmit(values: LeadWithClientFormValues) {
+    const nextAssignee = values.assignedTo || null;
+    if (lead?.assignedTo && nextAssignee && nextAssignee !== lead.assignedTo) {
+      const message = alreadyAssignedMessage([{
+        assignedToName: lead.assignedUser?.fullName || "another user",
+      }]);
+      if (!canReassign) {
+        toast.error(message);
+        return;
+      }
+      setPendingReassign(values);
+      return;
+    }
     try {
-      const parsed = leadWithClientSchema.parse(values);
-      const { leadValues, clientValues, tenantValues } = splitLeadClientValues(parsed);
-      const leadPayload = {
-        ...leadValues,
-        // Always send an explicit clear signal when "No broker" is selected.
-        brokerId: leadValues.brokerId ?? null,
-      };
-
-      // Save lead first, then the appropriate detail record (Buyer or Tenant)
-      await update.mutateAsync({ id: params.id, body: leadPayload });
-
-      // Save Buyer (client) details when service type is NOT Rent
-      const hasClientData = Object.values(clientValues).some((v) => v !== undefined && v !== "");
-      if (hasClientData && leadPayload.serviceType?.toLowerCase() !== "rent") {
-        await upsertClient.mutateAsync(clientValues);
-      }
-
-      // Save Tenant details when service type IS Rent
-      const hasTenantData = Object.values(tenantValues).some((v) => v !== undefined && v !== "");
-      if (hasTenantData && leadPayload.serviceType?.toLowerCase() === "rent") {
-        await upsertTenant.mutateAsync(tenantValues);
-      }
-
-      toast.success("Lead updated");
-      router.push(`/leads/${params.id}`);
+      await saveLead(values);
     } catch (e) {
-      toast.error(getErrorMessage(e));
+      const alert = alreadyAssignedMessageFromError(e);
+      if (alert && canReassign) {
+        setPendingReassign(values);
+        return;
+      }
+      toast.error(alert ?? getErrorMessage(e));
     }
   }
 
@@ -99,6 +121,26 @@ export default function EditLeadPage() {
           )}
         </CardBody>
       </Card>
+      <ConfirmModal
+        open={Boolean(pendingReassign)}
+        title="Lead already assigned"
+        danger={false}
+        confirmLabel="Reassign"
+        message={alreadyAssignedMessage([{
+          assignedToName: lead?.assignedUser?.fullName || "another user",
+        }])}
+        loading={update.isPending}
+        onClose={() => setPendingReassign(null)}
+        onConfirm={async () => {
+          if (!pendingReassign) return;
+          try {
+            await saveLead(pendingReassign, true);
+            setPendingReassign(null);
+          } catch (e) {
+            toast.error(getErrorMessage(e));
+          }
+        }}
+      />
     </div>
     </AccessGuard>
   );

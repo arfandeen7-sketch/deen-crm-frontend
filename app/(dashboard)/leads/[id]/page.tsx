@@ -86,7 +86,7 @@ function LeadDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { role } = useAuth();
-  const { data: lead, isLoading, isError, refetch } = useLead(params.id);
+  const { data: lead, isLoading, isError, error, refetch } = useLead(params.id);
   const { data: customFieldDefs = [] } = useLeadCustomFields();
   const { remove, update, convertToOwner } = useLeadMutations();
   const { data: activityData } = useLeadActivity(params.id);
@@ -137,7 +137,7 @@ function LeadDetailPageContent() {
   }
 
   if (isLoading) return <LoadingState />;
-  if (isError || !lead) return <ErrorState onRetry={refetch} />;
+  if (isError || !lead) return <ErrorState message={getErrorMessage(error)} onRetry={refetch} />;
 
   const locked = !canMutateDealClosedLead(role, lead.leadStatus);
 

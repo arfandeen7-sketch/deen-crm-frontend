@@ -73,7 +73,7 @@ export function useLeadMutations() {
     qc.invalidateQueries({ queryKey: ["followup"] });
     qc.invalidateQueries({ queryKey: ["followup-history"] });
     qc.invalidateQueries({ queryKey: ["lead-activity"] });
-    qc.invalidateQueries({ queryKey: ["custom-fields"] });
+    qc.invalidateQueries({ queryKey: ["notifications"] });
     qc.invalidateQueries({ queryKey: ["properties"] });
     qc.invalidateQueries({ queryKey: ["owners"] });
     qc.invalidateQueries({ queryKey: ["deal-closed"] });
@@ -85,8 +85,15 @@ export function useLeadMutations() {
   });
 
   const update = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: LeadInput }) =>
-      leadsService.update(id, body),
+    mutationFn: ({
+      id,
+      body,
+      confirmReassign,
+    }: {
+      id: string;
+      body: LeadInput;
+      confirmReassign?: boolean;
+    }) => leadsService.update(id, body, { confirmReassign }),
     onSuccess: invalidate,
   });
 
@@ -96,8 +103,15 @@ export function useLeadMutations() {
   });
 
   const bulkAssign = useMutation({
-    mutationFn: ({ ids, assignedTo }: { ids: string[]; assignedTo: string }) =>
-      leadsService.bulkAssign(ids, assignedTo),
+    mutationFn: ({
+      ids,
+      assignedTo,
+      confirmReassign,
+    }: {
+      ids: string[];
+      assignedTo: string;
+      confirmReassign?: boolean;
+    }) => leadsService.bulkAssign(ids, assignedTo, confirmReassign),
     onSuccess: invalidate,
   });
 

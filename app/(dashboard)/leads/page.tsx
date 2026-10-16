@@ -22,6 +22,7 @@ import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
 import { useLeadCustomFields } from "@/hooks/useCustomFields";
 import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
 import { useAuth } from "@/hooks/useAuth";
+import { useLeadSelection } from "@/hooks/useLeadSelection";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob } from "@/lib/utils";
@@ -38,13 +39,15 @@ function LeadsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canAction } = useAuth();
-  const { filters, setFilter, setFilters, resetFilters } = useLeadFilterStore();
+  const { filters, setFilter, resetFilters } = useLeadFilterStore();
+  const leadIdsParam = searchParams.get("leadIds");
   // The dropdown always has a selection. Property Finder enquiry is the default,
   // so a date range on this page uses that enquiry date unless another option is chosen.
-  const listFilters = useMemo(
-    () => ({ ...filters, dateField: filters.dateField ?? ("pf_enquiry" as const) }),
-    [filters],
-  );
+  const listFilters = useMemo(() => {
+    const base = { ...filters, dateField: filters.dateField ?? ("pf_enquiry" as const) };
+    if (!leadIdsParam) return base;
+    return { ...base, leadIds: leadIdsParam, page: 1, pageSize: 100 };
+  }, [filters, leadIdsParam]);
   const { data, isLoading, isError, refetch } = useLeadsList(listFilters);
   const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
@@ -56,19 +59,15 @@ function LeadsPageContent() {
     }
   }, [searchParams, setFilter]);
 
-  const [selected, setSelected] = useState<string[]>([]);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const rows = data?.data ?? [];
+  const { selected, toggleRow, toggleAll, lockAssigned, clear } = useLeadSelection(rows.map((row) => row.id));
+  const assignedFromNotification = leadIdsParam
+    ? leadIdsParam.split(",").map((id) => id.trim()).filter(Boolean).length
+    : 0;
   const [exporting, setExporting] = useState(false);
   const [historyLead, setHistoryLead] = useState<{ id: string; name: string } | null>(null);
 
-  const rows = data?.data ?? [];
-
-  function toggleRow(id: string) {
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-  }
-  function toggleAll(checked: boolean) {
-    setSelected(checked ? rows.map((r) => r.id) : []);
-  }
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   async function handleExport() {
     setExporting(true);
@@ -150,7 +149,26 @@ function LeadsPageContent() {
         </LeadTableToolbar>
       </Card>
 
-      <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
+      <BulkActions
+        selectedIds={selected}
+        onAssigned={lockAssigned}
+        onClear={clear}
+      />
+
+      {assignedFromNotification > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-950">
+            Showing {assignedFromNotification} lead{assignedFromNotification === 1 ? "" : "s"} from an assignment notification.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/leads")}
+            className="text-sm font-semibold text-amber-950 underline underline-offset-4"
+          >
+            Show all leads
+          </button>
+        </div>
+      )}
 
       <DataTable
         columns={displayColumns}

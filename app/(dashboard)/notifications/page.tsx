@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/services/api/client";
 import { timeAgo } from "@/lib/utils";
+import { ASSIGNMENT_NOTIFICATION_PREVIEW, assignmentNotificationHref } from "@/lib/assignmentNotification";
 import type { AppNotification, AssignmentNotificationLead } from "@/types";
 
 function LeadCard({
@@ -51,16 +52,18 @@ function NotificationCard({
   onRead,
 }: {
   notification: AppNotification;
-  onRead: (id: string, leadId?: string | null) => void;
+  onRead: (id: string, leadId?: string | null, leads?: AssignmentNotificationLead[] | null) => void;
 }) {
   const showLeads =
     notification.type === "assignment" &&
     notification.leads &&
     notification.leads.length > 0;
+  const previewLeads = showLeads ? notification.leads!.slice(0, ASSIGNMENT_NOTIFICATION_PREVIEW) : [];
+  const hiddenLeadCount = showLeads ? notification.leads!.length - previewLeads.length : 0;
 
   return (
     <div
-      onClick={() => onRead(notification.id, notification.leadId)}
+      onClick={() => onRead(notification.id, notification.leadId, notification.leadId ? undefined : notification.leads)}
       className={`group relative border-b border-zinc-100 px-6 py-4 transition-colors cursor-pointer hover:bg-zinc-50 ${
         !notification.isRead ? "bg-amber-50/30" : "bg-white"
       }`}
@@ -92,13 +95,26 @@ function NotificationCard({
 
               {showLeads && (
                 <div className="mt-3 space-y-2">
-                  {notification.leads!.map((lead) => (
+                  {previewLeads.map((lead) => (
                     <LeadCard
                       key={lead.id}
                       lead={lead}
                       onClick={(leadId) => onRead(notification.id, leadId)}
                     />
                   ))}
+                  {notification.leads!.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRead(notification.id, null, notification.leads);
+                      }}
+                      className="w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+                    >
+                      View all {notification.leads!.length} leads
+                      {hiddenLeadCount > 0 ? ` · ${hiddenLeadCount} more in All Leads` : ""}
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -126,15 +142,14 @@ export default function NotificationsPage() {
   const { data: notifications, isLoading, error } = useNotifications(filter === "unread");
   const { markRead, markAllRead } = useNotificationMutations();
 
-  async function handleRead(id: string, leadId?: string | null) {
+  async function handleRead(id: string, leadId?: string | null, leads?: AssignmentNotificationLead[] | null) {
     try {
       await markRead.mutateAsync(id);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
-    if (leadId) {
-      router.push(`/leads/${leadId}`);
-    }
+    const href = assignmentNotificationHref(leadId, leads);
+    if (href) router.push(href);
   }
 
   function handleMarkAllRead() {

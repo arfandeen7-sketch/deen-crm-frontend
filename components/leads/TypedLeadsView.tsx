@@ -18,6 +18,7 @@ import { LeadTableToolbar, useVisibleLeadColumns } from "@/components/leads/Lead
 import { CanAccess } from "@/components/shared/Guards";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { useLeadsList, useLeadMutations } from "@/hooks/useLeads";
+import { useLeadSelection } from "@/hooks/useLeadSelection";
 import { useLeadCustomFields } from "@/hooks/useCustomFields";
 import { buildCustomFieldColumns } from "@/components/leads/customFieldColumns";
 import { useAssignableUsers } from "@/hooks/useUsers";
@@ -54,7 +55,6 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
     pageSize: DEFAULT_PAGE_SIZE,
     category,
   });
-  const [selected, setSelected] = useState<string[]>([]);
   const [exporting, setExporting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -65,6 +65,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const sources = useFieldOptions("source");
   const statuses = useFieldOptions("lead_status");
   const rows = data?.data ?? [];
+  const { selected, toggleRow, toggleAll, lockAssigned, clear } = useLeadSelection(rows.map((row) => row.id));
 
   function setParam<K extends keyof LeadQueryParams>(
     key: K,
@@ -75,13 +76,6 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
       [key]: value,
       ...(key !== "page" ? { page: 1 } : {}),
     }));
-  }
-
-  function toggleRow(id: string) {
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-  }
-  function toggleAll(checked: boolean) {
-    setSelected(checked ? rows.map((r) => r.id) : []);
   }
 
   async function handleExport() {
@@ -412,7 +406,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
       </LeadTableToolbar>
 
       {enableBulk && (
-        <BulkActions selectedIds={selected} onClear={() => setSelected([])} />
+        <BulkActions selectedIds={selected} onAssigned={lockAssigned} onClear={clear} />
       )}
 
       <DataTable
