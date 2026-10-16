@@ -546,7 +546,6 @@ function DealClosedPageContent() {
 
       <BulkActions
         selectedIds={selected}
-        selectedLeads={rows.filter((row) => selected.includes(row.id))}
         onClear={() => setSelected([])}
       />
 
