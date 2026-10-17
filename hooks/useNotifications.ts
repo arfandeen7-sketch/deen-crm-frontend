@@ -14,7 +14,7 @@ export function useUnreadCount(): number {
     queryFn: () => notificationsService.unreadCount(),
     enabled,
     refetchInterval: enabled ? POLL_FAST : false,
-    staleTime: POLL_FAST,
+    staleTime: 0,
     retry: retrySkipAuth,
   });
   return data?.count ?? 0;
@@ -30,7 +30,7 @@ export function useNotifications(unreadOnly = false) {
       return res.data;
     },
     enabled,
-    staleTime: POLL_FAST,
+    staleTime: 0,
     refetchInterval: enabled ? POLL_FAST : false,
     retry: retrySkipAuth,
   });

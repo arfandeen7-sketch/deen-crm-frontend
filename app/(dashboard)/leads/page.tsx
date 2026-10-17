@@ -61,9 +61,7 @@ function LeadsPageContent() {
 
   const rows = data?.data ?? [];
   const { selected, toggleRow, toggleAll, lockAssigned, clear } = useLeadSelection(rows.map((row) => row.id));
-  const assignedFromNotification = leadIdsParam
-    ? leadIdsParam.split(",").map((id) => id.trim()).filter(Boolean).length
-    : 0;
+  const openedFromNotification = Boolean(leadIdsParam);
   const [exporting, setExporting] = useState(false);
   const [historyLead, setHistoryLead] = useState<{ id: string; name: string } | null>(null);
 
@@ -155,10 +153,12 @@ function LeadsPageContent() {
         onClear={clear}
       />
 
-      {assignedFromNotification > 0 && (
+      {openedFromNotification && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-sm text-amber-950">
-            Showing {assignedFromNotification} lead{assignedFromNotification === 1 ? "" : "s"} from an assignment notification.
+            {isLoading
+              ? "Loading leads from an assignment notification."
+              : `Showing ${rows.length} lead${rows.length === 1 ? "" : "s"} from an assignment notification.`}
           </p>
           <button
             type="button"
