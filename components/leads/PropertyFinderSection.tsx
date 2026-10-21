@@ -756,9 +756,9 @@ export function PropertyFinderSection({ lead }: Props) {
                 variant="primary"
               />
             )}
-            {data?.listingUrl && (
+            {/* {data?.listingUrl && (
               <LinkButton href={data.listingUrl} icon={ExternalLink} label="Listing URL" />
-            )}
+            )} */}
           </div>
         </CardBody>
       </Card>
@@ -824,38 +824,38 @@ export function PropertyFinderSection({ lead }: Props) {
   ) : null;
 
   // ─── Raw Property Finder Payload ───────────────────────────────────────────
-  const rawSection = !loading && !error && data ? (
-    <Card>
-      <button
-        type="button"
-        onClick={() => setIsRawOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 border-b border-transparent px-6 py-4 text-left hover:bg-slate-50 transition-colors rounded-[8px]"
-        style={{ borderBottomColor: isRawOpen ? 'var(--border)' : 'transparent' }}
-      >
-        <div className="flex items-center gap-2">
-          <Server className="h-3.5 w-3.5 text-foreground-secondary" />
-          <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">
-            Raw Property Finder Payload
-          </h3>
-          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 ring-1 ring-amber-200 normal-case tracking-normal">
-            Debug
-          </span>
-        </div>
-        {isRawOpen ? (
-          <ChevronUp className="h-4 w-4 text-slate-400 shrink-0" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
-        )}
-      </button>
-      {isRawOpen && (
-        <CardBody>
-          <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs leading-relaxed text-emerald-400">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </CardBody>
-      )}
-    </Card>
-  ) : null;
+  // const rawSection = !loading && !error && data ? (
+  //   <Card>
+  //     <button
+  //       type="button"
+  //       onClick={() => setIsRawOpen((v) => !v)}
+  //       className="flex w-full items-center justify-between gap-3 border-b border-transparent px-6 py-4 text-left hover:bg-slate-50 transition-colors rounded-[8px]"
+  //       style={{ borderBottomColor: isRawOpen ? 'var(--border)' : 'transparent' }}
+  //     >
+  //       <div className="flex items-center gap-2">
+  //         <Server className="h-3.5 w-3.5 text-foreground-secondary" />
+  //         <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">
+  //           Raw Property Finder Payload
+  //         </h3>
+  //         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 ring-1 ring-amber-200 normal-case tracking-normal">
+  //           Debug
+  //         </span>
+  //       </div>
+  //       {isRawOpen ? (
+  //         <ChevronUp className="h-4 w-4 text-slate-400 shrink-0" />
+  //       ) : (
+  //         <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
+  //       )}
+  //     </button>
+  //     {isRawOpen && (
+  //       <CardBody>
+  //         <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs leading-relaxed text-emerald-400">
+  //           {JSON.stringify(data, null, 2)}
+  //         </pre>
+  //       </CardBody>
+  //     )}
+  //   </Card>
+  // ) : null;
 
   return (
     <>
@@ -869,7 +869,7 @@ export function PropertyFinderSection({ lead }: Props) {
       {listingSection}
       {linksSection}
       {complianceSection}
-      {rawSection}
+      {/* {rawSection} */}
     </>
   );
 }
