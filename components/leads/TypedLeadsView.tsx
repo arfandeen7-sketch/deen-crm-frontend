@@ -102,7 +102,6 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
     }
   }
 
-  const isPFLead = (l: Lead) => l.source === "Property Finder";
   const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
 
   const columns: Column<Lead>[] = [
@@ -264,7 +263,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
         <div className="space-y-0.5">
           <p className="flex items-center gap-1 text-xs text-slate-600">
             <Calendar className="h-3 w-3 text-slate-400" />
-            {formatDate(isPFLead(l) ? l.createdAt : l.leadDate)}
+            {formatDate(l.leadDate)}
           </p>
           {l.followUpDate && (
             <p className="text-xs text-slate-400">Follow up: {formatDate(l.followUpDate)}</p>

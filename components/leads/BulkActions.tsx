@@ -20,7 +20,7 @@ export function BulkActions({
 }: {
   selectedIds: string[];
   onClear: () => void;
-  /** Called with the ids that were just assigned, before the selection is cleared. */
+  /** Called with the ids that were just assigned. The checkboxes stay selected. */
   onAssigned?: (ids: string[]) => void;
 }) {
   const { bulkAssign, bulkStatus, bulkDelete } = useLeadMutations();
@@ -48,7 +48,6 @@ export function BulkActions({
       toast.success(`Assigned ${res.updated} lead(s)`);
       setAssignOpen(false);
       onAssigned?.(selectedIds);
-      onClear();
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -60,7 +59,6 @@ export function BulkActions({
       const res = await bulkStatus.mutateAsync({ ids: selectedIds, leadStatus: status });
       toast.success(`Updated ${res.updated} lead(s)`);
       setStatusOpen(false);
-      onClear();
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -179,7 +177,6 @@ export function BulkActions({
           open={massUpdateOpen}
           onClose={() => setMassUpdateOpen(false)}
           selectedIds={selectedIds}
-          onSuccess={onClear}
         />
       )}
 

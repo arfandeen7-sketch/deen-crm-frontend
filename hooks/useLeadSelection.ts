@@ -6,9 +6,11 @@ import { idsForSelectAll, pruneLeadSelection, toggleLeadSelection } from "@/lib/
 
 /**
  * Page selection for lead tables.
- * Ids assigned in this visit are skipped by select-all, so the same page
- * cannot be bulk-assigned to the next person by checking the header box again.
- * An individual row can still be checked when a reassignment is intentional.
+ * Checkboxes stay selected after assign, status, and field updates so the
+ * same leads can be updated again without selecting them a second time.
+ * Ids assigned in this visit are skipped by select-all, so checking the
+ * header box later does not pick those leads up again. An individual row
+ * can still be checked when a reassignment is intentional.
  */
 export function useLeadSelection(rowIds: string[]) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -43,7 +45,6 @@ export function useLeadSelection(rowIds: string[]) {
 
   function lockAssigned(ids: string[]) {
     for (const id of ids) lockedRef.current.add(id);
-    setSelected([]);
   }
 
   function clear() {

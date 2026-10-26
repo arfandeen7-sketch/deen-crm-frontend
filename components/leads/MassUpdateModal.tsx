@@ -9,6 +9,7 @@ import { Field, Select, Input, Textarea } from "@/components/ui/Input";
 import { useLeadMutations } from "@/hooks/useLeads";
 import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useBrokerOptions } from "@/hooks/useBrokers";
+import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
 
 // ── Field definitions ─────────────────────────────────────────────────────────
@@ -24,6 +25,8 @@ interface FieldDef {
   category?: string;
   /** Whether clearing (null value) is allowed */
   nullable?: boolean;
+  /** Shown only for the master user. The API enforces the same restriction. */
+  masterOnly?: boolean;
 }
 
 const MASS_UPDATE_FIELDS: FieldDef[] = [
@@ -48,6 +51,8 @@ const MASS_UPDATE_FIELDS: FieldDef[] = [
   { key: "brokerId",       label: "Broker",          kind: "brokers",  nullable: true },
   { key: "followUpDate",   label: "Follow-up Date",  kind: "date",     nullable: true },
   { key: "followUpNote",   label: "Follow-up Note",  kind: "textarea", nullable: true },
+  { key: "leadDate",       label: "Inquiry Date",    kind: "date",     masterOnly: true },
+  { key: "createdAt",      label: "Created Date",    kind: "date",     masterOnly: true },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -142,7 +147,7 @@ interface MassUpdateModalProps {
   open: boolean;
   onClose: () => void;
   selectedIds: string[];
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export function MassUpdateModal({
@@ -152,12 +157,15 @@ export function MassUpdateModal({
   onSuccess,
 }: MassUpdateModalProps) {
   const { bulkUpdate } = useLeadMutations();
+  const { isMaster, user } = useAuth();
+  const canEditDates = isMaster || user?.role === "master";
 
   const [fieldKey, setFieldKey] = useState("");
   const [value, setValue] = useState("");
   const [confirmed, setConfirmed] = useState(false);
 
-  const fieldDef = MASS_UPDATE_FIELDS.find((f) => f.key === fieldKey);
+  const fields = MASS_UPDATE_FIELDS.filter((field) => canEditDates || !field.masterOnly);
+  const fieldDef = fields.find((f) => f.key === fieldKey);
   const valueLabel = useValueLabel(fieldDef, value);
 
   // Reset state when modal opens / field changes
@@ -200,7 +208,7 @@ export function MassUpdateModal({
         `${res.updated} lead${res.updated === 1 ? "" : "s"} updated successfully.`,
       );
       handleClose();
-      onSuccess();
+      onSuccess?.();
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -247,7 +255,7 @@ export function MassUpdateModal({
             disabled={confirmed}
           >
             <option value="">Select field…</option>
-            {MASS_UPDATE_FIELDS.map((f) => (
+            {fields.map((f) => (
               <option key={f.key} value={f.key}>
                 {f.label}
               </option>

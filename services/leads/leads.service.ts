@@ -62,8 +62,12 @@ export const leadsService = {
     leadIds: string[],
     field: string,
     value: string | null,
-  ): Promise<{ matched: number; updated: number }> {
-    return postData<{ matched: number; updated: number }>("/leads/bulk-update", {
+  ): Promise<{
+    matched: number;
+    updated: number;
+    leads?: { id: string; leadDate: string; createdAt: string }[];
+  }> {
+    return postData("/leads/bulk-update", {
       leadIds,
       field,
       value,
