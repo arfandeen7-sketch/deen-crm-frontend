@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -25,16 +26,58 @@ import { useFieldOptions } from "@/hooks/useDynamicFields";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
 import { alreadyAssignedMessage, alreadyAssignedMessageFromError } from "@/lib/alreadyAssigned";
-import { toDatetimeLocal, cn, isEmptyDisplayValue } from "@/lib/utils";
+import { toDatetimeLocal, isEmptyDisplayValue } from "@/lib/utils";
 import type { Lead } from "@/types";
 
 type ActiveModal = "status" | "comment" | "followup" | "assign" | "unassign" | null;
 
+type MenuPosition = {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+};
+
+const MENU_WIDTH = 192;
+const MENU_GAP = 4;
+const VIEWPORT_PAD = 8;
+
+/** Fixed position so the menu escapes the table's overflow clipping. */
+function computeMenuPosition(trigger: DOMRect): MenuPosition {
+  const width = Math.max(0, Math.min(MENU_WIDTH, window.innerWidth - VIEWPORT_PAD * 2));
+  const left = Math.min(
+    Math.max(VIEWPORT_PAD, trigger.right - width),
+    Math.max(VIEWPORT_PAD, window.innerWidth - width - VIEWPORT_PAD),
+  );
+  const spaceBelow = window.innerHeight - trigger.bottom - MENU_GAP - VIEWPORT_PAD;
+  const spaceAbove = trigger.top - MENU_GAP - VIEWPORT_PAD;
+  const openUpward = spaceBelow < 240 && spaceAbove > spaceBelow;
+  const maxHeight = Math.max(0, openUpward ? spaceAbove : spaceBelow);
+
+  if (openUpward) {
+    return {
+      bottom: window.innerHeight - trigger.top + MENU_GAP,
+      left,
+      width,
+      maxHeight,
+    };
+  }
+
+  return {
+    top: trigger.bottom + MENU_GAP,
+    left,
+    width,
+    maxHeight,
+  };
+}
+
 export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
+  const [menuPos, setMenuPos] = useState<MenuPosition | null>(null);
   const [active, setActive] = useState<ActiveModal>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { canAction } = useAuth();
   const { update, bulkAssign } = useLeadMutations();
@@ -63,48 +106,52 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
     return () => window.removeEventListener("lead-dropdown-open", handler);
   }, [lead.id]);
 
-  // Click outside to close
+  // Click outside to close. The menu is portaled, so it is not inside the trigger ref.
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (ref.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  // Fix z-index: lift the containing td and tr above other rows when open
   useEffect(() => {
-    if (!ref.current) return;
-    const td = ref.current.closest("td");
-    const tr = ref.current.closest("tr");
-    if (open) {
-      if (td) td.style.zIndex = "50";
-      if (tr) {
-        tr.style.position = "relative";
-        tr.style.zIndex = "40";
-      }
-      // Calculate whether to open upward based on available space in the scroll container
-      const rect = ref.current.getBoundingClientRect();
-      const scrollContainer = ref.current.closest('.overflow-x-auto') as HTMLElement | null;
-      const containerBottom = scrollContainer
-        ? scrollContainer.getBoundingClientRect().bottom
-        : window.innerHeight;
-      const spaceBelow = containerBottom - rect.bottom;
-      setOpenUpward(spaceBelow < 320);
-    } else {
-      if (td) td.style.zIndex = "";
-      if (tr) {
-        tr.style.position = "";
-        tr.style.zIndex = "";
-      }
-    }
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
+
+  const updateMenuPosition = () => {
+    const trigger = buttonRef.current;
+    if (!trigger) return;
+    setMenuPos(computeMenuPosition(trigger.getBoundingClientRect()));
+  };
+
+  // Position against the viewport so the table's overflow cannot clip the menu.
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onScrollOrResize = (event: Event) => {
+      // Scrolling inside the menu must not reposition it or reset its scroll offset.
+      if (event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      updateMenuPosition();
+    };
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
     return () => {
-      if (td) td.style.zIndex = "";
-      if (tr) {
-        tr.style.position = "";
-        tr.style.zIndex = "";
-      }
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
     };
   }, [open]);
 
@@ -221,21 +268,32 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
   return (
     <div className="relative" ref={ref} onClick={(e) => e.stopPropagation()}>
       <button
+        ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
         className="rounded p-1.5 text-slate-400 hover:text-slate-700"
         aria-label="Quick actions"
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
 
-      {open && (
+      {open && menuPos && createPortal(
         <div
           ref={menuRef}
-          className={cn(
-            "absolute right-0 z-50 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg",
-            openUpward ? "bottom-full mb-1" : "mt-1",
-          )
-          }>
+          role="menu"
+          style={{
+            position: "fixed",
+            top: menuPos.top,
+            bottom: menuPos.bottom,
+            left: menuPos.left,
+            width: menuPos.width,
+            maxHeight: menuPos.maxHeight,
+            zIndex: 50,
+          }}
+          className="overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <Link
             href={`/leads/${lead.id}`}
             className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -322,7 +380,8 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
               <Mail className="h-4 w-4 text-sky-500" /> Email Lead
             </a>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Update Status modal */}
