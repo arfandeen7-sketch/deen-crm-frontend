@@ -20,6 +20,9 @@ import { useLeadMutations } from "@/hooks/useLeads";
 import { useAuth } from "@/hooks/useAuth";
 import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { getErrorMessage } from "@/services/api/client";
+import { FOLLOWUP_LIST_FIELDS, followupListKey } from "@/lib/leadReturn";
+import { usePersistedListState } from "@/hooks/usePersistedListState";
+import { useLeadDetailHref } from "@/hooks/useLeadReturn";
 import type { Lead, LeadQueryParams } from "@/types";
 
 const TABS: { key: FollowupVariant; label: string; href: string }[] = [
@@ -30,13 +33,24 @@ const TABS: { key: FollowupVariant; label: string; href: string }[] = [
 
 export function FollowupView({ variant }: { variant: FollowupVariant }) {
   const router = useRouter();
-  const [view, setView] = useState<"table" | "calendar">("table");
+  const detailHref = useLeadDetailHref();
   const [completingId, setCompletingId] = useState<string | null>(null);
-  const [params, setParams] = useState<LeadQueryParams>({
-    page: 1,
-    pageSize: DEFAULT_PAGE_SIZE,
-  });
-  const { data, isLoading, isError, refetch } = useFollowup(variant, params);
+  const { state, setState, ready } = usePersistedListState<{
+    page: number;
+    pageSize: number;
+    search: string;
+    view: "table" | "calendar";
+  }>(
+    followupListKey(variant),
+    { page: 1, pageSize: DEFAULT_PAGE_SIZE, search: "", view: "table" },
+    FOLLOWUP_LIST_FIELDS,
+  );
+  const params: LeadQueryParams = {
+    page: state.page,
+    pageSize: state.pageSize,
+    search: state.search || undefined,
+  };
+  const { data, isLoading, isError, refetch } = useFollowup(variant, params, ready);
   const { update } = useLeadMutations();
   const { role } = useAuth();
   const rows = data?.data ?? [];
@@ -153,14 +167,14 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
         </div>
         <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
           <button
-            onClick={() => setView("table")}
-            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm", view === "table" ? "bg-slate-900 text-white" : "text-slate-600")}
+            onClick={() => setState((current) => ({ ...current, view: "table" }))}
+            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm", state.view === "table" ? "bg-slate-900 text-white" : "text-slate-600")}
           >
             <LayoutList className="h-4 w-4" /> Table
           </button>
           <button
-            onClick={() => setView("calendar")}
-            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm", view === "calendar" ? "bg-slate-900 text-white" : "text-slate-600")}
+            onClick={() => setState((current) => ({ ...current, view: "calendar" }))}
+            className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm", state.view === "calendar" ? "bg-slate-900 text-white" : "text-slate-600")}
           >
             <CalendarDays className="h-4 w-4" /> Calendar
           </button>
@@ -169,18 +183,20 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
 
       <Card className="p-4">
         <SearchInput
-          value={params.search ?? ""}
-          onChange={(v) => setParams((p) => ({ ...p, search: v, page: 1 }))}
+          value={state.search}
+          onChange={(v) => setState((current) => ({ ...current, search: v, page: 1 }))}
           placeholder="Search name or mobile…"
           className="w-full sm:w-72"
         />
       </Card>
 
-      {view === "calendar" ? (
+      {!ready ? (
+        <Card className="p-10 text-center text-sm text-slate-500">Loading follow-ups…</Card>
+      ) : state.view === "calendar" ? (
         <CalendarView
           rows={rows}
           completingId={completingId}
-          onSelect={(id) => router.push(`/leads/${id}`)}
+          onSelect={(id) => router.push(detailHref(id))}
           onMarkDone={handleMarkDone}
         />
       ) : (
@@ -194,7 +210,7 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
             onRetry={refetch}
             emptyTitle="No follow-ups"
             emptyMessage="There are no follow-ups in this view."
-            onRowClick={(l) => router.push(`/leads/${l.id}`)}
+            onRowClick={(l) => router.push(detailHref(l.id))}
           />
           {data && data.total > 0 && (
             <Pagination
@@ -202,8 +218,8 @@ export function FollowupView({ variant }: { variant: FollowupVariant }) {
               pageSize={data.pageSize}
               total={data.total}
               totalPages={data.totalPages}
-              onPageChange={(p) => setParams((prev) => ({ ...prev, page: p }))}
-              onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
+              onPageChange={(p) => setState((current) => ({ ...current, page: p }))}
+              onPageSizeChange={(s) => setState((current) => ({ ...current, pageSize: s, page: 1 }))}
             />
           )}
         </>

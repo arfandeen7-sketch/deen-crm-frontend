@@ -45,6 +45,9 @@ import { formatCurrency, formatAmount, formatDateTime, formatDate, displayValue 
 import { canMutateDealClosedLead } from "@/lib/dealClosedLock";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { getErrorMessage } from "@/services/api/client";
+import { DEAL_CLOSED_LIST_FIELDS, DEAL_CLOSED_LIST_KEY } from "@/lib/leadReturn";
+import { usePersistedListState } from "@/hooks/usePersistedListState";
+import { useLeadDetailHref, useLeadEditHref } from "@/hooks/useLeadReturn";
 import type { DealClosedQueryParams, Lead } from "@/types";
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
@@ -101,6 +104,7 @@ function DealDetailsModal({
   saleId: string | null;
   onClose: () => void;
 }) {
+  const detailHref = useLeadDetailHref();
   const { data, isLoading } = useDealClosedDetail(saleId);
 
   return (
@@ -212,7 +216,7 @@ function DealDetailsModal({
           {/* Actions */}
           <div className="flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
             <Link
-              href={`/leads/${data.leadId}`}
+              href={detailHref(data.leadId)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -284,13 +288,15 @@ function DetailRow({
 function EmployeeSummaryTable({
   closedFrom,
   closedTo,
+  enabled = true,
 }: {
   closedFrom?: string;
   closedTo?: string;
+  enabled?: boolean;
 }) {
-  const { data = [], isLoading, isError } = useDealClosedEmployeeSummary({ closedFrom, closedTo });
+  const { data = [], isLoading, isError } = useDealClosedEmployeeSummary({ closedFrom, closedTo }, enabled);
 
-  if (isLoading) {
+  if (!enabled || isLoading) {
     return (
       <div className="space-y-2 px-5 py-4">
         {[1, 2, 3].map((i) => (
@@ -343,21 +349,27 @@ function EmployeeSummaryTable({
 
 function DealClosedPageContent() {
   const router = useRouter();
+  const detailHref = useLeadDetailHref();
+  const editHref = useLeadEditHref();
   const { role, canAction } = useAuth();
   const isMaster = role === "master";
-  const [params, setParams] = useState<DealClosedQueryParams>({
-    page: 1,
-    pageSize: DEFAULT_PAGE_SIZE,
-    search: "",
-    sortBy: "updatedAt",
-    sortDir: "desc",
-  });
+  const { state: params, setState: setParams, ready } = usePersistedListState<DealClosedQueryParams>(
+    DEAL_CLOSED_LIST_KEY,
+    {
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+      search: "",
+      sortBy: "updatedAt",
+      sortDir: "desc",
+    },
+    DEAL_CLOSED_LIST_FIELDS,
+  );
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyLead, setHistoryLead] = useState<{ id: string; name: string } | null>(null);
 
-  const { data, isLoading, isError, refetch } = useDealClosedList(params);
+  const { data, isLoading, isError, refetch } = useDealClosedList(params, ready);
   const { data: stats } = useDealClosedStats();
   const { data: users = [] } = useDealClosedUsers();
   const { data: filterOptions } = useDealClosedOptions();
@@ -403,6 +415,7 @@ function DealClosedPageContent() {
     onOpenHistory: (lead) => setHistoryLead(lead),
     onDelete: (id) => setDeleteId(id),
     canMutate: (lead) => canMutateDealClosedLead(role, lead.leadStatus),
+    editHref,
   });
   const closedColumns: Column<Lead>[] = [
     {
@@ -515,7 +528,11 @@ function DealClosedPageContent() {
 
       <Card>
         <CardHeader title="Sales by Employee" subtitle="Sorted by total sales value" />
-        <EmployeeSummaryTable closedFrom={summaryDates.closedFrom} closedTo={summaryDates.closedTo} />
+        <EmployeeSummaryTable
+          closedFrom={summaryDates.closedFrom}
+          closedTo={summaryDates.closedTo}
+          enabled={ready}
+        />
       </Card>
 
       <Card className="p-4">
@@ -553,12 +570,12 @@ function DealClosedPageContent() {
         columns={displayColumns}
         rows={rows}
         rowKey={(lead) => lead.id}
-        loading={isLoading}
+        loading={!ready || isLoading}
         error={isError}
         onRetry={refetch}
         emptyTitle="No closed deals"
         emptyMessage="Deals appear here when a lead status is set to Deal Closed."
-        onRowClick={(lead) => router.push(`/leads/${lead.id}`)}
+        onRowClick={(lead) => router.push(detailHref(lead.id))}
         selectable={canSelect}
         selectedIds={selected}
         onToggleRow={toggleRow}

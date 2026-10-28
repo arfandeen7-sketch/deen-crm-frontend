@@ -9,13 +9,14 @@ import { QUERY_REQUIREMENTS } from "@/lib/auth-manifest";
 
 export type FollowupVariant = "today" | "missed" | "upcoming";
 
-export function useFollowup(variant: FollowupVariant, params: LeadQueryParams) {
-  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["leads:followup"]);
+export function useFollowup(variant: FollowupVariant, params: LeadQueryParams, enabled = true) {
+  const permitted = useQueryEnabled(QUERY_REQUIREMENTS["leads:followup"]);
+  const active = permitted && enabled;
   return useQuery({
     queryKey: ["followup", variant, params],
     queryFn: () => followupService[variant](params),
-    enabled,
-    refetchInterval: enabled ? POLL_FAST : false,
+    enabled: active,
+    refetchInterval: active ? POLL_FAST : false,
     retry: retrySkipAuth,
   });
 }

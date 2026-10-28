@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useLeadDetailHref } from "@/hooks/useLeadReturn";
 import { toast } from "sonner";
 import {
   MoreHorizontal,
@@ -73,6 +74,7 @@ function computeMenuPosition(trigger: DOMRect): MenuPosition {
 }
 
 export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?: boolean }) {
+  const detailHref = useLeadDetailHref();
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<MenuPosition | null>(null);
   const [active, setActive] = useState<ActiveModal>(null);
@@ -295,7 +297,7 @@ export function LeadQuickActions({ lead, locked = false }: { lead: Lead; locked?
           onMouseDown={(e) => e.stopPropagation()}
         >
           <Link
-            href={`/leads/${lead.id}`}
+            href={detailHref(lead.id)}
             className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Eye className="h-4 w-4 text-slate-400" /> View Details

@@ -42,13 +42,14 @@ function syncSavedLeadDates(qc: QueryClient, saved: SavedLeadDates[]): void {
   }
 }
 
-export function useLeadsList(params: LeadQueryParams) {
-  const enabled = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
+export function useLeadsList(params: LeadQueryParams, enabled = true) {
+  const permitted = useQueryEnabled(QUERY_REQUIREMENTS["leads:list"]);
+  const active = permitted && enabled;
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => leadsService.list(params),
-    enabled,
-    refetchInterval: enabled ? POLL_FAST : false,
+    enabled: active,
+    refetchInterval: active ? POLL_FAST : false,
     retry: retrySkipAuth,
   });
 }

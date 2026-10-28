@@ -28,6 +28,9 @@ import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob, formatDate, formatDateTime, displayValue, isEmptyDisplayValue } from "@/lib/utils";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { TYPED_LEAD_LIST_FIELDS, typedLeadListKey } from "@/lib/leadReturn";
+import { usePersistedListState } from "@/hooks/usePersistedListState";
+import { useLeadDetailHref, useLeadEditHref } from "@/hooks/useLeadReturn";
 import type { Lead, LeadQueryParams } from "@/types";
 
 type Category = NonNullable<LeadQueryParams["category"]>;
@@ -47,18 +50,21 @@ interface Props {
 
 export function TypedLeadsView({ category, enableBulk = false }: Props) {
   const router = useRouter();
+  const detailHref = useLeadDetailHref();
+  const editHref = useLeadEditHref();
   const { canAction, canPage } = useAuth();
   const pageKey = CATEGORY_PAGE_KEY[category];
 
-  const [params, setParams] = useState<LeadQueryParams>({
-    page: 1,
-    pageSize: DEFAULT_PAGE_SIZE,
-    category,
-  });
+  const { state: params, setState: setParams, ready } = usePersistedListState<LeadQueryParams>(
+    typedLeadListKey(category),
+    { page: 1, pageSize: DEFAULT_PAGE_SIZE, category },
+    TYPED_LEAD_LIST_FIELDS,
+    { category },
+  );
   const [exporting, setExporting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data, isLoading, isError, refetch } = useLeadsList(params);
+  const { data, isLoading, isError, refetch } = useLeadsList(params, ready);
   const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
   const { users } = useAssignableUsers();
@@ -312,7 +318,7 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
               <ExternalLink className="h-4 w-4" />
             </a>
           )}
-          <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
+          <Link href={editHref(l.id)} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
             <Pencil className="h-4 w-4" />
           </Link>
           <CanAccess module="leads" page="all_leads" action="delete">
@@ -412,12 +418,12 @@ export function TypedLeadsView({ category, enableBulk = false }: Props) {
         columns={displayColumns}
         rows={rows}
         rowKey={(l) => l.id}
-        loading={isLoading}
+        loading={!ready || isLoading}
         error={isError}
         onRetry={refetch}
         emptyTitle={`No ${category} leads`}
         emptyMessage="No leads match the current filters."
-        onRowClick={(l) => router.push(`/leads/${l.id}`)}
+        onRowClick={(l) => router.push(detailHref(l.id))}
         selectable={allowRowSelection}
         selectedIds={selected}
         onToggleRow={toggleRow}

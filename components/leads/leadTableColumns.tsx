@@ -22,12 +22,14 @@ export function buildLeadColumns({
   onOpenHistory,
   onDelete,
   canMutate,
+  editHref,
 }: {
   dateField?: LeadQueryParams["dateField"];
   onOpenHistory: (lead: { id: string; name: string }) => void;
   onDelete: (id: string) => void;
   /** When omitted, row actions follow the normal lead permissions. */
   canMutate?: (lead: Lead) => boolean;
+  editHref?: (id: string) => string;
 }): Column<Lead>[] {
   const allow = (lead: Lead) => (canMutate ? canMutate(lead) : true);
   const Dash = () => <span className="text-sm text-slate-400">—</span>;
@@ -315,7 +317,7 @@ export function buildLeadColumns({
             </a>
           )}
           {allow(l) ? (
-            <Link href={`/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
+            <Link href={editHref ? editHref(l.id) : `/leads/${l.id}/edit`} className="rounded p-1.5 text-slate-400 hover:text-gray-900">
               <Pencil className="h-4 w-4" />
             </Link>
           ) : (

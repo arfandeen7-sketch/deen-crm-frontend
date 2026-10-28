@@ -20,10 +20,12 @@ import { useTenantByLeadId, useTenantMutations } from "@/hooks/useTenants";
 import { getErrorMessage } from "@/services/api/client";
 import { alreadyAssignedMessage, alreadyAssignedMessageFromError } from "@/lib/alreadyAssigned";
 import { leadWithClientSchema, splitLeadClientValues, type LeadWithClientFormValues } from "@/schemas/lead.schema";
+import { useLeadDetailHref } from "@/hooks/useLeadReturn";
 
 export default function EditLeadPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const leadHref = useLeadDetailHref()(params.id);
   const { role, canAction } = useAuth();
   const { data: lead, isLoading, isError, refetch } = useLead(params.id);
   const { data: client } = useClientByLeadId(params.id);
@@ -55,7 +57,7 @@ export default function EditLeadPage() {
     }
 
     toast.success("Lead updated");
-    router.push(`/leads/${params.id}`);
+    router.push(leadHref);
   }
 
   async function onSubmit(values: LeadWithClientFormValues) {
@@ -86,7 +88,7 @@ export default function EditLeadPage() {
   return (
     <AccessGuard module="leads" page="all_leads" action="edit">
     <div className="space-y-5">
-      <Link href={`/leads/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+      <Link href={leadHref} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
         <ArrowLeft className="h-4 w-4" /> Back to lead
       </Link>
       <PageHeader title="Edit Lead" subtitle={lead?.leadName} />
@@ -105,7 +107,7 @@ export default function EditLeadPage() {
               <p className="max-w-lg text-sm text-slate-600">
                 Only a Master user can edit this lead or change its status. Master can unlock it by choosing a different status, which returns the lead to All Leads.
               </p>
-              <Button variant="outline" onClick={() => router.push(`/leads/${params.id}`)}>
+              <Button variant="outline" onClick={() => router.push(leadHref)}>
                 Back to lead
               </Button>
             </div>
@@ -116,7 +118,7 @@ export default function EditLeadPage() {
               initialTenant={tenant}
               submitting={update.isPending || upsertClient.isPending || upsertTenant.isPending}
               onSubmit={onSubmit}
-              onCancel={() => router.push(`/leads/${params.id}`)}
+              onCancel={() => router.push(leadHref)}
             />
           )}
         </CardBody>

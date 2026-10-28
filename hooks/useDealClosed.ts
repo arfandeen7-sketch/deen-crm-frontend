@@ -8,10 +8,11 @@ import type { DealClosedQueryParams } from "@/types";
 const KEY = "deal-closed";
 
 /** Paginated list of closed deals visible to the current user. */
-export function useDealClosedList(params: DealClosedQueryParams = {}) {
+export function useDealClosedList(params: DealClosedQueryParams = {}, enabled = true) {
   return useQuery({
     queryKey: [KEY, "list", params],
     queryFn: () => dealClosedService.list(params),
+    enabled,
     retry: retrySkipAuth,
   });
 }
@@ -27,11 +28,13 @@ export function useDealClosedStats() {
 
 /** Per-employee breakdown sorted by total sales value desc. */
 export function useDealClosedEmployeeSummary(
-  params: Pick<DealClosedQueryParams, "closedFrom" | "closedTo"> = {}
+  params: Pick<DealClosedQueryParams, "closedFrom" | "closedTo"> = {},
+  enabled = true,
 ) {
   return useQuery({
     queryKey: [KEY, "employee-summary", params],
     queryFn: () => dealClosedService.employeeSummary(params),
+    enabled,
     retry: retrySkipAuth,
   });
 }

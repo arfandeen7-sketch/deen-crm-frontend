@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -49,6 +49,8 @@ import { PropertyFinderSection } from "@/components/leads/PropertyFinderSection"
 import { ClientDetailsCard } from "@/components/clients/ClientDetailsCard";
 import { TenantDetailsCard } from "@/components/tenants/TenantDetailsCard";
 import { isRentalLead, getEffectiveServiceType } from "@/lib/leadServiceType";
+import { resolveLeadBackLink } from "@/lib/leadReturn";
+import { useLeadEditHref } from "@/hooks/useLeadReturn";
 
 function InfoRow({
   icon: Icon,
@@ -85,6 +87,8 @@ export default function LeadDetailPage() {
 function LeadDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editHref = useLeadEditHref();
   const { role } = useAuth();
   const { data: lead, isLoading, isError, error, refetch } = useLead(params.id);
   const { data: customFieldDefs = [] } = useLeadCustomFields();
@@ -100,7 +104,11 @@ function LeadDetailPageContent() {
     try {
       await remove.mutateAsync(params.id);
       toast.success("Lead deleted");
-      router.push("/leads");
+      const back = resolveLeadBackLink(
+        searchParams.get("from"),
+        lead ? !canMutateDealClosedLead(role, lead.leadStatus) : false,
+      );
+      router.push(back.href);
     } catch (e) {
       toast.error(getErrorMessage(e));
     }
@@ -140,11 +148,12 @@ function LeadDetailPageContent() {
   if (isError || !lead) return <ErrorState message={getErrorMessage(error)} onRetry={refetch} />;
 
   const locked = !canMutateDealClosedLead(role, lead.leadStatus);
+  const back = resolveLeadBackLink(searchParams.get("from"), locked);
 
   return (
     <div className="space-y-5">
-      <Link href={locked ? "/leads/deal-closed" : "/leads"} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
-        <ArrowLeft className="h-4 w-4" /> {locked ? "Back to Deal Closed" : "Back to leads"}
+      <Link href={back.href} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700">
+        <ArrowLeft className="h-4 w-4" /> {back.label}
       </Link>
 
       <PageHeader
@@ -171,7 +180,7 @@ function LeadDetailPageContent() {
               </CanAccess>
             )}
             {!locked && (
-            <Button variant="outline" onClick={() => router.push(`/leads/${lead.id}/edit`)}>
+            <Button variant="outline" onClick={() => router.push(editHref(lead.id))}>
               <Pencil className="h-4 w-4" /> Edit
             </Button>
             )}

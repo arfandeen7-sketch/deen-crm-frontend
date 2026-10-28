@@ -26,6 +26,10 @@ import { useLeadSelection } from "@/hooks/useLeadSelection";
 import { leadsService } from "@/services/leads/leads.service";
 import { getErrorMessage } from "@/services/api/client";
 import { downloadBlob } from "@/lib/utils";
+import { ALL_LEADS_LIST_KEY, LEAD_LIST_FIELDS, isUuid, readListState } from "@/lib/leadReturn";
+import { useLeadDetailHref, useLeadEditHref } from "@/hooks/useLeadReturn";
+import { DEFAULT_PAGE_SIZE } from "@/constants";
+import type { LeadQueryParams } from "@/types";
 
 export default function LeadsPage() {
   return (
@@ -38,9 +42,12 @@ export default function LeadsPage() {
 function LeadsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const detailHref = useLeadDetailHref();
+  const editHref = useLeadEditHref();
   const { canAction } = useAuth();
-  const { filters, setFilter, resetFilters } = useLeadFilterStore();
+  const { filters, hydrated, setFilter, resetFilters, replaceFilters } = useLeadFilterStore();
   const leadIdsParam = searchParams.get("leadIds");
+  const listQuery = searchParams.toString();
   // The dropdown always has a selection. Property Finder enquiry is the default,
   // so a date range on this page uses that enquiry date unless another option is chosen.
   const listFilters = useMemo(() => {
@@ -48,16 +55,21 @@ function LeadsPageContent() {
     if (!leadIdsParam) return base;
     return { ...base, leadIds: leadIdsParam, page: 1, pageSize: 100 };
   }, [filters, leadIdsParam]);
-  const { data, isLoading, isError, refetch } = useLeadsList(listFilters);
+  const { data, isLoading, isError, refetch } = useLeadsList(listFilters, hydrated);
   const { data: customFieldDefs } = useLeadCustomFields();
   const { remove } = useLeadMutations();
 
   useEffect(() => {
-    const assignedTo = searchParams.get("assignedTo");
-    if (assignedTo) {
-      setFilter("assignedTo", assignedTo);
-    }
-  }, [searchParams, setFilter]);
+    const saved = (readListState(ALL_LEADS_LIST_KEY, LEAD_LIST_FIELDS) ?? {}) as Partial<LeadQueryParams>;
+    const assignedTo = new URLSearchParams(listQuery).get("assignedTo");
+    const urlAssignee = assignedTo && isUuid(assignedTo) ? assignedTo.toLowerCase() : undefined;
+    replaceFilters({
+      page: 1,
+      pageSize: saved.pageSize ?? DEFAULT_PAGE_SIZE,
+      ...saved,
+      ...(urlAssignee && urlAssignee !== saved.assignedTo ? { assignedTo: urlAssignee, page: 1 } : {}),
+    });
+  }, [listQuery, replaceFilters]);
 
   const rows = data?.data ?? [];
   const { selected, toggleRow, toggleAll, lockAssigned, clear } = useLeadSelection(rows.map((row) => row.id));
@@ -95,6 +107,7 @@ function LeadsPageContent() {
     dateField: filters.dateField,
     onOpenHistory: (lead) => setHistoryLead(lead),
     onDelete: (id) => setDeleteId(id),
+    editHref,
   });
 
   const customCols = buildCustomFieldColumns(customFieldDefs);
@@ -174,12 +187,12 @@ function LeadsPageContent() {
         columns={displayColumns}
         rows={rows}
         rowKey={(l) => l.id}
-        loading={isLoading}
+        loading={!hydrated || isLoading}
         error={isError}
         onRetry={refetch}
         emptyTitle="No leads found"
         emptyMessage="Try adjusting your filters or create a new lead."
-        onRowClick={(l) => router.push(`/leads/${l.id}`)}
+        onRowClick={(l) => router.push(detailHref(l.id))}
         selectable={
           canAction("leads", "all_leads", "bulk_assign") ||
           canAction("leads", "all_leads", "bulk_status") ||
