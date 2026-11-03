@@ -37,11 +37,13 @@ import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useOwner, useOwnerManualProperties, useOwnerPropertyMutations, useOwnerUtilityMutations, useOwnerGenericDocumentMutations } from "@/hooks/useOwners";
+import { useAuth } from "@/hooks/useAuth";
 import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { formatCurrency, displayValue } from "@/lib/utils";
 import { OwnerPropertyForm } from "@/components/forms/OwnerPropertyForm";
 import { ManualPropertySection } from "@/components/owners/ManualPropertySection";
+import { EditCreatedByModal } from "@/components/owners/EditCreatedByModal";
 import { OwnerDocumentSection } from "@/components/owners/OwnerDocumentSection";
 import { OwnerUtilitySection } from "@/components/owners/OwnerUtilitySection";
 import { GenericDocumentSection } from "@/components/shared/GenericDocumentSection";
@@ -105,6 +107,8 @@ function OwnerDetailContent() {
   const utilityMutations = useOwnerUtilityMutations(params.id);
   const documentMutations = useOwnerGenericDocumentMutations(params.id);
   const isMaster = useOwnerTenantFullAccess();
+  const { isMaster: canEditCreatedBy } = useAuth();
+  const [editCreatedByOpen, setEditCreatedByOpen] = useState(false);
   // Pre-fetch manual properties count for the subtitle (shared cache with ManualPropertySection)
   const { data: manualPropsData } = useOwnerManualProperties(params.id);
 
@@ -264,6 +268,11 @@ function OwnerDetailContent() {
             />
             <ContactItem
               icon={<MapPin className="h-4 w-4" />}
+              label="Country"
+              value={owner.country}
+            />
+            <ContactItem
+              icon={<MapPin className="h-4 w-4" />}
               label="Emirate"
               value={owner.emirate}
             />
@@ -296,6 +305,17 @@ function OwnerDetailContent() {
               icon={<Tag className="h-4 w-4" />}
               label="Created by"
               value={owner.creator?.fullName}
+              action={
+                canEditCreatedBy ? (
+                  <button
+                    type="button"
+                    onClick={() => setEditCreatedByOpen(true)}
+                    className="rounded px-1.5 py-0.5 text-[11px] font-medium normal-case tracking-normal text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    Edit
+                  </button>
+                ) : null
+              }
             />
           </div>
         </CardBody>
@@ -460,6 +480,12 @@ function OwnerDetailContent() {
       </Modal>
 
       {/* ── Delete Property Confirmation ───────────────────────────── */}
+      <EditCreatedByModal
+        owner={owner}
+        open={editCreatedByOpen}
+        onClose={() => setEditCreatedByOpen(false)}
+      />
+
       <ConfirmModal
         open={!!deletePropertyId}
         onClose={() => setDeletePropertyId(null)}
@@ -479,17 +505,20 @@ function ContactItem({
   icon,
   label,
   value,
+  action,
 }: {
   icon: React.ReactNode;
   label: string;
   value?: string | null;
+  action?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-2">
       <span className="mt-0.5 text-slate-400">{icon}</span>
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
           {label}
+          {action}
         </p>
         <p className="text-sm text-neutral-800">{value || "—"}</p>
       </div>

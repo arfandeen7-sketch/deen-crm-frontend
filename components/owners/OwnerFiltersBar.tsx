@@ -15,6 +15,7 @@ export type OwnerFilters = Pick<
   | "emirate"
   | "city"
   | "locality"
+  | "country"
   | "passportNumber"
   | "emiratesIdNumber"
 >;
@@ -82,6 +83,13 @@ export function OwnerFiltersBar({
         value={filters.nationality ?? ""}
         onChange={(e) => onChange("nationality", e.target.value || undefined)}
         placeholder="Nationality"
+        className={textInputClass}
+      />
+      <input
+        type="text"
+        value={filters.country ?? ""}
+        onChange={(e) => onChange("country", e.target.value || undefined)}
+        placeholder="Country"
         className={textInputClass}
       />
       <input

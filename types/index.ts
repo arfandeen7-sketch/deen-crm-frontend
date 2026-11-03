@@ -1274,6 +1274,7 @@ export interface Owner {
   emirate?: string | null;
   city?: string | null;
   locality?: string | null;
+  country?: string | null;
   nationality?: string | null;
   notes?: string | null;
   // Identity documents
@@ -1476,6 +1477,7 @@ export interface OwnerQueryParams {
   emirate?: string;
   city?: string;
   locality?: string;
+  country?: string;
   passportNumber?: string;
   emiratesIdNumber?: string;
 }

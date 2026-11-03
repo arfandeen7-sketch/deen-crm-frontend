@@ -36,6 +36,7 @@ export function OwnerForm({
       emirate: initial?.emirate ?? "",
       city: initial?.city ?? "",
       locality: initial?.locality ?? "",
+      country: initial?.country ?? "",
       notes: initial?.notes ?? "",
       passportNumber: initial?.passportNumber ?? "",
       emiratesIdNumber: initial?.emiratesIdNumber ?? "",
@@ -82,6 +83,10 @@ export function OwnerForm({
 
         <Field label="WhatsApp" error={errors.whatsapp?.message}>
           <Input placeholder="Optional" {...register("whatsapp")} />
+        </Field>
+
+        <Field label="Country" error={errors.country?.message}>
+          <Input placeholder="e.g. United Arab Emirates" {...register("country")} />
         </Field>
 
         <Field label="Emirate" error={errors.emirate?.message}>

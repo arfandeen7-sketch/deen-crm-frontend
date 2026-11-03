@@ -26,6 +26,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { UserAvatar } from "@/components/ui/Avatar";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
 import { useOwnersList, useOwnerMutations } from "@/hooks/useOwners";
+import { useAuth } from "@/hooks/useAuth";
 import { useOwnerTenantFullAccess } from "@/hooks/useOwnerTenantFullAccess";
 import { getErrorMessage } from "@/services/api/client";
 import { ownerManualPropertiesService } from "@/services/owners/ownerManualProperties.service";
@@ -35,6 +36,7 @@ import {
   OwnerFiltersBar,
   type OwnerFilters,
 } from "@/components/owners/OwnerFiltersBar";
+import { EditCreatedByModal } from "@/components/owners/EditCreatedByModal";
 import type { Owner, OwnerQueryParams, BulkDeleteImportedPreview } from "@/types";
 
 const Dash: React.FC = () => <span className="text-sm text-slate-400">—</span>;
@@ -50,6 +52,8 @@ export default function OwnersPage() {
 function OwnersPageContent() {
   const router = useRouter();
   const isMaster = useOwnerTenantFullAccess();
+  const { isMaster: canEditCreatedBy } = useAuth();
+  const [createdByTarget, setCreatedByTarget] = useState<Owner | null>(null);
   const [params, setParams] = useState<OwnerQueryParams>({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -175,6 +179,11 @@ function OwnersPageContent() {
 
     // ── Location ─────────────────────────────────────────────────────────────
     {
+      key: "country",
+      header: "Country",
+      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.country)}</span>,
+    },
+    {
       key: "emirate",
       header: "Emirate",
       render: (o) => <span className="text-sm text-slate-700">{displayValue(o.emirate)}</span>,
@@ -254,7 +263,20 @@ function OwnersPageContent() {
     {
       key: "creator",
       header: "Created By",
-      render: (o) => <span className="text-sm text-slate-700">{displayValue(o.creator?.fullName)}</span>,
+      render: (o) => (
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <span className="text-sm text-slate-700">{displayValue(o.creator?.fullName)}</span>
+          {canEditCreatedBy && (
+            <button
+              type="button"
+              onClick={() => setCreatedByTarget(o)}
+              className="rounded px-1.5 py-0.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+      ),
     },
     {
       key: "createdAt",
@@ -342,7 +364,7 @@ function OwnersPageContent() {
         <SearchInput
           value={params.search ?? ""}
           onChange={(v) => setParams((p) => ({ ...p, search: v, page: 1 }))}
-          placeholder="Search owners by name, mobile, email…"
+          placeholder="Search owners by name, mobile, email, country…"
           className="w-full sm:w-80"
         />
         <OwnerFiltersBar filters={filters} onChange={setFilter} onReset={resetFilters} />
@@ -374,6 +396,12 @@ function OwnersPageContent() {
           onPageSizeChange={(s) => setParams((prev) => ({ ...prev, pageSize: s, page: 1 }))}
         />
       )}
+
+      <EditCreatedByModal
+        owner={createdByTarget}
+        open={!!createdByTarget}
+        onClose={() => setCreatedByTarget(null)}
+      />
 
       <ConfirmModal
         open={!!deleteId}

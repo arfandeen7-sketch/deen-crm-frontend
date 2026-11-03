@@ -28,6 +28,7 @@ export const ownerSchema = z.object({
   emirate: optionalString,
   city: optionalString,
   locality: optionalString,
+  country: optionalString,
   notes: optionalString,
   // Identity documents
   passportNumber: optionalString,

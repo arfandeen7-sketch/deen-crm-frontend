@@ -87,7 +87,23 @@ export function useOwnerMutations() {
     onSuccess: invalidate,
   });
 
-  return { create, update, remove };
+  const updateCreatedBy = useMutation({
+    mutationFn: ({ id, createdById }: { id: string; createdById: string }) =>
+      ownersService.updateCreatedBy(id, createdById),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, remove, updateCreatedBy };
+}
+
+/** CRM users a Master can assign as Created By. Only fetch while the picker is open. */
+export function useOwnerCreatedByUsers(enabled: boolean) {
+  return useQuery({
+    queryKey: [KEY, "created-by-users"],
+    queryFn: () => ownersService.createdByUsers(),
+    enabled,
+    retry: retrySkipAuth,
+  });
 }
 
 export function useOwnerPropertyMutations() {

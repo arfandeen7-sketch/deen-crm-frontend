@@ -2,10 +2,12 @@ import {
   api,
   deleteData,
   getData,
+  patchData,
   postData,
   putData,
 } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
+import type { PropertySummary } from "@/services/properties/properties.service";
 import type {
   Owner,
   OwnerWithProperties,
@@ -14,8 +16,15 @@ import type {
   OwnerInput,
   OwnerPropertyInput,
   Paginated,
+  UserRole,
 } from "@/types";
-import type { PropertySummary } from "@/services/properties/properties.service";
+
+export interface OwnerCreatedByUser {
+  id: string;
+  fullName: string;
+  role: UserRole;
+  isActive: boolean;
+}
 
 export interface OwnerCreateResult {
   owner: Owner;
@@ -60,6 +69,16 @@ export const ownersService = {
 
   update(id: string, body: OwnerInput): Promise<Owner> {
     return putData<Owner>(`/owners/${id}`, body);
+  },
+
+  /** Master-only. Returns every CRM user, including Master accounts. */
+  createdByUsers(): Promise<OwnerCreatedByUser[]> {
+    return getData<OwnerCreatedByUser[]>("/owners/created-by-users");
+  },
+
+  /** Master-only. Reassigns who the owner was created by. */
+  updateCreatedBy(id: string, createdById: string): Promise<Owner> {
+    return patchData<Owner>(`/owners/${id}/created-by`, { createdById });
   },
 
   remove(id: string): Promise<{ success: true }> {
