@@ -35,6 +35,7 @@ import {
   ClipboardList,
   Package,
   Hotel,
+  CalendarRange,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -190,6 +191,19 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Hotel,
         navAccess: { module: "bellaviu_client_data", page: "all_bellaviu_clients", action: "view" },
       },
+    ],
+  },
+  // ── 6d. Open House Event ─────────────────────────────────────────────────
+  // Not visible to any user by default — Master must grant access per user.
+  {
+    id: "open_house_events",
+    title: "Open House Event",
+    icon: CalendarRange,
+    moduleKey: "open_house_events",
+    section: "MENU",
+    items: [
+      { label: "Events", href: "/open-house-events", icon: CalendarRange, navAccess: { module: "open_house_events", page: "all_events", action: "view" } },
+      { label: "Event Leads", href: "/open-house-events/leads", icon: UserPlus, navAccess: { module: "open_house_events", page: "event_leads", action: "view" } },
     ],
   },
   // ── 6. Buyer Details (direct link — no dropdown) ─────────────────────────

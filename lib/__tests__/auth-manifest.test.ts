@@ -69,6 +69,19 @@ describe("auth-manifest — resolveRouteRequirement", () => {
     }
   });
 
+  it("resolves Open House pages to their own permission pages", () => {
+    const events = resolveRouteRequirement("/open-house-events");
+    const leads = resolveRouteRequirement("/open-house-events/leads");
+    expect(events).toEqual({
+      type: "permission",
+      requirement: { module: "open_house_events", page: "all_events", action: "view" },
+    });
+    expect(leads).toEqual({
+      type: "permission",
+      requirement: { module: "open_house_events", page: "event_leads", action: "view" },
+    });
+  });
+
   it("falls back to authenticated for unknown routes", () => {
     const req = resolveRouteRequirement("/unknown-route");
     expect(req.type).toBe("authenticated");

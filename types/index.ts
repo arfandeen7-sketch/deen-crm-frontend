@@ -349,6 +349,66 @@ export interface BellaviuClient {
   emiratesUploader?: Pick<User, "id" | "fullName"> | null;
 }
 
+// ── Open House Events ─────────────────────────────────────────────────────────
+// Event leads are stored separately from `Lead` and never enter lead workflows.
+
+export type OpenHouseEventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+export type OpenHouseLeadPurpose = "investment" | "end_use";
+export type OpenHouseLeadInterest = "hot" | "warm" | "cold";
+
+export interface OpenHouseEvent {
+  id: string;
+  eventName: string;
+  /** ISO date (UTC midnight of the event day). */
+  eventDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  developerName: string;
+  location: string;
+  venueName?: string | null;
+  projectName?: string | null;
+  projectDetails?: string | null;
+  status: OpenHouseEventStatus;
+  expectedAttendees?: number | null;
+  organizerName?: string | null;
+  organizerContact?: string | null;
+  notes?: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  _count?: { leads: number };
+}
+
+export type OpenHouseEventOption = Pick<
+  OpenHouseEvent,
+  "id" | "eventName" | "eventDate" | "status" | "developerName"
+>;
+
+export interface OpenHouseEventLead {
+  id: string;
+  eventId: string;
+  clientName: string;
+  mobileNumber: string;
+  alternativeMobile?: string | null;
+  email?: string | null;
+  nationality?: string | null;
+  /** Decimal serialised as a string by the API. */
+  budget?: string | number | null;
+  interestedProject?: string | null;
+  propertyType?: string | null;
+  bedrooms?: string | null;
+  purpose?: OpenHouseLeadPurpose | null;
+  interestLevel?: OpenHouseLeadInterest | null;
+  requirements?: string | null;
+  notes?: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: OpenHouseEventOption | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+}
+
 // ── Tenant Details ────────────────────────────────────────────────────────────
 
 /** Lightweight tenant summary embedded in owner property records. */

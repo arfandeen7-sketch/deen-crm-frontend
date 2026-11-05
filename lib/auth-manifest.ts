@@ -123,6 +123,10 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // Bellaviu Client Data
   "/bellaviu-clients": { type: "permission", requirement: { module: "bellaviu_client_data", page: "all_bellaviu_clients", action: "view" } },
 
+  // Open House Event
+  "/open-house-events": { type: "permission", requirement: { module: "open_house_events", page: "all_events", action: "view" } },
+  "/open-house-events/leads": { type: "permission", requirement: { module: "open_house_events", page: "event_leads", action: "view" } },
+
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
   "/my-hr/attendance-corrections": { type: "authenticated" },
@@ -226,6 +230,11 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "pocket-listings:list":   { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
   "pocket-listings:detail": { module: "pocket_listings", page: "all_pocket_listings", action: "view" },
 
+  "open-house-events:list":   { module: "open_house_events", page: "all_events", action: "view" },
+  "open-house-events:detail": { module: "open_house_events", page: "all_events", action: "view" },
+  "open-house-leads:list":    { module: "open_house_events", page: "event_leads", action: "view" },
+  "open-house-leads:detail":  { module: "open_house_events", page: "event_leads", action: "view" },
+
   "custom-fields:list": { module: "leads" },
 };
 
@@ -296,6 +305,13 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "pocket-listings:create": { module: "pocket_listings", page: "all_pocket_listings", action: "create" },
   "pocket-listings:edit": { module: "pocket_listings", page: "all_pocket_listings", action: "edit" },
   "pocket-listings:delete": { module: "pocket_listings", page: "all_pocket_listings", action: "delete" },
+
+  "open-house-events:create": { module: "open_house_events", page: "all_events", action: "create" },
+  "open-house-events:edit":   { module: "open_house_events", page: "all_events", action: "edit" },
+  "open-house-events:delete": { module: "open_house_events", page: "all_events", action: "delete" },
+  "open-house-leads:create":  { module: "open_house_events", page: "event_leads", action: "create" },
+  "open-house-leads:edit":    { module: "open_house_events", page: "event_leads", action: "edit" },
+  "open-house-leads:delete":  { module: "open_house_events", page: "event_leads", action: "delete" },
 
   "integrations:connect": { module: "integrations", page: "all_integrations", action: "connect" },
   "integrations:edit": { module: "integrations", page: "all_integrations", action: "edit" },
