@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, X, LogOut, KeyRound, UserCircle } from "lucide-react";
@@ -149,21 +150,21 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   }, []);
 
   return (
-    <div className="flex h-full flex-col bg-white font-sans text-ink-2">
+    <div className="flex h-full flex-col bg-black font-sans text-white">
       {/* ── Wordmark ── */}
       <div className="flex items-center justify-between gap-2 px-6 pb-4 pt-7">
         <Link
           href="/dashboard/overview"
-          className="wordmark text-[22px] leading-none text-ink"
+          className="inline-flex"
           onClick={onNavigate}
           aria-label="DEEN Properties"
         >
-          deen
+          <Image src="/logo.png" alt="" width={139} height={47} className="h-10 w-auto" priority />
         </Link>
         {onNavigate && (
           <button
             onClick={onNavigate}
-            className="rounded-lg p-1.5 text-ink-3 hover:bg-fill-soft hover:text-ink lg:hidden"
+            className="rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white lg:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
@@ -194,7 +195,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           return (
             <div key={sectionName}>
-              <div className="mb-2 px-3 text-[12px] capitalize text-ink-3">
+              <div className="mb-2 px-3 text-[12px] capitalize text-white/50">
                 {sectionName.toLowerCase()}
               </div>
               <div className="space-y-1">
@@ -221,13 +222,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         className={cn(
                           "enter-left flex h-11 w-full items-center gap-3 rounded-lg px-3 text-[14px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                           isSingularActive
-                            ? "bg-fill-soft font-medium text-ink"
-                            : "text-ink-2 hover:bg-fill-soft/70 hover:text-ink",
+                            ? "bg-white/15 font-medium text-white"
+                            : "text-white/80 hover:bg-white/10 hover:text-white",
                         )}
                       >
                         <GroupIcon
                           strokeWidth={1.5}
-                          className={cn("h-5 w-5 shrink-0", isSingularActive ? "text-ink" : "text-ink-3")}
+                          className={cn("h-5 w-5 shrink-0", isSingularActive ? "text-white" : "text-white/55")}
                         />
                         <span className="flex-1 truncate">{group.title}</span>
                       </Link>
@@ -242,20 +243,20 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         className={cn(
                           "flex h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-left text-[14px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                           isActive
-                            ? "bg-fill-soft font-medium text-ink"
-                            : "text-ink-2 hover:bg-fill-soft/70 hover:text-ink",
+                            ? "bg-white/15 font-medium text-white"
+                            : "text-white/80 hover:bg-white/10 hover:text-white",
                         )}
                       >
                         <GroupIcon
                           strokeWidth={1.5}
-                          className={cn("h-5 w-5 shrink-0", isActive ? "text-ink" : "text-ink-3")}
+                          className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "text-white/55")}
                         />
                         <span className="flex-1 truncate">{group.title}</span>
                         <ChevronDown
                           strokeWidth={1.5}
                           className={cn(
-                            "h-4 w-4 shrink-0 text-ink-3 transition-transform duration-[220ms]",
-                            isOpen && "rotate-180 text-ink",
+                            "h-4 w-4 shrink-0 text-white/55 transition-transform duration-[220ms]",
+                            isOpen && "rotate-180 text-white",
                           )}
                         />
                       </button>
@@ -266,7 +267,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                           isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0",
                         )}
                       >
-                        <ul className="mb-1 mt-1 ml-5 space-y-0.5 border-l border-line pl-3">
+                        <ul className="mb-1 mt-1 ml-5 space-y-0.5 border-l border-white/20 pl-3">
                           {visibleItems.map((item) => {
                             const itemActive = isItemActive(pathname, item.href);
                             const ItemIcon = item.icon;
@@ -279,13 +280,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                                   className={cn(
                                     "flex h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                                     itemActive
-                                      ? "bg-fill-soft font-medium text-ink"
-                                      : "text-ink-3 hover:bg-fill-soft/70 hover:text-ink",
+                                      ? "bg-white/15 font-medium text-white"
+                                      : "text-white/65 hover:bg-white/10 hover:text-white",
                                   )}
                                 >
                                   <ItemIcon
                                     strokeWidth={1.5}
-                                    className={cn("h-4 w-4 shrink-0", itemActive ? "text-ink" : "text-ink-3")}
+                                    className={cn("h-4 w-4 shrink-0", itemActive ? "text-white" : "text-white/55")}
                                   />
                                   {item.label}
                                 </Link>
@@ -306,10 +307,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       {/* ── Profile pinned to bottom ── */}
       <div className="relative p-3" ref={profileRef}>
         {profileOpen && (
-          <div className="pop-in absolute bottom-full left-3 right-3 z-50 mb-2 origin-bottom overflow-hidden rounded-xl border border-line bg-white py-1 text-sm shadow-md">
-            <div className="border-b border-line px-4 py-3">
-              <p className="font-medium text-ink">{user?.fullName}</p>
-              <p className="truncate text-xs text-ink-3">{user?.email}</p>
+          <div className="pop-in absolute bottom-full left-3 right-3 z-50 mb-2 origin-bottom overflow-hidden rounded-xl border border-white/15 bg-neutral-950 py-1 text-sm shadow-md">
+            <div className="border-b border-white/15 px-4 py-3">
+              <p className="font-medium text-white">{user?.fullName}</p>
+              <p className="truncate text-xs text-white/60">{user?.email}</p>
             </div>
             <Link
               href="/settings/profile"
@@ -317,9 +318,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 setProfileOpen(false);
                 if (onNavigate) onNavigate();
               }}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-ink-2 transition-colors hover:bg-fill-soft hover:text-ink"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <UserCircle className="h-4 w-4 text-ink-3" strokeWidth={1.5} /> Profile
+              <UserCircle className="h-4 w-4 text-white/55" strokeWidth={1.5} /> Profile
             </Link>
             <Link
               href="/settings/change-password"
@@ -327,9 +328,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 setProfileOpen(false);
                 if (onNavigate) onNavigate();
               }}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-ink-2 transition-colors hover:bg-fill-soft hover:text-ink"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <KeyRound className="h-4 w-4 text-ink-3" strokeWidth={1.5} /> Change Password
+              <KeyRound className="h-4 w-4 text-white/55" strokeWidth={1.5} /> Change Password
             </Link>
           </div>
         )}
@@ -337,12 +338,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setProfileOpen((v) => !v)}
-            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-[background-color,transform] duration-[220ms] hover:bg-fill-soft active:scale-[0.985]"
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-[background-color,transform] duration-[220ms] hover:bg-white/10 active:scale-[0.985]"
           >
-            <UserAvatar name={user?.fullName} online />
+            <UserAvatar name={user?.fullName} online className="border-white/20 bg-white/10 text-white" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[14px] font-medium text-ink">{user?.fullName}</p>
-              <p className="mt-0.5 truncate text-[12px] text-ink-3">
+              <p className="truncate text-[14px] font-medium text-white">{user?.fullName}</p>
+              <p className="mt-0.5 truncate text-[12px] text-white/60">
                 {user ? ROLE_LABELS[user.role] : ""}
               </p>
             </div>
@@ -351,7 +352,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             onClick={() => logout()}
             title="Log out"
             aria-label="Log out"
-            className="cursor-pointer rounded-lg p-2.5 text-ink-3 transition-[background-color,color,transform] duration-[220ms] hover:bg-fill-soft hover:text-ink active:scale-95"
+            className="cursor-pointer rounded-lg p-2.5 text-white/60 transition-[background-color,color,transform] duration-[220ms] hover:bg-white/10 hover:text-white active:scale-95"
           >
             <LogOut className="h-5 w-5" strokeWidth={1.5} />
           </button>

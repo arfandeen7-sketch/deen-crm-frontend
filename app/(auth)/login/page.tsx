@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -80,7 +81,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
       {/* Paper panel */}
       <div className="hidden w-7/12 flex-col justify-between bg-paper p-12 lg:flex">
-        <span className="wordmark enter text-[26px] leading-none text-ink">deen</span>
+        <Image
+          src="/logo.png"
+          alt="DEEN Properties"
+          width={139}
+          height={47}
+          className="enter h-12 w-auto brightness-0"
+        />
 
         <div className="enter max-w-xl" style={{ "--i": 1 } as React.CSSProperties}>
           <p className="text-[13px] text-ink-2">Real estate management platform</p>
@@ -124,7 +131,13 @@ export default function LoginPage() {
       {/* Form */}
       <div className="flex w-full flex-col justify-between p-8 lg:w-5/12 lg:p-12">
         <div className="flex items-center justify-between text-[12.5px] text-ink-3">
-          <span className="wordmark text-[20px] text-ink lg:invisible">deen</span>
+          <Image
+            src="/logo.png"
+            alt="DEEN Properties"
+            width={139}
+            height={47}
+            className="h-8 w-auto brightness-0 lg:invisible"
+          />
           <div className="flex items-center gap-5 tabular-nums">
             <span className="flex items-center gap-2">
               <Calendar className="h-4 w-4" strokeWidth={1.5} />
