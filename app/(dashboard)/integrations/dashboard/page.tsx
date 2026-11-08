@@ -28,7 +28,7 @@ function SummaryCard({ icon: Icon, label, value, alert }: { icon: React.Componen
         <Icon className="h-5 w-5" />
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">{label}</p>
+        <p className="text-[10px] font-bold text-foreground-muted">{label}</p>
         <p className="text-lg font-semibold text-foreground">{value}</p>
       </div>
     </div>
@@ -61,27 +61,27 @@ function HealthCard({ report }: { report: HealthReport }) {
       </div>
       <div className="grid grid-cols-2 gap-3 p-6 sm:grid-cols-4 lg:grid-cols-6">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Leads Ingested</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Leads Ingested</p>
           <p className="text-base font-semibold text-foreground">{report.leadStats.totalIngested}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Duplicates</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Duplicates</p>
           <p className="text-base font-semibold text-foreground">{report.leadStats.duplicates}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Webhooks</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Webhooks</p>
           <p className="text-base font-semibold text-foreground">{report.webhookStats.received}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Dead Letter</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Dead Letter</p>
           <p className={`text-base font-semibold ${report.webhookStats.deadLetter > 0 ? "text-rose-600" : "text-foreground"}`}>{report.webhookStats.deadLetter}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Failed Syncs</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Failed Syncs</p>
           <p className={`text-base font-semibold ${report.syncStats.failed > 0 ? "text-rose-600" : "text-foreground"}`}>{report.syncStats.failed}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Token Expiry</p>
+          <p className="text-[10px] font-bold text-foreground-muted">Token Expiry</p>
           <p className={`text-base font-semibold ${credentialExpiringSoon ? "text-amber-600" : "text-foreground"}`}>
             {report.credentialHealth.daysUntilExpiry != null ? `${report.credentialHealth.daysUntilExpiry}d` : "—"}
           </p>

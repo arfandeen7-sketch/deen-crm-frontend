@@ -77,7 +77,7 @@ export function FollowUpsWidget({
                       {lead.leadName}
                     </h4>
                     {isMissed && (
-                      <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-600">
+                      <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-600">
                         Overdue
                       </span>
                     )}
@@ -97,8 +97,8 @@ export function FollowUpsWidget({
                       : "bg-amber-50 border-amber-100/50 text-amber-600"
                   }`}
                 >
-                  <span className="text-xl font-extrabold leading-none">{day}</span>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider mt-0.5">{month}</span>
+                  <span className="text-xl font-medium leading-none">{day}</span>
+                  <span className="text-[10px] font-medium mt-0.5">{month}</span>
                 </div>
               </div>
             );

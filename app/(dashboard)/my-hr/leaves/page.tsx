@@ -148,7 +148,7 @@ export default function MyLeavesPage() {
           {balance.balances.map((b) => (
             <div key={b.leaveTypeCode} className="rounded-lg border border-border bg-background p-4">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">{b.leaveTypeName}</p>
+                <p className="text-xs font-semibold text-foreground-secondary">{b.leaveTypeName}</p>
                 {b.carryForward > 0 && (
                   <Badge className="bg-blue-50 text-blue-600">+{b.carryForward} CF</Badge>
                 )}

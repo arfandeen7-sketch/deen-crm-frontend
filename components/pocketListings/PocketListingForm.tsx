@@ -52,7 +52,7 @@ function FormSection({
 }) {
   return (
     <div>
-      <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-100 pb-2">
+      <h3 className="mb-4 text-[11px] font-semibold text-neutral-500 border-b border-neutral-100 pb-2">
         {title}
       </h3>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{children}</div>
@@ -406,7 +406,7 @@ export function PocketListingForm({
 
       {/* ── Amenities ──────────────────────────────────────────────────────── */}
       <div>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-100 pb-2">
+        <h3 className="mb-4 text-[11px] font-semibold text-neutral-500 border-b border-neutral-100 pb-2">
           Amenities
         </h3>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
@@ -529,7 +529,7 @@ export function PocketListingForm({
 
       {/* ── Images ─────────────────────────────────────────────────────────── */}
       <div>
-        <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-100 pb-2">
+        <h3 className="mb-4 text-[11px] font-semibold text-neutral-500 border-b border-neutral-100 pb-2">
           Images
         </h3>
 

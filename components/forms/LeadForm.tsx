@@ -156,7 +156,7 @@ export function LeadForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-6">
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Client Information</h3>
+          <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Client Information</h3>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Lead Name" required error={errors.leadName?.message}>
               <Input placeholder="Full name" invalid={!!errors.leadName} {...register("leadName")} />
@@ -188,7 +188,7 @@ export function LeadForm({
         </div>
 
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Lead Attributes & Assignment</h3>
+          <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Lead Attributes & Assignment</h3>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Source" required error={errors.source?.message}>
               <Controller
@@ -308,7 +308,7 @@ export function LeadForm({
         </div>
 
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Property Details</h3>
+          <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">Property Details</h3>
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="City" error={errors.city?.message}>
               <Input placeholder="e.g. Dubai" {...register("city")} />
@@ -351,7 +351,7 @@ export function LeadForm({
 
         {customFieldDefs.length > 0 && (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+            <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
               Custom Fields
             </h3>
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -370,7 +370,7 @@ export function LeadForm({
         {/* ── Buyer / Tenant Details (conditional on Service Type) ──────────── */}
         {showTenantFields ? (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+            <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
               Tenant Details
               <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
             </h3>
@@ -406,7 +406,7 @@ export function LeadForm({
           </div>
         ) : (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
+            <h3 className="text-xs font-bold text-neutral-500 mb-3 pb-1 border-b border-neutral-100">
               Buyer Details
               <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">(optional — saved separately from lead)</span>
             </h3>

@@ -66,18 +66,18 @@ export function DataTable<T>({
     return <EmptyState title={emptyTitle} message={emptyMessage} action={emptyAction} />;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-2xs">
+    <div className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-0 text-left text-xs">
           <thead>
-            <tr className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 bg-neutral-50/90 border-b border-neutral-200/80">
+            <tr className="text-[12.5px] font-normal text-ink-3 bg-white border-b border-line">
               {selectable && (
-                <th className="w-10 whitespace-nowrap px-4 py-3 border-b border-neutral-200/80">
+                <th className="w-10 whitespace-nowrap px-4 py-3.5 border-b border-line">
                   <input
                     type="checkbox"
                     checked={allChecked}
                     onChange={(e) => onToggleAll?.(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-300 bg-white text-black focus:ring-black accent-black"
+                    className="h-4 w-4 rounded border-line bg-white accent-[#1a1a1a]"
                   />
                 </th>
               )}
@@ -85,9 +85,9 @@ export function DataTable<T>({
                 <th
                   key={col.key}
                   className={cn(
-                    "whitespace-nowrap px-4 py-3 border-b border-neutral-200/80 font-semibold",
+                    "whitespace-nowrap px-4 py-3.5 border-b border-line font-normal",
                     col.stickyRight &&
-                      "sticky right-0 z-10 bg-neutral-50/90 border-l border-neutral-200/60 shadow-xs",
+                      "sticky right-0 z-10 bg-white border-l border-line",
                     col.headerClassName,
                   )}
                 >
@@ -95,7 +95,7 @@ export function DataTable<T>({
                     <button
                       type="button"
                       onClick={() => onSort(col.sortKey as string)}
-                      className="inline-flex items-center gap-1 uppercase tracking-wider"
+                      className="inline-flex items-center gap-1 hover:text-ink transition-colors"
                     >
                       {col.header}
                       {sort?.key === col.sortKey ? (sort.direction === "asc" ? "↑" : "↓") : ""}
@@ -107,7 +107,7 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line">
             {rows.map((row, index) => {
               const id = rowKey(row);
               const selected = selectedIds.includes(id);
@@ -117,16 +117,16 @@ export function DataTable<T>({
                   key={id}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "group bg-white transition-colors duration-100",
-                    onRowClick && "cursor-pointer hover:bg-neutral-50/80",
-                    selected && "bg-neutral-100/60",
+                    "group bg-white transition-colors duration-[120ms]",
+                    onRowClick && "cursor-pointer hover:bg-fill-soft",
+                    selected && "bg-fill-soft",
                     rowClassName?.(row),
                   )}
                 >
                   {selectable && (
                     <td
                       className={cn(
-                        "whitespace-nowrap px-4 py-3 border-b border-neutral-100 bg-inherit",
+                        "whitespace-nowrap px-4 py-3.5 border-b border-line bg-inherit",
                         isLast && "border-b-0",
                       )}
                       onClick={(e) => e.stopPropagation()}
@@ -135,7 +135,7 @@ export function DataTable<T>({
                         type="checkbox"
                         checked={selected}
                         onChange={() => onToggleRow?.(id)}
-                        className="h-4 w-4 rounded border-neutral-300 bg-white text-black focus:ring-black accent-black"
+                        className="h-4 w-4 rounded border-line bg-white accent-[#1a1a1a]"
                       />
                     </td>
                   )}
@@ -143,9 +143,9 @@ export function DataTable<T>({
                     <td
                       key={col.key}
                       className={cn(
-                        "whitespace-nowrap px-4 py-3 text-neutral-700 border-b border-neutral-100 bg-inherit",
+                        "whitespace-nowrap px-4 py-3.5 text-ink-2 border-b border-line bg-inherit",
                         isLast && "border-b-0",
-                        col.stickyRight && "sticky right-0 z-10 bg-inherit border-l border-neutral-100 shadow-2xs",
+                        col.stickyRight && "sticky right-0 z-10 bg-inherit border-l border-line",
                         col.className,
                       )}
                     >

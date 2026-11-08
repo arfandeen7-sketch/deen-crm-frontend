@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/States";
+import { CountUp } from "@/components/dashboard/PaperBand";
 
 export function StatCard({
   label,
   value,
   icon: Icon,
-  accent = "indigo",
   loading,
   href,
 }: {
@@ -20,45 +19,35 @@ export function StatCard({
   loading?: boolean;
   href?: string;
 }) {
-  const accents: Record<string, string> = {
-    indigo: "bg-neutral-100 text-neutral-900",
-    emerald: "bg-emerald-50 text-emerald-700",
-    amber: "bg-amber-50 text-amber-700",
-    rose: "bg-red-50 text-red-700",
-    sky: "bg-sky-50 text-sky-700",
-    violet: "bg-purple-50 text-purple-700",
-  };
-
   const inner = (
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
+        <p className="text-[13px] text-ink-2">{label}</p>
         {loading ? (
-          <Skeleton className="mt-2 h-7 w-16" />
+          <Skeleton className="mt-3 h-9 w-20" />
         ) : (
-          <p className="mt-1 text-2xl font-bold tracking-tight text-neutral-900">{value ?? 0}</p>
+          <p className="display-num mt-3 text-ink">
+            <CountUp value={value ?? 0} />
+          </p>
         )}
       </div>
-      <span className={cn("flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200/60 shadow-2xs", accents[accent])}>
-        <Icon className="h-4.5 w-4.5 shrink-0" />
+      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-fill-soft text-ink">
+        {href ? (
+          <ArrowRight className="arrow h-5 w-5 shrink-0" strokeWidth={1.5} />
+        ) : (
+          <Icon className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+        )}
       </span>
     </div>
   );
 
   if (href) {
     return (
-      <Link
-        href={href}
-        className="block rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs transition-all hover:border-neutral-300 hover:shadow-xs"
-      >
+      <Link href={href} className="arrow-link lift block rounded-xl border border-line bg-white p-6">
         {inner}
       </Link>
     );
   }
 
-  return (
-    <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-2xs transition-all">
-      {inner}
-    </div>
-  );
+  return <div className="rounded-xl border border-line bg-white p-6">{inner}</div>;
 }

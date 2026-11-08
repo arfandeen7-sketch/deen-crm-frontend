@@ -139,7 +139,7 @@ function DocumentRow({
           <FileText className="h-4 w-4 text-neutral-500" />
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+          <p className="text-[11px] font-semibold text-neutral-500">
             {typeLabel}
           </p>
           <p className="mt-0.5 truncate text-xs text-emerald-700" title={doc.fileName}>

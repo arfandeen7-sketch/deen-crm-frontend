@@ -52,7 +52,7 @@ function HealthDot({ status }: { status: string }) {
 function StatCard({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
   return (
     <div className="border border-border bg-background px-4 py-3 rounded-md">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">{label}</p>
+      <p className="text-[10px] font-bold text-foreground-muted">{label}</p>
       <p className="mt-1 text-lg font-semibold text-foreground">{value}</p>
       {sub && <p className="text-xs text-foreground-muted">{sub}</p>}
     </div>
@@ -281,7 +281,7 @@ export default function IntegrationDetailPage() {
 
                 <Card>
                   <div className="px-6 py-4 border-b border-border">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">Webhook Stats</h3>
+                    <h3 className="text-[11px] font-bold text-foreground-secondary">Webhook Stats</h3>
                   </div>
                   <div className="grid grid-cols-2 gap-3 p-6 sm:grid-cols-3 lg:grid-cols-6">
                     <StatCard label="Received" value={healthReport.webhookStats.received} />
@@ -295,7 +295,7 @@ export default function IntegrationDetailPage() {
 
                 <Card>
                   <div className="px-6 py-4 border-b border-border">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">Sync Stats</h3>
+                    <h3 className="text-[11px] font-bold text-foreground-secondary">Sync Stats</h3>
                   </div>
                   <div className="grid grid-cols-2 gap-3 p-6 sm:grid-cols-3 lg:grid-cols-5">
                     <StatCard label="Total" value={healthReport.syncStats.total} />
@@ -308,7 +308,7 @@ export default function IntegrationDetailPage() {
 
                 <Card>
                   <div className="px-6 py-4 border-b border-border">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">Lead Stats</h3>
+                    <h3 className="text-[11px] font-bold text-foreground-secondary">Lead Stats</h3>
                   </div>
                   <div className="grid grid-cols-2 gap-3 p-6 sm:grid-cols-2">
                     <StatCard label="Total Ingested" value={healthReport.leadStats.totalIngested} />
@@ -318,7 +318,7 @@ export default function IntegrationDetailPage() {
 
                 <Card>
                   <div className="px-6 py-4 border-b border-border">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">Credential Health</h3>
+                    <h3 className="text-[11px] font-bold text-foreground-secondary">Credential Health</h3>
                   </div>
                   <div className="p-6 space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-foreground-muted">Status</span><StatusBadge status={healthReport.credentialHealth.status} /></div>
@@ -348,7 +348,7 @@ export default function IntegrationDetailPage() {
                     <thead>
                       <tr>
                         {["Type", "Status", "Started", "Completed", "Fetched", "Created", "Duplicates", "Error"].map(h => (
-                          <th key={h} className="border-b border-border bg-section px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">{h}</th>
+                          <th key={h} className="border-b border-border bg-section px-5 py-3 text-left text-[11px] font-bold text-foreground-secondary">{h}</th>
                         ))}
                       </tr>
                     </thead>

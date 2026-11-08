@@ -283,7 +283,7 @@ export function MassUpdateModal({
         {/* Step 3 – Preview (shown after clicking Preview) */}
         {confirmed && fieldDef && (
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <p className="text-xs font-semibold text-neutral-500">
               Preview
             </p>
             <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-800">

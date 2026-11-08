@@ -35,7 +35,7 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Personal Information */}
       <fieldset className="rounded-xl border border-neutral-200/80 p-4 bg-white shadow-2xs space-y-4">
-        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-neutral-500">Personal Information</legend>
+        <legend className="px-2 text-xs font-bold text-neutral-500">Personal Information</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Full Name" required error={errors.fullName?.message}>
             <Input invalid={!!errors.fullName} {...register("fullName")} />
@@ -52,7 +52,7 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
 
       {/* Employment Details */}
       <fieldset className="rounded-xl border border-neutral-200/80 p-4 bg-white shadow-2xs space-y-4">
-        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-neutral-500">Employment Details</legend>
+        <legend className="px-2 text-xs font-bold text-neutral-500">Employment Details</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Role" required error={errors.role?.message}>
             <Select {...register("role")} defaultValue={defaultValues?.role ?? "sales_executive"}>
@@ -88,7 +88,7 @@ export function EmployeeForm({ defaultValues, onSubmit, isLoading }: EmployeeFor
 
       {/* Salary & Bank */}
       <fieldset className="rounded-xl border border-neutral-200/80 p-4 bg-white shadow-2xs space-y-4">
-        <legend className="px-2 text-xs font-bold uppercase tracking-wider text-neutral-500">Salary &amp; Bank Details</legend>
+        <legend className="px-2 text-xs font-bold text-neutral-500">Salary &amp; Bank Details</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Basic Salary (AED)" error={errors.basicSalary?.message}>
             <Input type="number" step="0.01" {...register("basicSalary")} />

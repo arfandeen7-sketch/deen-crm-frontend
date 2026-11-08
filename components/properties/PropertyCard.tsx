@@ -86,11 +86,11 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
 
         {/* Deal Closed badge — takes precedence over offering badge */}
         {dealBadge ? (
-          <span className="absolute left-3 top-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
             {dealBadge}
           </span>
         ) : offeringLabel ? (
-          <span className="absolute left-3 top-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
             {offeringLabel}
           </span>
         ) : null}
@@ -202,7 +202,7 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
 
         {/* Type + Reference */}
         <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+          <span className="text-[10px] font-medium text-neutral-400">
             {displayValue(property.type, "")}
             {property.type && property.furnishingType ? " · " : ""}
             {displayValue(property.furnishingType, "")}

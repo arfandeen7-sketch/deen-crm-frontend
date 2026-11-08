@@ -123,7 +123,7 @@ function PropertiesContent() {
       {showFilters && (
         <div className="mb-6 grid grid-cols-1 gap-3 rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+            <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
               Offering Type
             </label>
             <Select
@@ -139,7 +139,7 @@ function PropertiesContent() {
             </Select>
           </div>
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+            <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
               Category
             </label>
             <Select
@@ -155,7 +155,7 @@ function PropertiesContent() {
             </Select>
           </div>
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+            <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
               Furnishing
             </label>
             <Select

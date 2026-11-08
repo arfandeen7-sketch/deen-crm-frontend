@@ -674,7 +674,7 @@ function TenantsPageContent() {
             {/* Preview list */}
             {deletePreview.tenantsPreview.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                <p className="mb-2 text-xs font-semibold text-neutral-500">
                   Tenants to be deleted (first {deletePreview.tenantsPreview.length})
                 </p>
                 <div className="max-h-40 overflow-y-auto rounded-lg border border-neutral-200 divide-y divide-neutral-100">

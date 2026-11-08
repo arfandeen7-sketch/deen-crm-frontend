@@ -15,6 +15,7 @@ import { RecentLeadsTable } from "@/components/dashboard/RecentLeadsTable";
 import { FollowUpsWidget } from "@/components/dashboard/FollowUpsWidget";
 import { TodoListWidget } from "@/components/dashboard/TodoListWidget";
 import { EmployeeTodosWidget } from "@/components/dashboard/EmployeeTodosWidget";
+import { LeadMetricsBand, PaperBand, StatArrow } from "@/components/dashboard/PaperBand";
 
 export function MasterDashboard() {
   const summary = useDashboardSummary();
@@ -27,51 +28,14 @@ export function MasterDashboard() {
 
   return (
     <div className="space-y-4 font-sans pb-12">
-      {/* ── Top Stat Strip ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 md:divide-x divide-neutral-200/80 pb-8 border-b border-neutral-200/80">
-        <div className="flex flex-col justify-between pt-2 pb-4 pr-6 md:pl-0 md:pr-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.totalLeads ?? 0)}
-            </div>
-          </div>
-          <div className="h-1 bg-black absolute bottom-0 left-0 right-0 md:left-0 md:right-6 rounded-full" />
-        </div>
-
-        <Link href="/leads/untouched" className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Untouched Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {untouched.isLoading ? "..." : (untouched.data ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-amber-500 absolute bottom-0 left-6 right-6 rounded-full" />
-        </Link>
-
-        <div className="flex flex-col justify-between pt-2 pb-4 px-6 relative h-36">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Deals Closed</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {summary.isLoading ? "..." : (summary.data?.dealsClosed ?? 0).toString().padStart(2, "0")}
-            </div>
-            <p className="mt-1 text-xs font-medium text-teal-700">
-              AED {summary.isLoading ? "…" : Math.round(summary.data?.salesAmount ?? 0).toLocaleString()}
-            </p>
-          </div>
-          <div className="h-1 bg-teal-600 absolute bottom-0 left-6 right-6 rounded-full" />
-        </div>
-
-        <Link href="/leads/unassigned" className="flex flex-col justify-between pt-2 pb-4 pl-6 pr-0 relative h-36 hover:bg-neutral-50/60 transition-colors rounded-xl">
-          <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Unassigned Leads</span>
-            <div className="text-4xl font-extrabold text-neutral-900 mt-2 tracking-tight">
-              {unassigned.isLoading ? "..." : (unassigned.data ?? 0).toString().padStart(2, "0")}
-            </div>
-          </div>
-          <div className="h-1 bg-red-600 absolute bottom-0 left-6 right-0 rounded-full" />
-        </Link>
-      </div>
+      <LeadMetricsBand
+        summary={summary.data}
+        summaryLoading={summary.isLoading}
+        untouched={untouched.data}
+        untouchedLoading={untouched.isLoading}
+        unassigned={unassigned.data}
+        unassignedLoading={unassigned.isLoading}
+      />
 
       {/* ── Recent Leads (2/3) & Missed Follow-ups (1/3) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-8 border-b border-zinc-200">

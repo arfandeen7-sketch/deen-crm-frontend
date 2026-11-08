@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
-  Building2, Eye, EyeOff, Calendar, Clock, Shield, Quote,
+  Eye, EyeOff, Calendar, Clock,
   Activity, Database, Users, TrendingUp, Lock, Mail, ChevronRight
 } from "lucide-react";
 import { loginSchema, type LoginValues } from "@/schemas/auth.schema";
@@ -78,189 +77,138 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex w-full flex-col lg:flex-row min-h-screen">
-      {/* Left Column */}
-      <div className="hidden lg:flex w-7/12 flex-col justify-between p-12 lg:pr-8">
-        {/* Top: Logo */}
-        <div className="pb-4">
-          <Image
-            src="/deen-new-logo.png"
-            alt="Deen Properties"
-            width={240}
-            height={80}
-            className="w-auto h-16 object-contain"
-            priority
-          />
-        </div>
+    <div className="flex min-h-screen w-full flex-col lg:flex-row">
+      {/* Paper panel */}
+      <div className="hidden w-7/12 flex-col justify-between bg-paper p-12 lg:flex">
+        <span className="wordmark enter text-[26px] leading-none text-ink">deen</span>
 
-        {/* Middle: Text & Tags */}
-        <div className="max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 border border-slate-800 bg-[#0a0a0a]/50 px-3 py-1.5 text-[9px] uppercase tracking-widest text-slate-400">
-            <div className="h-1.5 w-1.5 bg-amber-500" />
-            <span>Real Estate Management Platform</span>
-          </div>
-
-          <h1 className="mt-4 text-[44px] font-light text-white leading-[1.1] tracking-tight">
-            MANAGE PROPERTIES.<br/>
-            TRACK <span className="text-amber-500 font-normal">LEADS. </span>
-            CLOSE DEALS.
+        <div className="enter max-w-xl" style={{ "--i": 1 } as React.CSSProperties}>
+          <p className="text-[13px] text-ink-2">Real estate management platform</p>
+          <h1 className="mt-4 text-[44px] font-normal leading-[1.1] tracking-tight text-ink">
+            Manage properties.
+            <br />
+            Track leads.
+            <br />
+            Close deals.
           </h1>
-
-          <p className="mt-8 text-sm text-slate-500 leading-relaxed max-w-lg font-sans">
-            A unified platform for property management, CRM operations and lead tracking designed for contemporary enterprise real estate teams.
+          <p className="mt-6 max-w-md text-[14px] leading-relaxed text-ink-2">
+            A unified place for property management, CRM operations and lead tracking, built for
+            contemporary real estate teams.
           </p>
 
-          <div className="mt-12 flex flex-wrap gap-4">
-            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-              <Database className="h-3.5 w-3.5 text-slate-500" />
-              Property Management
-            </div>
-            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-              <Users className="h-3.5 w-3.5 text-slate-500" />
-              CRM Tracking
-            </div>
-            <div className="flex items-center gap-2 border border-slate-800/80 bg-[#0a0a0a]/40 px-4 py-2.5 text-[10px] font-mono tracking-widest uppercase text-slate-300">
-              <TrendingUp className="h-3.5 w-3.5 text-slate-500" />
-              Lead Monitoring
-            </div>
+          <div className="mt-10 flex flex-wrap gap-3">
+            {[
+              { icon: Database, label: "Property management" },
+              { icon: Users, label: "CRM tracking" },
+              { icon: TrendingUp, label: "Lead monitoring" },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex h-9 items-center gap-2 rounded-lg border border-ink/15 px-3.5 text-[13px] text-ink"
+              >
+                <Icon className="h-4 w-4 text-ink-2" strokeWidth={1.5} />
+                {label}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Bottom: Quote and Footer */}
-        <div className="mt-4">
-          <div className="border-l-2 border-amber-500/80 pl-6 py-2 mb-16">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-amber-500 tracking-widest mb-4 uppercase">
-              <Quote className="h-3 w-3" />
-              Thoughts That Matter
-            </div>
-            <p className="text-lg text-white font-sans max-w-lg mb-6 leading-snug">
-              "The best investment we make is in the people and relationships that build DEEN."
-            </p>
-            <div className="text-[10px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
-              <span className="w-4 h-[1px] bg-slate-700"></span>
-              DEEN PROPERTIES
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs text-slate-600 font-mono mt-8">
-            <span className="tracking-widest text-[10px] uppercase">DEEN PROPERTIES CRM <span className="text-slate-800 mx-2">|</span> Internal Use Only</span>
-          </div>
+        <div className="enter" style={{ "--i": 2 } as React.CSSProperties}>
+          <p className="max-w-lg text-[18px] leading-snug text-ink">
+            &ldquo;The best investment we make is in the people and relationships that build DEEN.&rdquo;
+          </p>
+          <p className="mt-4 text-[12.5px] text-ink-2">Deen Properties · Internal use only</p>
         </div>
       </div>
 
-      {/* Right Column */}
-      <div className="flex w-full lg:w-5/12 flex-col justify-between p-8 lg:p-12 lg:pl-16 border-l border-slate-800/50 bg-[#020202]/40 backdrop-blur-sm relative z-10">
-        {/* Top Right: Date/Time */}
-        <div className="flex justify-end gap-6 text-[10px] text-slate-500 font-mono tracking-widest uppercase">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5 text-amber-500/80" />
-            {dateString}
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 text-amber-500/80" />
-            {timeString}
+      {/* Form */}
+      <div className="flex w-full flex-col justify-between p-8 lg:w-5/12 lg:p-12">
+        <div className="flex items-center justify-between text-[12.5px] text-ink-3">
+          <span className="wordmark text-[20px] text-ink lg:invisible">deen</span>
+          <div className="flex items-center gap-5 tabular-nums">
+            <span className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" strokeWidth={1.5} />
+              {dateString}
+            </span>
+            <span className="flex items-center gap-2">
+              <Clock className="h-4 w-4" strokeWidth={1.5} />
+              {timeString}
+            </span>
           </div>
         </div>
 
-        {/* Center: Login Form */}
-        <div className="w-full max-w-[440px] mx-auto my-auto relative mt-20 mb-20">
-          {/* Corner borders for the form box */}
-          <div className="absolute -top-px -left-px w-8 h-8 border-t-[1.5px] border-l-[1.5px] border-amber-500/80 z-20" />
+        <div className="enter mx-auto my-12 w-full max-w-[420px]" style={{ "--i": 1 } as React.CSSProperties}>
+          <h2 className="text-[28px] font-normal tracking-tight text-ink">Welcome back</h2>
+          <p className="mt-1.5 text-[13px] text-ink-3">Sign in to continue to your workspace</p>
 
-          <div className="border border-slate-800/80 bg-[#070707] p-8 lg:p-10 relative z-10 shadow-2xl">
-            <div className="mb-10 flex items-start justify-between">
-              <div>
-                <h2 className="text-[22px] font-light text-white mb-2">WELCOME BACK</h2>
-                <p className="text-[11px] text-slate-500 font-sans">Sign in to continue to your account workspace</p>
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="text-[12.5px] text-ink-2">Email</label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" strokeWidth={1.5} />
+                <input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@deen.ae"
+                  aria-invalid={errors.email ? true : undefined}
+                  className={`block h-12 w-full rounded-xl border bg-white pl-10 pr-3 text-sm text-ink placeholder:text-ink-3 transition-[border-color] duration-[220ms] focus:border-ink focus:outline-none ${errors.email ? "shake border-red-400" : "border-line"}`}
+                  {...register("email")}
+                />
               </div>
-              {/* <div className="border border-amber-900/50 bg-amber-500/10 px-2.5 py-1 text-[8px] text-amber-500 tracking-widest uppercase">
-                Secure Access
-              </div> */}
+              {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] tracking-widest text-slate-500 uppercase flex items-center gap-1 font-mono">
-                  Username / Email <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-slate-600" />
-                  </div>
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="name@deen.ae"
-                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-3 text-sm text-slate-300 placeholder-slate-600 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors font-mono"
-                    {...register("email")}
-                  />
-                </div>
-                {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] tracking-widest text-slate-500 uppercase flex items-center gap-1 font-mono">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-slate-600" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    className="block w-full bg-[#0a0a0a] border border-slate-800 py-3.5 pl-11 pr-10 text-sm text-slate-300 placeholder-slate-600 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors font-mono"
-                    {...register("password")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-600 hover:text-slate-400"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
-              </div>
-
-              <Button
-                type="submit"
-                loading={isSubmitting}
-                className="mt-4 w-full bg-amber-400 hover:bg-amber-500 text-black text-[12px] font-bold tracking-[0.2em] uppercase py-4 h-auto"
-              >
-                Login
-              </Button>
-            </form>
-
-            {DEMO_AUTH_ENABLED && (
-              <div className="mt-8 pt-6 border-t border-slate-800/50">
-                <div className="flex items-center gap-2 text-[9px] text-amber-500 tracking-widest uppercase mb-4">
-                  <Activity className="h-3 w-3" />
-                  Enterprise Simulation Matrix
-                </div>
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 bg-[#0a0a0a] border border-slate-800 px-4 py-3 mb-2">
-                  <span>{DEMO_CREDENTIALS.email}</span>
-                  <span className="text-slate-700">|</span>
-                  <span>{DEMO_CREDENTIALS.password}</span>
-                </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[12.5px] text-ink-2">Password</label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" strokeWidth={1.5} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  aria-invalid={errors.password ? true : undefined}
+                  className={`block h-12 w-full rounded-xl border bg-white pl-10 pr-10 text-sm text-ink placeholder:text-ink-3 transition-[border-color] duration-[220ms] focus:border-ink focus:outline-none ${errors.password ? "shake border-red-400" : "border-line"}`}
+                  {...register("password")}
+                />
                 <button
                   type="button"
-                  onClick={fillDemo}
-                  className="w-full border border-slate-800 bg-[#0a0a0a] hover:bg-slate-900 py-3 text-[9px] text-slate-400 hover:text-slate-300 tracking-widest uppercase flex items-center justify-center gap-2 transition-colors mt-3"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3.5 text-ink-3 transition-colors hover:text-ink"
                 >
-                  Mount Automated Keypair <ChevronRight className="h-3 w-3" />
+                  {showPassword ? <EyeOff className="h-4 w-4" strokeWidth={1.5} /> : <Eye className="h-4 w-4" strokeWidth={1.5} />}
                 </button>
               </div>
-            )}
-          </div>
+              {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
+            </div>
+
+            <Button type="submit" loading={isSubmitting} size="lg" className="mt-2 w-full">
+              Log in
+            </Button>
+          </form>
+
+          {DEMO_AUTH_ENABLED && (
+            <div className="mt-8 border-t border-line pt-6">
+              <p className="mb-3 flex items-center gap-2 text-[12.5px] text-ink-3">
+                <Activity className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Demo credentials
+              </p>
+              <div className="flex items-center justify-between rounded-lg bg-fill-soft px-4 py-3 text-[12px] text-ink-2">
+                <span>{DEMO_CREDENTIALS.email}</span>
+                <span className="text-ink-3">{DEMO_CREDENTIALS.password}</span>
+              </div>
+              <button
+                type="button"
+                onClick={fillDemo}
+                className="arrow-link mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-line py-3 text-[13px] text-ink transition-[background-color,transform] hover:bg-fill-soft active:scale-[0.985]"
+              >
+                Fill demo credentials <ChevronRight className="arrow h-3.5 w-3.5" strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Bottom Right: Status */}
-        {/* <div className="flex justify-end items-center gap-2 text-[9px] text-slate-600 font-mono tracking-widest uppercase">
-          <Shield className="h-3 w-3" />
-          Secure SSL Multi-Layer Execution Active
-        </div> */}
+        <div />
       </div>
     </div>
   );

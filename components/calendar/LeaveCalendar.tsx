@@ -169,7 +169,7 @@ export function LeaveCalendar({
             <div
               key={d}
               className={cn(
-                "py-2 text-center text-[11px] font-semibold uppercase tracking-widest",
+                "py-2 text-center text-[11px] font-semibold",
                 i === 0 || i === 6 ? "text-rose-400/80" : "text-foreground-secondary",
               )}
             >
@@ -358,7 +358,7 @@ export function LeaveCalendar({
 
             {/* Employees on leave */}
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
+              <p className="mb-2 text-xs font-semibold text-foreground-secondary">
                 On Leave ({selectedDay.leaves.length})
               </p>
               {selectedDay.leaves.length === 0 ? (

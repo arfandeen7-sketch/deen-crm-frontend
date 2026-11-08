@@ -7,7 +7,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const baseField =
-  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 transition-all duration-150";
+  "w-full rounded-lg border border-line bg-white px-3.5 py-2 text-sm text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:bg-fill-soft disabled:text-ink-3 transition-[border-color,background-color] duration-[220ms]";
 
 export interface FieldWrapProps {
   label?: string;
@@ -23,14 +23,14 @@ export function Field({ label, error, success, required, hint, className, childr
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {label && (
-        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
+        <label className="text-[12.5px] font-medium text-ink-2">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       {children}
-      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
-      {success && !error && <p className="text-xs font-medium text-emerald-600">{success}</p>}
+      {error && <p className="text-xs text-red-600 animate-in">{error}</p>}
+      {success && !error && <p className="text-xs text-ink-2">{success}</p>}
       {hint && !error && !success && <p className="text-xs text-neutral-500">{hint}</p>}
     </div>
   );
@@ -300,7 +300,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           disabled={props.disabled}
           onClick={() => (isOpen ? closeDropdown() : setIsOpen(true))}
           className={cn(
-            "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 px-3.5 py-2 text-sm text-neutral-900 shadow-2xs focus:outline-none focus:border-black focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 transition-all duration-150 cursor-pointer h-10 text-left",
+            "flex w-full items-center justify-between rounded-lg border border-line bg-white hover:bg-fill-soft px-3.5 py-2 text-sm text-ink focus:outline-none focus:border-ink disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 transition-all duration-150 cursor-pointer h-10 text-left",
             invalid && "border-red-400 ring-1 ring-red-500/30"
           )}
         >
@@ -322,7 +322,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               zIndex: 9999,
             }}
             className={cn(
-              "flex flex-col overflow-hidden rounded-xl border border-slate-100 bg-white shadow-lg shadow-black/5 animate-in fade-in duration-150",
+              "flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-md animate-in fade-in",
               dropdownPos.flip ? "slide-in-from-bottom-1" : "slide-in-from-top-1",
             )}
           >
@@ -340,7 +340,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     e.stopPropagation();
                   }}
                   placeholder="Search…"
-                  className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                  className="w-full rounded-lg border border-line bg-white py-1.5 pl-8 pr-2.5 text-sm text-ink placeholder:text-ink-3 focus:border-ink focus:outline-none"
                   aria-label="Search options"
                 />
               </div>

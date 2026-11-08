@@ -153,7 +153,7 @@ export function EmployeeActivitySection({ showLeadData }: EmployeeActivitySectio
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider mr-2">
+            <span className="text-xs font-bold text-zinc-500 mr-2">
               {summary!.totalEmployees} Total
             </span>
             {summaryBadges.map((b) => (
@@ -317,11 +317,11 @@ function EmployeeRow({
           <div className="hidden md:flex items-center gap-6 shrink-0">
             <div className="text-center min-w-[60px]">
               <p className="text-sm font-bold text-zinc-900">{employee.leadsAssigned ?? 0}</p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Leads</p>
+              <p className="text-[10px] text-zinc-400">Leads</p>
             </div>
             <div className="text-center min-w-[60px]">
               <p className="text-sm font-bold text-zinc-900">{employee.followupsToday ?? 0}</p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">F/U</p>
+              <p className="text-[10px] text-zinc-400">F/U</p>
             </div>
             <div className="text-center min-w-[60px]">
               <p className={cn(
@@ -330,11 +330,11 @@ function EmployeeRow({
               )}>
                 {employee.missedFollowups ?? 0}
               </p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Missed</p>
+              <p className="text-[10px] text-zinc-400">Missed</p>
             </div>
             <div className="text-center min-w-[60px]">
               <p className="text-sm font-bold text-zinc-900">{activityCount}</p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Activity</p>
+              <p className="text-[10px] text-zinc-400">Activity</p>
             </div>
           </div>
         )}
@@ -369,21 +369,21 @@ function ExpandedAttendanceDetail({ employee }: { employee: EmployeeActivityRow 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-3">
       <div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Status</p>
+        <p className="text-[10px] font-bold text-zinc-400">Status</p>
         <p className="text-sm font-semibold text-zinc-700 mt-1">
           {ATTENDANCE_LABEL[att.status] ?? humanize(att.status)}
         </p>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Check In</p>
+        <p className="text-[10px] font-bold text-zinc-400">Check In</p>
         <p className="text-sm font-semibold text-zinc-700 mt-1">{formatTime(att.checkInTime)}</p>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Check Out</p>
+        <p className="text-[10px] font-bold text-zinc-400">Check Out</p>
         <p className="text-sm font-semibold text-zinc-700 mt-1">{formatTime(att.checkOutTime)}</p>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Working Hours</p>
+        <p className="text-[10px] font-bold text-zinc-400">Working Hours</p>
         <p className="text-sm font-semibold text-zinc-700 mt-1">
           {att.workingHours ? `${att.workingHours}h` : "—"}
         </p>
@@ -401,7 +401,7 @@ function ExpandedLeadDetail({ employee }: { employee: EmployeeActivityRow }) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-3">
       {/* Assigned Leads */}
       <div>
-        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">
+        <h4 className="text-xs font-bold text-zinc-500 mb-3">
           Assigned Leads ({leads.length})
         </h4>
         <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
@@ -438,7 +438,7 @@ function ExpandedLeadDetail({ employee }: { employee: EmployeeActivityRow }) {
 
       {/* Activity Timeline */}
       <div>
-        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h4 className="text-xs font-bold text-zinc-500 mb-3 flex items-center gap-2">
           Activity Timeline
           {Object.keys(activitiesToday).length > 0 && (
             <span className="flex flex-wrap gap-1">

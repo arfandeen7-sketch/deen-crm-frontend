@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Poppins } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 import { APP_NAME } from "@/constants";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
-
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${poppins.variable} h-full antialiased`}
+      className={`${geist.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>{children}</Providers>

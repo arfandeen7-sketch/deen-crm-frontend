@@ -586,7 +586,7 @@ function PocketListingDetailContent() {
           <Card className="lg:sticky lg:top-6">
             {/* Purple "Off-Market Listing" banner */}
             <div className="rounded-t-xl bg-purple-600 px-5 py-2.5 text-center">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-white">
+              <span className="text-[10px] font-semibold text-white">
                 Off-Market Listing
               </span>
             </div>
@@ -605,14 +605,14 @@ function PocketListingDetailContent() {
               {/* Status badge */}
               <div className="flex flex-wrap gap-2">
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${statusCfg.className}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold ${statusCfg.className}`}
                 >
                   <CheckCircle2 className="h-3 w-3" />
                   {statusCfg.label}
                 </span>
 
                 {offeringLabel && (
-                  <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
+                  <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-semibold text-blue-700">
                     {offeringLabel}
                   </span>
                 )}
@@ -679,7 +679,7 @@ function SpecCard({
     <div className="flex flex-col items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
       <Icon className="h-5 w-5 text-neutral-400" />
       <span className="text-sm font-semibold text-neutral-900">{value}</span>
-      <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+      <span className="text-[10px] font-medium text-neutral-400">
         {label}
       </span>
     </div>
@@ -709,7 +709,7 @@ function DetailRow({
 function StatusRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+      <span className="text-[10px] font-medium text-neutral-400">
         {label}
       </span>
       <span className="text-xs font-medium text-neutral-700">{value}</span>

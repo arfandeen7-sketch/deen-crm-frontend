@@ -240,51 +240,51 @@ export default function LeaveManagementPage() {
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Employee</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Employee</p>
                 <p className="text-foreground">{detailTarget.user?.fullName ?? "—"}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Leave Type</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Leave Type</p>
                 <p className="text-foreground">{detailTarget.leaveTypeConfig?.name ?? detailTarget.leaveType.replace("_", " ")}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">From</p>
+                <p className="text-xs font-semibold text-foreground-secondary">From</p>
                 <p className="text-foreground">{formatDate(detailTarget.dateFrom)}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">To</p>
+                <p className="text-xs font-semibold text-foreground-secondary">To</p>
                 <p className="text-foreground">{formatDate(detailTarget.dateTo)}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Total Days</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Total Days</p>
                 <p className="text-foreground">{detailTarget.isHalfDay ? `${detailTarget.totalDays} (Half Day)` : detailTarget.totalDays}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Status</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Status</p>
                 <Badge className={LEAVE_STATUS_COLORS[detailTarget.status]}>{detailTarget.status}</Badge>
               </div>
             </div>
             {detailTarget.reason && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Reason</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Reason</p>
                 <p className="text-foreground-secondary">{detailTarget.reason}</p>
               </div>
             )}
             {detailTarget.reviewNote && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Master Review Note</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Master Review Note</p>
                 <p className="text-foreground-secondary">{detailTarget.reviewNote}</p>
               </div>
             )}
             {detailTarget.hrReviewNote && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">HR Review Note</p>
+                <p className="text-xs font-semibold text-foreground-secondary">HR Review Note</p>
                 <p className="text-foreground-secondary">{detailTarget.hrReviewNote}</p>
               </div>
             )}
             {detailTarget.attachmentUrl && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Attachment</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Attachment</p>
                 <a
                   href="#"
                   onClick={async (e) => {
@@ -305,7 +305,7 @@ export default function LeaveManagementPage() {
             )}
             {detailTarget.cancellationReason && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-foreground-secondary">Cancellation Reason</p>
+                <p className="text-xs font-semibold text-foreground-secondary">Cancellation Reason</p>
                 <p className="text-foreground-secondary">{detailTarget.cancellationReason}</p>
               </div>
             )}

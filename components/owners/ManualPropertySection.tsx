@@ -230,7 +230,7 @@ export function ManualPropertySection({ ownerId, isMaster }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full border-separate border-spacing-0 text-left text-xs">
               <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 bg-neutral-50/90">
+                <tr className="text-[11px] font-semibold text-neutral-500 bg-neutral-50/90">
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Building / Project</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Unit</th>
                   <th className="whitespace-nowrap px-4 py-3 border-b border-neutral-200">Community</th>

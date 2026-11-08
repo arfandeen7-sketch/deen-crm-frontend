@@ -125,7 +125,7 @@ function PropertyDetailContent() {
               dealClosed={isClosed}
             />
             {dealBadge && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 {dealBadge}
               </span>
@@ -300,10 +300,10 @@ function PropertyDetailContent() {
               <div className="space-y-2 border-t border-neutral-100 pt-3">
                 {dealBadge && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                    <span className="text-[10px] font-medium text-neutral-400">
                       Deal Status
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-600">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
                       <CheckCircle2 className="h-3 w-3" />
                       {dealBadge}
                     </span>
@@ -402,7 +402,7 @@ function SpecCard({
     <div className="flex flex-col items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
       <Icon className="h-5 w-5 text-neutral-400" />
       <span className="text-sm font-semibold text-neutral-900">{value}</span>
-      <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+      <span className="text-[10px] font-medium text-neutral-400">
         {label}
       </span>
     </div>
@@ -432,7 +432,7 @@ function DetailRow({
 function StatusRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+      <span className="text-[10px] font-medium text-neutral-400">
         {label}
       </span>
       <span className="text-xs font-medium text-neutral-700">{value}</span>

@@ -23,7 +23,7 @@ export function Pagination({
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex flex-col items-center justify-between gap-3 border-t border-neutral-100 bg-white px-4 py-3 sm:flex-row">
+    <div className="flex flex-col items-center justify-between gap-3 border-t border-line bg-white px-4 py-3 sm:flex-row">
       <div className="flex items-center gap-2 text-xs text-neutral-500">
         <span>
           Showing <span className="font-semibold text-neutral-800">{from}</span>–
@@ -46,7 +46,7 @@ export function Pagination({
         <button
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 shadow-2xs hover:bg-neutral-50 active:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+          className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-white px-3 text-xs font-medium text-neutral-700 hover:bg-fill-soft active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
         >
           <ChevronLeft className="h-3.5 w-3.5" /> Prev
         </button>
@@ -56,7 +56,7 @@ export function Pagination({
         <button
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 shadow-2xs hover:bg-neutral-50 active:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
+          className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-white px-3 text-xs font-medium text-neutral-700 hover:bg-fill-soft active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 transition-colors cursor-pointer"
         >
           Next <ChevronRight className="h-3.5 w-3.5" />
         </button>

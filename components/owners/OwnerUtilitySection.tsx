@@ -132,7 +132,7 @@ function UtilityRow({
             <Zap className="h-4 w-4 text-amber-600" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <p className="text-[11px] font-semibold text-neutral-500">
               {typeLabel}
             </p>
             <p className="mt-0.5 break-words text-sm font-medium text-slate-800">

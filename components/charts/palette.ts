@@ -2,32 +2,32 @@ import { Chart as ChartJS, TooltipItem, DefaultDataPoint } from "chart.js";
 
 // Fixed categorical palette (max 8 colors)
 export const CHART_COLORS = [
-  "#6366f1", // Indigo
-  "#0ea5e9", // Sky
-  "#14b8a6", // Teal
-  "#f59e0b", // Amber
-  "#ef4444", // Rose
-  "#8b5cf6", // Violet
-  "#ec4899", // Pink
-  "#10b981", // Emerald
+  "#1a1a1a", // Ink
+  "#6f6f6a", // Ink 3
+  "#3a3a38",
+  "#a8a8a2",
+  "#4a4a47", // Ink 2
+  "#cfcfc9",
+  "#8a8a85",
+  "#e6e6e1" // Line
 ];
 
-export const OTHER_COLOR = "#94a3b8"; // Slate 400 for "Other" grouping
+export const OTHER_COLOR = "#d4d4cf"; // "Other" grouping
 
 // Semantic colors
 export const SEMANTIC_COLORS = {
-  success: "#10b981", // Emerald
-  warning: "#f59e0b", // Amber
-  danger: "#ef4444", // Rose
+  success: "#1a1a1a",
+  warning: "#8a8a85",
+  danger: "#b42318"
 };
 
 // Common Chart.js tooltip configuration
 export const commonTooltipOptions = {
-  backgroundColor: "rgba(15, 23, 42, 0.9)", // slate-900
-  titleColor: "#f8fafc", // slate-50
-  bodyColor: "#cbd5e1", // slate-300
+  backgroundColor: "#1a1a1a",
+  titleColor: "#ffffff",
+  bodyColor: "#b9b9b4",
   padding: 12,
-  cornerRadius: 8,
+  cornerRadius: 12,
   displayColors: true,
   boxPadding: 4,
 };

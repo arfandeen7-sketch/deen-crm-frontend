@@ -69,7 +69,7 @@ export function EmployeeLeadsModal({ open, onClose, userId, userName }: Employee
         <div className="flex flex-wrap items-center gap-1">
           <StatusBadge status={l.leadStatus} />
           {l.convertedToOwnerId ? (
-            <span className="inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-800">
+            <span className="inline-flex items-center rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-800">
               Converted to owner
             </span>
           ) : null}

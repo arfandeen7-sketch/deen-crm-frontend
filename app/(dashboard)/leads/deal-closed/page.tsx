@@ -78,7 +78,7 @@ function StatCard({
         >
           <Icon className="h-4 w-4" />
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <p className="text-[11px] font-semibold text-neutral-500">
           {label}
         </p>
       </div>
@@ -123,7 +123,7 @@ function DealDetailsModal({
         <div className="space-y-6 text-sm">
           {/* Deal Information */}
           <section>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-3 text-[11px] font-semibold text-neutral-500">
               Deal Information
             </h3>
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -144,7 +144,7 @@ function DealDetailsModal({
 
           {/* Property Information */}
           <section>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-3 text-[11px] font-semibold text-neutral-500">
               Property Information
             </h3>
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -160,7 +160,7 @@ function DealDetailsModal({
 
           {/* Lead Information */}
           <section>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-3 text-[11px] font-semibold text-neutral-500">
               Lead Information
             </h3>
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -175,7 +175,7 @@ function DealDetailsModal({
           {/* Client Information */}
           {data.client && (
             <section>
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+              <h3 className="mb-3 text-[11px] font-semibold text-neutral-500">
                 Client Information
               </h3>
               <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -200,7 +200,7 @@ function DealDetailsModal({
           {/* Owner Conversion */}
           {data.convertedToOwnerId && data.convertedOwner && (
             <section>
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+              <h3 className="mb-3 text-[11px] font-semibold text-neutral-500">
                 Owner Record
               </h3>
               <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -260,7 +260,7 @@ function DetailRow({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+      <dt className="text-[10px] font-semibold text-neutral-400">
         {label}
       </dt>
       <dd className="text-sm">
@@ -319,10 +319,10 @@ function EmployeeSummaryTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-neutral-100">
-            <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-neutral-500 w-8">#</th>
-            <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Sales User</th>
-            <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Closed Deals</th>
-            <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Total Sales Value</th>
+            <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500 w-8">#</th>
+            <th className="px-5 py-3 text-left text-[10px] font-semibold text-neutral-500">Sales User</th>
+            <th className="px-5 py-3 text-right text-[10px] font-semibold text-neutral-500">Closed Deals</th>
+            <th className="px-5 py-3 text-right text-[10px] font-semibold text-neutral-500">Total Sales Value</th>
           </tr>
         </thead>
         <tbody>

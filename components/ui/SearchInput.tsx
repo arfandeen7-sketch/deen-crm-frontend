@@ -36,7 +36,7 @@ export function SearchInput({
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
-        className="h-9 w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-8 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black transition-all duration-150"
+        className="h-10 w-full rounded-lg border border-transparent bg-fill-soft pl-9 pr-8 text-[13px] text-ink placeholder:text-ink-3 focus:border-ink focus:bg-white focus:outline-none transition-[border-color,background-color] duration-[220ms]"
       />
       {local && (
         <button

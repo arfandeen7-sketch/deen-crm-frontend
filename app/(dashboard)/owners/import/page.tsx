@@ -365,7 +365,7 @@ function ImportContent() {
             {/* Errors / warnings */}
             {result.errors.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                <p className="mb-2 text-xs font-semibold text-neutral-500">
                   Issues ({result.errors.length})
                 </p>
                 <div className="max-h-60 overflow-y-auto rounded-lg border border-neutral-200 divide-y divide-neutral-100">
@@ -452,7 +452,7 @@ function FieldGroup({
 }) {
   return (
     <div>
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <p className="mb-2 text-[11px] font-semibold text-neutral-500">
         {title}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">

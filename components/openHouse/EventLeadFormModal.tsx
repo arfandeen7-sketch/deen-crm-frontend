@@ -156,7 +156,7 @@ export function EventLeadFormModal({
         </section>
 
         <section className="space-y-3 border-t border-neutral-100 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">Client</h3>
+          <h3 className="text-xs font-semibold text-neutral-600">Client</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Client Name" required error={errors.clientName}>
               <Input
@@ -214,7 +214,7 @@ export function EventLeadFormModal({
         </section>
 
         <section className="space-y-3 border-t border-neutral-100 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">Interest</h3>
+          <h3 className="text-xs font-semibold text-neutral-600">Interest</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Interested Project" error={errors.interestedProject}>
               <Input

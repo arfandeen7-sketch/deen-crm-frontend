@@ -166,7 +166,7 @@ export function NotificationCenter() {
         <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150">
           <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 bg-neutral-50/50">
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800">Notifications</h3>
+              <h3 className="text-xs font-bold text-neutral-800">Notifications</h3>
               {badgeCount > 0 && (
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
                   {badgeCount} unread

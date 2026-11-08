@@ -632,7 +632,7 @@ function LocationPicker({
                         >
                           <span className="text-neutral-900">{loc.name}</span>
                           {loc.type && (
-                            <span className="text-xs uppercase tracking-wide text-neutral-400">{loc.type}</span>
+                            <span className="text-xs text-neutral-400">{loc.type}</span>
                           )}
                         </button>
                       </li>
@@ -753,7 +753,7 @@ function ImageUploadField({
 
         return (
           <div className="md:col-span-2">
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
+            <label className="mb-1.5 block text-[11px] font-semibold text-neutral-600">
               Images <span className="ml-1 text-red-500">*</span>
             </label>
             <p className="mb-2 text-xs text-neutral-500">

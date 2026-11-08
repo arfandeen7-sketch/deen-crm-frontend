@@ -88,7 +88,7 @@ export function AssignmentHistoryModal({
                     </p>
                     {isLatest && (
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                           isUnassign
                             ? "bg-rose-50 text-rose-600"
                             : "bg-blue-50 text-blue-600"

@@ -46,32 +46,32 @@ export function Modal({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in">
       <div
-        className="absolute inset-0 bg-neutral-950/50 backdrop-blur-xs transition-opacity"
+        className="absolute inset-0 bg-ink/40 transition-opacity"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-xl animate-in zoom-in-95 duration-150",
+          "relative z-10 w-full overflow-hidden rounded-2xl border border-line bg-white shadow-xl animate-in zoom-in-95",
           sizes[size],
         )}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-neutral-100 px-6 py-4.5">
+          <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
             <div>
               {title && (
-                <h2 className="text-base font-bold text-neutral-900">{title}</h2>
+                <h2 className="text-[20px] font-normal tracking-tight text-ink">{title}</h2>
               )}
               {description && (
-                <p className="mt-0.5 text-xs text-neutral-500">{description}</p>
+                <p className="mt-1 text-[12.5px] text-ink-3">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
+              className="rounded-lg p-1.5 text-ink-3 hover:bg-fill-soft hover:text-ink transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -79,7 +79,7 @@ export function Modal({
         )}
         <div className="max-h-[75vh] overflow-y-auto px-6 py-5">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 bg-neutral-50/60 px-6 py-3.5">
+          <div className="flex items-center justify-end gap-2.5 border-t border-line bg-fill-soft/60 px-6 py-3.5">
             {footer}
           </div>
         )}

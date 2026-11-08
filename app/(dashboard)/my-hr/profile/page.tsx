@@ -55,7 +55,7 @@ export default function MyProfilePage() {
           </div>
           {monthSummary && (
             <div className="rounded-xl border border-neutral-200/80 bg-white p-6 shadow-2xs">
-              <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Current Month Attendance</h3>
+              <h3 className="mb-4 text-xs font-bold text-neutral-500">Current Month Attendance</h3>
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                 <MiniStat label="Present" value={monthSummary.presentDays ?? monthSummary.present} color="emerald" />
                 <MiniStat label="Absent" value={monthSummary.absentDays ?? monthSummary.absent} color="rose" />
@@ -67,7 +67,7 @@ export default function MyProfilePage() {
           )}
           {(user.leaveBalance || balanceData?.balances) && (
             <div className="rounded-xl border border-neutral-200/80 bg-white p-6 shadow-2xs">
-              <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Leave Balance</h3>
+              <h3 className="mb-4 text-xs font-bold text-neutral-500">Leave Balance</h3>
               <div className="grid grid-cols-3 gap-4">
                 <MiniStat label="Annual" value={user.leaveBalance?.annual ?? balanceData?.balances?.find(b => b.leaveTypeCode === "annual")?.remaining ?? 0} color="neutral" />
                 <MiniStat label="Sick" value={user.leaveBalance?.sick ?? balanceData?.balances?.find(b => b.leaveTypeCode === "sick")?.remaining ?? 0} color="rose" />
@@ -93,7 +93,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 function DashCard({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
     <div className="rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
-      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">{label}</p>
+      <p className="text-xs font-medium text-neutral-500">{label}</p>
       <p className="mt-1 text-lg font-bold tracking-tight text-neutral-900">{value}</p>
     </div>
   );
@@ -102,8 +102,8 @@ function DashCard({ label, value, accent }: { label: string; value: string; acce
 function MiniStat({ label, value = 0, color }: { label: string; value?: number; color: string }) {
   return (
     <div className="rounded-lg border border-neutral-100 bg-neutral-50/80 p-2.5 text-center">
-      <p className="text-xl font-extrabold tracking-tight text-neutral-900">{value}</p>
-      <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mt-0.5">{label}</p>
+      <p className="text-xl font-medium tracking-tight text-neutral-900">{value}</p>
+      <p className="text-[10px] font-semibold text-neutral-500 mt-0.5">{label}</p>
     </div>
   );
 }

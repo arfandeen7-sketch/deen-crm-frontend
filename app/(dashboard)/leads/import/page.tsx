@@ -400,7 +400,7 @@ function MapStep({
           <div className="overflow-x-auto">
             <table className="w-full border-separate border-spacing-0 text-left text-sm">
               <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary">
+                <tr className="text-[11px] font-semibold text-foreground-secondary">
                   <th className="whitespace-nowrap border-b border-border bg-section px-4 py-3">
                     System Field
                   </th>
@@ -423,7 +423,7 @@ function MapStep({
                           {field.label}
                           {field.required && <span className="text-red-500">*</span>}
                           {custom && (
-                            <span className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-600">
+                            <span className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600">
                               Custom
                             </span>
                           )}
@@ -621,7 +621,7 @@ function PreviewTable({
         <div className="overflow-x-auto">
           <table className="w-full border-separate border-spacing-0 text-left text-sm">
             <thead>
-              <tr className="text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary">
+              <tr className="text-[11px] font-semibold text-foreground-secondary">
                 {mappedFields.map((f) => (
                   <th
                     key={f.key}
@@ -704,7 +704,7 @@ function ResultStep({
             <div className="overflow-x-auto">
               <table className="w-full border-separate border-spacing-0 text-left text-sm">
                 <thead>
-                  <tr className="text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary">
+                  <tr className="text-[11px] font-semibold text-foreground-secondary">
                     <th className="whitespace-nowrap border-b border-border bg-section px-5 py-3.5">Row</th>
                     <th className="whitespace-nowrap border-b border-border bg-section px-5 py-3.5">Reason</th>
                   </tr>

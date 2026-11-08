@@ -332,7 +332,7 @@ function DetailField({
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
+        <p className="text-[11px] font-semibold text-neutral-500">{label}</p>
         <p className="mt-0.5 truncate text-sm text-neutral-800" title={value ?? ""}>
           {value || <span className="text-neutral-300">—</span>}
         </p>

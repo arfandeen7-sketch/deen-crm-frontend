@@ -19,7 +19,7 @@ interface BellaviuClientViewModalProps {
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <span className="text-[11px] font-semibold text-neutral-500">
         {label}
       </span>
       <span className="text-sm text-neutral-900">{value || "—"}</span>
@@ -74,7 +74,7 @@ export function BellaviuClientViewModal({
         </div>
 
         <div className="space-y-3 border-t border-neutral-100 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">
+          <h3 className="text-xs font-semibold text-neutral-600">
             Documents
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

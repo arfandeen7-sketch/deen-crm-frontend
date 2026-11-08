@@ -629,7 +629,7 @@ function ChequesTimeline({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <p className="text-[11px] font-semibold text-neutral-500">
           Cheque Timeline
         </p>
         {total > 0 && (
@@ -690,7 +690,7 @@ function ChequesTimeline({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <p className="text-[11px] font-semibold text-neutral-500">
         {title}
       </p>
       {children}

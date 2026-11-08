@@ -260,35 +260,35 @@ function PropertySubmissionDetailContent() {
             <CardHeader title="Submission Info" />
             <CardBody className="space-y-3">
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Submitted by</p>
+                <p className="text-[10px] font-medium text-neutral-400">Submitted by</p>
                 <p className="text-sm font-semibold text-neutral-900">{submission.submittedBy?.fullName ?? "Unknown"}</p>
                 <p className="text-xs text-neutral-500">{submission.submittedBy?.email}</p>
               </div>
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Submitted on</p>
+                <p className="text-[10px] font-medium text-neutral-400">Submitted on</p>
                 <p className="text-sm text-neutral-700">{formatDateTime(submission.createdAt)}</p>
               </div>
               {submission.reviewedBy && (
                 <>
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Reviewed by</p>
+                    <p className="text-[10px] font-medium text-neutral-400">Reviewed by</p>
                     <p className="text-sm font-semibold text-neutral-900">{submission.reviewedBy.fullName}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Reviewed on</p>
+                    <p className="text-[10px] font-medium text-neutral-400">Reviewed on</p>
                     <p className="text-sm text-neutral-700">{formatDateTime(submission.reviewedAt)}</p>
                   </div>
                 </>
               )}
               {submission.reviewNote && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Review note</p>
+                  <p className="text-[10px] font-medium text-neutral-400">Review note</p>
                   <p className="text-sm text-neutral-700">{submission.reviewNote}</p>
                 </div>
               )}
               {submission.pfListingId && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">PF Listing ID</p>
+                  <p className="text-[10px] font-medium text-neutral-400">PF Listing ID</p>
                   <p className="text-sm font-mono text-neutral-700">{submission.pfListingId}</p>
                 </div>
               )}
@@ -370,20 +370,20 @@ function BackLink() {
 function StatusBadge({ status }: { status: PropertySubmissionStatus }) {
   if (status === "pending") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-600">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-600">
         <Clock className="h-3.5 w-3.5" /> Pending
       </span>
     );
   }
   if (status === "approved") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-green-600">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-600">
         <CheckCircle2 className="h-3.5 w-3.5" /> Approved
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-red-600">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">
       <XCircle className="h-3.5 w-3.5" /> Rejected
     </span>
   );

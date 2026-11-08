@@ -94,7 +94,7 @@ export function EventFormModal({ open, onClose, onSaved, record }: EventFormModa
     >
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <section className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">Event</h3>
+          <h3 className="text-xs font-semibold text-neutral-600">Event</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Event Name" required error={errors.eventName} className="sm:col-span-2">
               <Input
@@ -143,7 +143,7 @@ export function EventFormModal({ open, onClose, onSaved, record }: EventFormModa
         </section>
 
         <section className="space-y-3 border-t border-neutral-100 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">Developer &amp; Venue</h3>
+          <h3 className="text-xs font-semibold text-neutral-600">Developer &amp; Venue</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Developer Name" required error={errors.developerName}>
               <Input
@@ -199,7 +199,7 @@ export function EventFormModal({ open, onClose, onSaved, record }: EventFormModa
         </section>
 
         <section className="space-y-3 border-t border-neutral-100 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">Project</h3>
+          <h3 className="text-xs font-semibold text-neutral-600">Project</h3>
           <div className="grid grid-cols-1 gap-4">
             <Field label="Project Name" error={errors.projectName}>
               <Input

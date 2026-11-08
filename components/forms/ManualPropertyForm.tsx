@@ -53,7 +53,7 @@ export function ManualPropertyForm({ initial, submitting, onSubmit, onCancel }: 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* ── Building / Location ───────────────────────────────────── */}
       <div>
-        <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <h4 className="mb-3 text-[11px] font-semibold text-neutral-500">
           Building &amp; Location
         </h4>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -77,7 +77,7 @@ export function ManualPropertyForm({ initial, submitting, onSubmit, onCancel }: 
 
       {/* ── Unit Details ──────────────────────────────────────────── */}
       <div>
-        <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <h4 className="mb-3 text-[11px] font-semibold text-neutral-500">
           Unit Details
         </h4>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -120,7 +120,7 @@ export function ManualPropertyForm({ initial, submitting, onSubmit, onCancel }: 
 
       {/* ── Financials & Status ───────────────────────────────────── */}
       <div>
-        <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <h4 className="mb-3 text-[11px] font-semibold text-neutral-500">
           Financials &amp; Status
         </h4>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

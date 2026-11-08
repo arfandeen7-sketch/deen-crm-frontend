@@ -440,7 +440,7 @@ function ModeTab({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+      <p className="text-[11px] font-semibold text-neutral-500">
         {title}
       </p>
       {children}

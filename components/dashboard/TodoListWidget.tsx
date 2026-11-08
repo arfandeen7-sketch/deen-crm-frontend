@@ -40,7 +40,7 @@ function PriorityBadge({ priority }: { priority: TodoPriority }) {
   return (
     <span
       className={cn(
-        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
         PRIORITY_STYLES[priority],
       )}
     >
@@ -298,7 +298,7 @@ function TodoRow({
 
         {todo.reminderAt && (
           <span
-            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700"
+            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700"
             title={`Reminder at ${formatDateTime(todo.reminderAt)}`}
           >
             <BellRing className="h-3 w-3" />

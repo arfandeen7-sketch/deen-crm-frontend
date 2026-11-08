@@ -321,7 +321,7 @@ function OwnerDetailContent() {
         </CardBody>
         {owner.notes && (
           <div className="border-t border-neutral-100 px-5 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <p className="text-xs font-semibold text-neutral-500">
               Notes
             </p>
             <p className="mt-1 text-sm text-neutral-700">{owner.notes}</p>
@@ -516,7 +516,7 @@ function ContactItem({
     <div className="flex items-start gap-2">
       <span className="mt-0.5 text-slate-400">{icon}</span>
       <div>
-        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-500">
           {label}
           {action}
         </p>
@@ -627,11 +627,11 @@ function PropertyRow({
               )}
             </div>
             {dealBadge ? (
-              <span className="absolute left-1 top-1 rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white shadow-sm">
+              <span className="absolute left-1 top-1 rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-semibold text-white shadow-sm">
                 {dealBadge}
               </span>
             ) : offeringLabel ? (
-              <span className="absolute left-1 top-1 rounded-full bg-black/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+              <span className="absolute left-1 top-1 rounded-full bg-black/80 px-2 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm">
                 {offeringLabel}
               </span>
             ) : null}
@@ -642,7 +642,7 @@ function PropertyRow({
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-medium text-slate-900 truncate">{title}</p>
               {dealBadge && (
-                <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+                <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
                   {dealBadge}
                 </span>
               )}
@@ -757,7 +757,7 @@ function PropertyRow({
               rental.agreementStartDate &&
               rental.agreementEndDate && (
                 <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50/60 px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+                  <p className="text-[10px] font-semibold text-blue-600">
                     Rental Agreement
                   </p>
                   <div className="mt-1 grid gap-2 sm:grid-cols-3">
@@ -809,7 +809,7 @@ function PropertyRow({
             {activeTenant && (
               <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                  <p className="text-[10px] font-semibold text-emerald-600">
                     Current Tenant
                   </p>
                   <Link
@@ -924,7 +924,7 @@ function PropertyRow({
 
             {property.notes && (
               <div className="mt-2 rounded-lg bg-amber-50/60 border border-amber-100 px-3 py-1.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+                <p className="text-[10px] font-semibold text-amber-600">
                   Owner Notes
                 </p>
                 <p className="mt-0.5 text-xs text-amber-800">{property.notes}</p>

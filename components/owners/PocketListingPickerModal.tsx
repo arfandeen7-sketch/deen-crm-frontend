@@ -218,14 +218,14 @@ function PocketListingSelectCard({
         )}
 
         {/* Off-Market Listing badge */}
-        <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+        <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
           Off-Market
         </span>
 
         {/* Status badge */}
         <span
           className={cn(
-            "absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm",
+            "absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm",
             statusColor,
           )}
         >

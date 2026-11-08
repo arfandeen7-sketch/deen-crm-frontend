@@ -61,7 +61,7 @@ export function DetailRow({
   const empty = value === null || value === undefined || value === "";
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</span>
+      <span className="text-[11px] font-semibold text-neutral-500">{label}</span>
       <span className="whitespace-pre-wrap break-words text-sm text-neutral-900">{empty ? "—" : value}</span>
     </div>
   );

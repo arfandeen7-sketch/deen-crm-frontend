@@ -270,7 +270,7 @@ export function BellaviuClientFormModal({
 
         {showDocuments && effectiveRecord && (
           <div className="space-y-3 border-t border-neutral-100 pt-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">
+            <h3 className="text-xs font-semibold text-neutral-600">
               Documents
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

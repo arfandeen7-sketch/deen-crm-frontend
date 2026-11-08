@@ -83,7 +83,7 @@ export function KpiCard({
       <div>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
+            <p className="text-xs font-semibold text-neutral-500">{label}</p>
             {hint ? <p className="mt-1 text-xs font-normal normal-case tracking-normal text-neutral-500">{hint}</p> : null}
             {loading ? (
               <Skeleton className="mt-2 h-7 w-16" />

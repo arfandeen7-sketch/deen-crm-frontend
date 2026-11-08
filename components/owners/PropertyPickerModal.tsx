@@ -228,11 +228,11 @@ function PropertySelectCard({
 
         {/* Deal Closed badge — takes precedence over offering badge (same as Properties module) */}
         {dealBadge ? (
-          <span className="absolute left-3 top-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
             {dealBadge}
           </span>
         ) : offeringLabel ? (
-          <span className="absolute left-3 top-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
             {offeringLabel}
           </span>
         ) : null}
@@ -285,7 +285,7 @@ function PropertySelectCard({
         {/* Rental agreement details (if rented out) */}
         {dealBadge === "Rented Out" && rental && rental.agreementStartDate && rental.agreementEndDate && (
           <div className="mt-2 rounded-lg bg-amber-50 border border-amber-100 px-2 py-1.5">
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-amber-600">
+            <p className="text-[9px] font-semibold text-amber-600">
               Rental Agreement
             </p>
             <div className="mt-0.5 flex items-center justify-between text-[10px] text-amber-800">

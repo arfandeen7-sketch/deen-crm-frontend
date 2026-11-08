@@ -63,7 +63,7 @@ function InfoRow({
     <div className="flex items-start gap-3 py-2.5">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <p className="text-[10px] font-semibold text-slate-400">
           {label}
         </p>
         <div className="mt-0.5 text-sm font-medium text-slate-800 break-words">{value}</div>
@@ -285,7 +285,7 @@ export function PropertyFinderSection({ lead }: Props) {
         <CardBody className="space-y-6">
           {data?.propertyTitle && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              <p className="text-[10px] font-semibold text-slate-400 mb-1">
                 Property Title
               </p>
               <p className="text-base font-semibold text-slate-900">{data.propertyTitle}</p>
@@ -340,7 +340,7 @@ export function PropertyFinderSection({ lead }: Props) {
 
           {data?.propertyDescription && (
             <div className="border-t border-slate-100 pt-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              <p className="text-[10px] font-semibold text-slate-400 mb-2">
                 Property Description
               </p>
               <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
@@ -372,7 +372,7 @@ export function PropertyFinderSection({ lead }: Props) {
         <CardBody className="space-y-4">
           {data?.locationHierarchy && (
             <div className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              <p className="text-[10px] font-semibold text-slate-400 mb-1">
                 Location Hierarchy
               </p>
               <p className="text-sm font-medium text-slate-700">{data.locationHierarchy}</p>
@@ -541,7 +541,7 @@ export function PropertyFinderSection({ lead }: Props) {
         <CardBody className="space-y-6">
           {data?.mainImage && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <p className="text-[10px] font-semibold text-slate-400 mb-3">
                 Main Image
               </p>
               <a href={data.mainImage} target="_blank" rel="noopener noreferrer">
@@ -556,7 +556,7 @@ export function PropertyFinderSection({ lead }: Props) {
 
           {data?.imageGallery && data.imageGallery.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <p className="text-[10px] font-semibold text-slate-400 mb-3">
                 Image Gallery
                 <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500 normal-case tracking-normal">
                   {data.imageGallery.length} photos
@@ -594,7 +594,7 @@ export function PropertyFinderSection({ lead }: Props) {
 
           {(data?.floorPlan || data?.virtualTour || data?.video) && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <p className="text-[10px] font-semibold text-slate-400 mb-3">
                 Additional Media
               </p>
               <div className="flex flex-wrap gap-3">
@@ -719,7 +719,7 @@ export function PropertyFinderSection({ lead }: Props) {
             <div className="flex items-start gap-3 py-2.5 sm:col-span-2 lg:col-span-3">
               <Star className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-[10px] font-semibold text-slate-400">
                   Quality Score
                 </p>
                 <div className="mt-1.5 max-w-xs">
@@ -797,7 +797,7 @@ export function PropertyFinderSection({ lead }: Props) {
         </div>
         {data?.compliance != null && (
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Compliance Details</p>
+            <p className="text-[10px] font-semibold text-slate-400 mb-2">Compliance Details</p>
             <pre className="rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs text-slate-600 overflow-x-auto">
               {JSON.stringify(data.compliance, null, 2)}
             </pre>
@@ -805,7 +805,7 @@ export function PropertyFinderSection({ lead }: Props) {
         )}
         {data?.products != null && (
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Products</p>
+            <p className="text-[10px] font-semibold text-slate-400 mb-2">Products</p>
             <pre className="rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs text-slate-600 overflow-x-auto">
               {JSON.stringify(data.products, null, 2)}
             </pre>
@@ -813,7 +813,7 @@ export function PropertyFinderSection({ lead }: Props) {
         )}
         {data?.portals != null && (
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Portals</p>
+            <p className="text-[10px] font-semibold text-slate-400 mb-2">Portals</p>
             <pre className="rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs text-slate-600 overflow-x-auto">
               {JSON.stringify(data.portals, null, 2)}
             </pre>
@@ -834,7 +834,7 @@ export function PropertyFinderSection({ lead }: Props) {
   //     >
   //       <div className="flex items-center gap-2">
   //         <Server className="h-3.5 w-3.5 text-foreground-secondary" />
-  //         <h3 className="text-[11px] font-bold uppercase tracking-wider text-foreground-secondary">
+  //         <h3 className="text-[11px] font-bold text-foreground-secondary">
   //           Raw Property Finder Payload
   //         </h3>
   //         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600 ring-1 ring-amber-200 normal-case tracking-normal">

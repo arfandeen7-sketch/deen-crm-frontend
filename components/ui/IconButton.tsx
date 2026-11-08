@@ -22,7 +22,7 @@ export interface IconButtonProps
 const variants: Record<Variant, string> = {
   default: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900",
   ghost: "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900",
-  danger: "text-rose-600 hover:bg-rose-50",
+  danger: "text-red-600 hover:bg-red-50",
   success: "text-emerald-600 hover:bg-emerald-50",
   warning: "text-amber-600 hover:bg-amber-50",
   info: "text-sky-600 hover:bg-sky-50",
@@ -50,7 +50,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         disabled={disabled || loading}
         onClick={loading ? undefined : onClick}
         className={cn(
-          "inline-flex items-center justify-center rounded p-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center rounded-lg p-1.5 transition-[background-color,transform,color] active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none",
           variants[variant],
           className,
         )}

@@ -128,17 +128,17 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
         )}
 
         {/* Purple "Off-Market Listing" badge — top-left (distinguishes from PF cards) */}
-        <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+        <span className="absolute left-3 top-3 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
           Off-Market Listing
         </span>
 
         {/* Deal Closed / offering badge — bottom-left */}
         {dealBadge ? (
-          <span className="absolute bottom-3 left-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+          <span className="absolute bottom-3 left-3 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
             {dealBadge}
           </span>
         ) : offeringLabel ? (
-          <span className="absolute bottom-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+          <span className="absolute bottom-3 left-3 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
             {offeringLabel}
           </span>
         ) : null}
@@ -254,7 +254,7 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
 
         {/* Type + Reference + Status */}
         <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+          <span className="text-[10px] font-medium text-neutral-400">
             {displayValue(listing.type, "")}
             {listing.type && listing.furnishingType ? " · " : ""}
             {displayValue(listing.furnishingType, "")}
@@ -268,7 +268,7 @@ export function PocketListingCard({ listing, onClick }: PocketListingCardProps) 
         <div className="mt-2 flex items-center gap-2">
           <span
             className={cn(
-              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold",
               status.className,
             )}
           >

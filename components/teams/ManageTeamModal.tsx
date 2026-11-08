@@ -101,7 +101,7 @@ export function ManageTeamModal({
 
         {/* ── Team Leader ───────────────────────────────────── */}
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+          <p className="mb-2 text-xs font-semibold text-foreground-muted">
             Team Leader
           </p>
           <div className="flex items-center gap-3 rounded-[6px] border border-border bg-panel p-3">
@@ -119,7 +119,7 @@ export function ManageTeamModal({
         {/* ── Current Members ───────────────────────────────── */}
         <div>
           <div className="mb-2 flex items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+            <p className="text-xs font-semibold text-foreground-muted">
               Team Members
             </p>
             <span className="rounded-full bg-panel px-2 py-0.5 text-xs font-medium text-foreground-secondary">
@@ -180,7 +180,7 @@ export function ManageTeamModal({
         {addableExecutives.length > 0 && (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+              <p className="text-xs font-semibold text-foreground-muted">
                 Add Executives
               </p>
               <span className="rounded-full bg-panel px-2 py-0.5 text-xs font-medium text-foreground-secondary">

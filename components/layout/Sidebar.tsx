@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronDown, X, LogOut, KeyRound, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -150,42 +149,35 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   }, []);
 
   return (
-    <div className="flex h-full flex-col bg-[#151515] text-zinc-400 border-r border-zinc-800/30 font-sans">
-      {/* ── Logo ── */}
-      <div className="flex items-center justify-between gap-2 px-6 py-6">
+    <div className="flex h-full flex-col bg-white font-sans text-ink-2">
+      {/* ── Wordmark ── */}
+      <div className="flex items-center justify-between gap-2 px-6 pb-4 pt-7">
         <Link
           href="/dashboard/overview"
-          className="flex items-center gap-2.5"
+          className="wordmark text-[22px] leading-none text-ink"
           onClick={onNavigate}
+          aria-label="DEEN Properties"
         >
-          <Image
-            src="/deen-new-logo.png"
-            alt="DEEN Properties"
-            width={200}
-            height={40}
-            className="h-12 w-auto object-contain"
-            priority
-          />
+          deen
         </Link>
         {onNavigate && (
           <button
             onClick={onNavigate}
-            className="rounded p-1 text-zinc-500 hover:text-white lg:hidden"
+            className="rounded-lg p-1.5 text-ink-3 hover:bg-fill-soft hover:text-ink lg:hidden"
             aria-label="Close sidebar"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
         )}
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto px-4 py-2 sidebar-nav-scroll space-y-6">
+      <nav className="sidebar-nav-scroll flex-1 space-y-6 overflow-y-auto px-3 py-2">
         {["MENU", "GENERAL"].map((sectionName) => {
           const sectionGroups = NAV_GROUPS.filter(
             (g) => (g.section || "MENU") === sectionName
           );
 
-          // Filter by visibility/permissions
           const visibleGroups = sectionGroups.filter((group) => {
             if (group.masterOnly && !isMaster) return false;
             if (group.hideForMaster && isMaster) return false;
@@ -202,11 +194,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
           return (
             <div key={sectionName}>
-              <div className="px-3 mb-3 text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">
-                {sectionName}
+              <div className="mb-2 px-3 text-[12px] capitalize text-ink-3">
+                {sectionName.toLowerCase()}
               </div>
               <div className="space-y-1">
-                {visibleGroups.map((group) => {
+                {visibleGroups.map((group, gi) => {
                   const visibleItems = group.items.filter(
                     (item) =>
                       (!item.masterOnly || isMaster) &&
@@ -216,8 +208,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   const isOpen = openGroups.has(group.id);
                   const isActive = groupContainsActive(pathname, visibleItems);
                   const GroupIcon = group.icon;
+                  const stagger = { "--i": gi } as React.CSSProperties;
 
-                  // Singular items like Dashboard (Overview)
                   if (group.isSingular && group.href) {
                     const isSingularActive = pathname === group.href || pathname.startsWith(`${group.href}/`);
                     return (
@@ -225,18 +217,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         key={group.id}
                         href={group.href}
                         onClick={onNavigate}
+                        style={stagger}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 font-medium",
+                          "enter-left flex h-11 w-full items-center gap-3 rounded-lg px-3 text-[14px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                           isSingularActive
-                            ? "bg-[#242424] text-white"
-                            : "text-zinc-400 hover:bg-[#242424]/40 hover:text-white",
+                            ? "bg-fill-soft font-medium text-ink"
+                            : "text-ink-2 hover:bg-fill-soft/70 hover:text-ink",
                         )}
                       >
                         <GroupIcon
-                          className={cn(
-                            "h-5 w-5 shrink-0",
-                            isSingularActive ? "text-white" : "text-zinc-500",
-                          )}
+                          strokeWidth={1.5}
+                          className={cn("h-5 w-5 shrink-0", isSingularActive ? "text-ink" : "text-ink-3")}
                         />
                         <span className="flex-1 truncate">{group.title}</span>
                       </Link>
@@ -244,40 +235,38 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   }
 
                   return (
-                    <div key={group.id} className="mb-1">
-                      {/* Group header */}
+                    <div key={group.id} className="enter-left" style={stagger}>
                       <button
                         onClick={() => toggleGroup(group.id)}
+                        aria-expanded={isOpen}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all duration-200 font-medium",
+                          "flex h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-left text-[14px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                           isActive
-                            ? "text-white bg-[#242424]/30"
-                            : "text-zinc-400 hover:bg-[#242424]/40 hover:text-white",
+                            ? "bg-fill-soft font-medium text-ink"
+                            : "text-ink-2 hover:bg-fill-soft/70 hover:text-ink",
                         )}
                       >
                         <GroupIcon
-                          className={cn(
-                            "h-5 w-5 shrink-0",
-                            isActive ? "text-white" : "text-zinc-500",
-                          )}
+                          strokeWidth={1.5}
+                          className={cn("h-5 w-5 shrink-0", isActive ? "text-ink" : "text-ink-3")}
                         />
                         <span className="flex-1 truncate">{group.title}</span>
                         <ChevronDown
+                          strokeWidth={1.5}
                           className={cn(
-                            "h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200",
-                            isOpen && "rotate-180 text-zinc-400",
+                            "h-4 w-4 shrink-0 text-ink-3 transition-transform duration-[220ms]",
+                            isOpen && "rotate-180 text-ink",
                           )}
                         />
                       </button>
 
-                      {/* Collapsible items panel */}
                       <div
                         className={cn(
-                          "overflow-hidden transition-all duration-200 ease-in-out",
+                          "overflow-hidden transition-[max-height,opacity] duration-[320ms] ease-[var(--ease-out)]",
                           isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0",
                         )}
                       >
-                        <ul className="mb-1 mt-1 space-y-1 pl-4 border-l border-zinc-800/50 ml-5">
+                        <ul className="mb-1 mt-1 ml-5 space-y-0.5 border-l border-line pl-3">
                           {visibleItems.map((item) => {
                             const itemActive = isItemActive(pathname, item.href);
                             const ItemIcon = item.icon;
@@ -286,18 +275,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                                 <Link
                                   href={item.href}
                                   onClick={onNavigate}
+                                  tabIndex={isOpen ? 0 : -1}
                                   className={cn(
-                                    "flex items-center gap-3 rounded-md py-2 px-3 text-sm transition-all duration-200 font-medium",
+                                    "flex h-10 items-center gap-3 rounded-lg px-3 text-[13.5px] transition-[background-color,color,transform] duration-[220ms] active:scale-[0.985]",
                                     itemActive
-                                      ? "bg-[#242424] text-white"
-                                      : "text-zinc-500 hover:bg-[#242424]/20 hover:text-zinc-300",
+                                      ? "bg-fill-soft font-medium text-ink"
+                                      : "text-ink-3 hover:bg-fill-soft/70 hover:text-ink",
                                   )}
                                 >
                                   <ItemIcon
-                                    className={cn(
-                                      "h-4 w-4 shrink-0",
-                                      itemActive ? "text-white" : "text-zinc-600"
-                                    )}
+                                    strokeWidth={1.5}
+                                    className={cn("h-4 w-4 shrink-0", itemActive ? "text-ink" : "text-ink-3")}
                                   />
                                   {item.label}
                                 </Link>
@@ -315,13 +303,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
-      {/* ── Footer with Profile Card ── */}
-      <div className="relative border-t border-zinc-800/40 p-4" ref={profileRef}>
+      {/* ── Profile pinned to bottom ── */}
+      <div className="relative p-3" ref={profileRef}>
         {profileOpen && (
-          <div className="absolute bottom-full left-4 right-4 mb-2 z-50 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 py-1 shadow-2xl text-sm">
-            <div className="border-b border-zinc-800 px-4 py-3">
-              <p className="font-semibold text-white">{user?.fullName}</p>
-              <p className="truncate text-xs font-medium text-zinc-400">{user?.email}</p>
+          <div className="pop-in absolute bottom-full left-3 right-3 z-50 mb-2 origin-bottom overflow-hidden rounded-xl border border-line bg-white py-1 text-sm shadow-md">
+            <div className="border-b border-line px-4 py-3">
+              <p className="font-medium text-ink">{user?.fullName}</p>
+              <p className="truncate text-xs text-ink-3">{user?.email}</p>
             </div>
             <Link
               href="/settings/profile"
@@ -329,9 +317,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 setProfileOpen(false);
                 if (onNavigate) onNavigate();
               }}
-              className="flex items-center gap-2.5 px-4 py-2.5 font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-ink-2 transition-colors hover:bg-fill-soft hover:text-ink"
             >
-              <UserCircle className="h-4 w-4 text-zinc-500" /> Profile
+              <UserCircle className="h-4 w-4 text-ink-3" strokeWidth={1.5} /> Profile
             </Link>
             <Link
               href="/settings/change-password"
@@ -339,34 +327,35 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 setProfileOpen(false);
                 if (onNavigate) onNavigate();
               }}
-              className="flex items-center gap-2.5 px-4 py-2.5 font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-ink-2 transition-colors hover:bg-fill-soft hover:text-ink"
             >
-              <KeyRound className="h-4 w-4 text-zinc-500" /> Change Password
+              <KeyRound className="h-4 w-4 text-ink-3" strokeWidth={1.5} /> Change Password
             </Link>
-            <button
-              onClick={() => {
-                setProfileOpen(false);
-                logout();
-              }}
-              className="flex w-full items-center gap-2.5 border-t border-zinc-800 px-4 py-2.5 font-medium text-rose-400 hover:bg-rose-950/30 transition-colors cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" /> Logout
-            </button>
           </div>
         )}
 
-        <button
-          onClick={() => setProfileOpen((v) => !v)}
-          className="flex w-full items-center gap-3 rounded-xl bg-[#242424] p-3 text-left hover:bg-[#2b2b2b] transition-colors border border-zinc-800/30 cursor-pointer"
-        >
-          <UserAvatar name={user?.fullName} className="ring-2 ring-zinc-800 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{user?.fullName}</p>
-            <p className="text-[11px] font-medium text-zinc-400 truncate mt-0.5">
-              {user ? ROLE_LABELS[user.role] : ""}
-            </p>
-          </div>
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-[background-color,transform] duration-[220ms] hover:bg-fill-soft active:scale-[0.985]"
+          >
+            <UserAvatar name={user?.fullName} online />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-medium text-ink">{user?.fullName}</p>
+              <p className="mt-0.5 truncate text-[12px] text-ink-3">
+                {user ? ROLE_LABELS[user.role] : ""}
+              </p>
+            </div>
+          </button>
+          <button
+            onClick={() => logout()}
+            title="Log out"
+            aria-label="Log out"
+            className="cursor-pointer rounded-lg p-2.5 text-ink-3 transition-[background-color,color,transform] duration-[220ms] hover:bg-fill-soft hover:text-ink active:scale-95"
+          >
+            <LogOut className="h-5 w-5" strokeWidth={1.5} />
+          </button>
+        </div>
       </div>
     </div>
   );

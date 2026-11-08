@@ -203,7 +203,7 @@ function DocumentSlot({
           <FileText className="h-4 w-4 text-neutral-500" />
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+          <p className="text-[11px] font-semibold text-neutral-500">
             {label}
           </p>
           {number && (

@@ -149,7 +149,7 @@ function PocketListingsContent() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Status */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Status
               </label>
               <Select
@@ -166,7 +166,7 @@ function PocketListingsContent() {
 
             {/* Category */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Category
               </label>
               <Select
@@ -181,7 +181,7 @@ function PocketListingsContent() {
 
             {/* Offering Type */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Offering Type
               </label>
               <Select
@@ -199,7 +199,7 @@ function PocketListingsContent() {
 
             {/* Location (Emirate) */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Location
               </label>
               <Select
@@ -217,7 +217,7 @@ function PocketListingsContent() {
 
             {/* Property Type */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Property Type
               </label>
               <Select
@@ -235,7 +235,7 @@ function PocketListingsContent() {
 
             {/* Bedrooms */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Bedrooms
               </label>
               <Select
@@ -253,7 +253,7 @@ function PocketListingsContent() {
 
             {/* User (created by) — always shown; contains at least the current user */}
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <label className="mb-1 block text-[10px] font-semibold text-neutral-400">
                 Added By
               </label>
               <Select

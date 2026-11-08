@@ -469,7 +469,7 @@ function OwnersPageContent() {
               {/* Owners to be deleted (preview) */}
               {bulkPreview.ownersToDeletePreview.length > 0 && (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <p className="mb-2 text-xs font-semibold text-neutral-500">
                     Owners to be deleted ({bulkPreview.ownersToDeleteCount}
                     {bulkPreview.ownersToDeleteCount > bulkPreview.ownersToDeletePreview.length
                       ? ` — showing first ${bulkPreview.ownersToDeletePreview.length}`

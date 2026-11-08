@@ -176,20 +176,20 @@ function SubmissionRow({ submission }: { submission: any }) {
 function StatusBadge({ status }: { status: PropertySubmissionStatus }) {
   if (status === "pending") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
         <Clock className="h-3 w-3" /> Pending
       </span>
     );
   }
   if (status === "approved") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-600">
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-600">
         <CheckCircle2 className="h-3 w-3" /> Approved
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-red-600">
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
       <XCircle className="h-3 w-3" /> Rejected
     </span>
   );

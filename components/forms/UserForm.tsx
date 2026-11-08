@@ -310,7 +310,7 @@ export function UserForm({
       {selectedRole !== "master" && (
         <div className="space-y-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-800">Custom Module Access</p>
+            <p className="text-xs font-bold text-amber-800">Custom Module Access</p>
             <p className="mt-0.5 text-xs text-amber-600">
               Grant Master-level access to specific modules for this user.
             </p>
@@ -338,7 +338,7 @@ export function UserForm({
       {/* ── Permission Section ───────────────────────────────────────────── */}
       <div className="space-y-3 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-neutral-800">Permissions</p>
+          <p className="text-xs font-bold text-neutral-800">Permissions</p>
           <p className="mt-0.5 text-xs text-neutral-500">
             Grant specific module, page, and action access. Zero access by default.
           </p>

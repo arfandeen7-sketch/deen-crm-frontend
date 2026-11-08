@@ -81,7 +81,7 @@ export function ClientDocumentCard({
     <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <FileText className="h-4 w-4 shrink-0 text-neutral-500" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-600">{label}</span>
+        <span className="text-xs font-semibold text-neutral-600">{label}</span>
       </div>
 
       {hasDocument ? (

@@ -219,7 +219,7 @@ export function OwnerPropertyForm({
       {/* ── Property Source Tabs ───────────────────────────────────── */}
       {!isEditMode && (
         <div>
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
+          <label className="mb-2 block text-[11px] font-semibold text-neutral-600">
             Property Source <span className="ml-1 text-red-500">*</span>
           </label>
 
@@ -326,7 +326,7 @@ export function OwnerPropertyForm({
       {/* ── Auto-filled read-only details ─────────────────────────── */}
       {(selectedProperty || isEditMode) && (
         <div className="rounded-lg border border-neutral-200 bg-neutral-50/60 p-4">
-          <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+          <h4 className="mb-3 text-[11px] font-semibold text-neutral-500">
             Property Details
           </h4>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -618,7 +618,7 @@ function InfoBanner({ message }: { message: React.ReactNode }) {
 function DetailField({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+      <p className="text-[10px] font-semibold text-neutral-400">
         {label}
       </p>
       <p className="text-sm text-neutral-800">{value || "—"}</p>
