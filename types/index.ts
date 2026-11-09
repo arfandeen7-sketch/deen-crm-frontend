@@ -383,7 +383,10 @@ export interface OpenHouseEvent {
 export type OpenHouseEventOption = Pick<
   OpenHouseEvent,
   "id" | "eventName" | "eventDate" | "status" | "developerName"
->;
+> & {
+  location?: string | null;
+  venueName?: string | null;
+};
 
 export interface OpenHouseEventLead {
   id: string;
@@ -407,6 +410,45 @@ export interface OpenHouseEventLead {
   updatedAt: string;
   event?: OpenHouseEventOption | null;
   creator?: Pick<User, "id" | "fullName"> | null;
+}
+
+export type OpenHouseRsvpStatus = "confirmed" | "maybe" | "awaiting" | "declined";
+export type OpenHouseRsvpInterest =
+  | "studio"
+  | "1_br"
+  | "2_br"
+  | "3_br_plus"
+  | "villa_townhouse"
+  | "investment"
+  | "commercial"
+  | "not_sure";
+export type OpenHouseRsvpBudget =
+  | "aed_1m_1_5m"
+  | "aed_1_5m_2m"
+  | "aed_2m_3m"
+  | "aed_3m_4m"
+  | "aed_4m_5m"
+  | "aed_5m_plus";
+
+export interface OpenHouseRsvp {
+  id: string;
+  eventId: string;
+  guestName: string;
+  mobile: string;
+  peopleComingWith: number;
+  /** 24-hour "HH:mm", from 09:00 to 21:30. */
+  expectedArrival: string;
+  status: OpenHouseRsvpStatus;
+  interestedIn: OpenHouseRsvpInterest;
+  budget: OpenHouseRsvpBudget;
+  notes?: string | null;
+  createdBy: string;
+  updatedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  event?: (OpenHouseEventOption & { startTime?: string | null; endTime?: string | null; venueName?: string | null; location?: string | null }) | null;
+  creator?: Pick<User, "id" | "fullName"> | null;
+  updater?: Pick<User, "id" | "fullName"> | null;
 }
 
 // ── Tenant Details ────────────────────────────────────────────────────────────

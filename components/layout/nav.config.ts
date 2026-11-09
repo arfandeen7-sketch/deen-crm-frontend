@@ -36,6 +36,7 @@ import {
   Package,
   Hotel,
   CalendarRange,
+  Ticket,
 } from "lucide-react";
 import { MANAGED_DYNAMIC_CATEGORIES } from "@/constants";
 
@@ -204,6 +205,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Events", href: "/open-house-events", icon: CalendarRange, navAccess: { module: "open_house_events", page: "all_events", action: "view" } },
       { label: "Event Leads", href: "/open-house-events/leads", icon: UserPlus, navAccess: { module: "open_house_events", page: "event_leads", action: "view" } },
+      { label: "RSVP", href: "/open-house-events/rsvp", icon: Ticket, navAccess: { module: "open_house_events", page: "rsvp", action: "view" } },
     ],
   },
   // ── 6. Buyer Details (direct link — no dropdown) ─────────────────────────

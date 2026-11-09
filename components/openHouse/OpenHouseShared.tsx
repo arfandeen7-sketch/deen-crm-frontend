@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarRange, UserPlus } from "lucide-react";
+import { CalendarRange, Ticket, UserPlus } from "lucide-react";
 import { CanAccess } from "@/components/shared/Guards";
 import { Badge } from "@/components/ui/Badge";
 import { cn, formatDate } from "@/lib/utils";
@@ -15,13 +15,17 @@ import {
   OPEN_HOUSE_EVENTS_PAGE,
   OPEN_HOUSE_LEADS_PAGE,
   OPEN_HOUSE_MODULE,
+  OPEN_HOUSE_RSVP_PAGE,
+  RSVP_STATUS_COLORS,
+  RSVP_STATUS_OPTIONS,
   labelFor,
 } from "@/constants/openHouse";
-import type { OpenHouseEventStatus, OpenHouseLeadInterest } from "@/types";
+import type { OpenHouseEventStatus, OpenHouseLeadInterest, OpenHouseRsvpStatus } from "@/types";
 
 const TABS = [
   { href: "/open-house-events", label: "Events", icon: CalendarRange, page: OPEN_HOUSE_EVENTS_PAGE },
   { href: "/open-house-events/leads", label: "Event Leads", icon: UserPlus, page: OPEN_HOUSE_LEADS_PAGE },
+  { href: "/open-house-events/rsvp", label: "RSVP", icon: Ticket, page: OPEN_HOUSE_RSVP_PAGE },
 ];
 
 /** Switches between the Event Management and Event Leads tables. */
@@ -70,6 +74,11 @@ export function DetailRow({
 export function EventStatusBadge({ status }: { status?: OpenHouseEventStatus | null }) {
   if (!status) return <span className="text-slate-400">—</span>;
   return <Badge className={EVENT_STATUS_COLORS[status]}>{labelFor(EVENT_STATUS_OPTIONS, status)}</Badge>;
+}
+
+export function RsvpStatusBadge({ status }: { status?: OpenHouseRsvpStatus | null }) {
+  if (!status) return <span className="text-slate-400">—</span>;
+  return <Badge className={RSVP_STATUS_COLORS[status]}>{labelFor(RSVP_STATUS_OPTIONS, status)}</Badge>;
 }
 
 export function InterestBadge({ level }: { level?: OpenHouseLeadInterest | null }) {

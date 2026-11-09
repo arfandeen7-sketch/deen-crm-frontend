@@ -5,6 +5,7 @@ import type {
   OpenHouseEvent,
   OpenHouseEventLead,
   OpenHouseEventOption,
+  OpenHouseRsvp,
   Paginated,
 } from "@/types";
 
@@ -43,6 +44,18 @@ export interface OpenHouseEventLeadQueryParams {
 
 export type OpenHouseEventPayload = Record<string, string | number | null>;
 export type OpenHouseEventLeadPayload = Record<string, string | number | null>;
+export type OpenHouseRsvpPayload = Record<string, string | number | null>;
+
+export interface OpenHouseRsvpQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  eventId?: string;
+  status?: string;
+  expectedArrival?: string;
+  sortBy?: "createdAt" | "guestName" | "expectedArrival" | "status" | "peopleComingWith" | "eventName";
+  sortDir?: SortDir;
+}
 
 export const openHouseEventsService = {
   /** GET /api/open-house/events — paginated list */
@@ -94,6 +107,30 @@ export const openHouseEventLeadsService = {
 
   remove(id: string): Promise<void> {
     return deleteData<void>(`/open-house/leads/${id}`);
+  },
+};
+
+export const openHouseRsvpsService = {
+  /** GET /api/open-house/rsvps — paginated list */
+  async list(params: OpenHouseRsvpQueryParams = {}): Promise<Paginated<OpenHouseRsvp>> {
+    const res = await api.get<Paginated<OpenHouseRsvp>>(`/open-house/rsvps${buildQuery(params)}`);
+    return res.data;
+  },
+
+  getById(id: string): Promise<OpenHouseRsvp> {
+    return getData<OpenHouseRsvp>(`/open-house/rsvps/${id}`);
+  },
+
+  create(body: OpenHouseRsvpPayload): Promise<OpenHouseRsvp> {
+    return postData<OpenHouseRsvp>(`/open-house/rsvps`, body);
+  },
+
+  update(id: string, body: OpenHouseRsvpPayload): Promise<OpenHouseRsvp> {
+    return putData<OpenHouseRsvp>(`/open-house/rsvps/${id}`, body);
+  },
+
+  remove(id: string): Promise<void> {
+    return deleteData<void>(`/open-house/rsvps/${id}`);
   },
 };
 

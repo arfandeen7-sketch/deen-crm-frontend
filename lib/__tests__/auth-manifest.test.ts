@@ -72,6 +72,7 @@ describe("auth-manifest — resolveRouteRequirement", () => {
   it("resolves Open House pages to their own permission pages", () => {
     const events = resolveRouteRequirement("/open-house-events");
     const leads = resolveRouteRequirement("/open-house-events/leads");
+    const rsvp = resolveRouteRequirement("/open-house-events/rsvp");
     expect(events).toEqual({
       type: "permission",
       requirement: { module: "open_house_events", page: "all_events", action: "view" },
@@ -79,6 +80,10 @@ describe("auth-manifest — resolveRouteRequirement", () => {
     expect(leads).toEqual({
       type: "permission",
       requirement: { module: "open_house_events", page: "event_leads", action: "view" },
+    });
+    expect(rsvp).toEqual({
+      type: "permission",
+      requirement: { module: "open_house_events", page: "rsvp", action: "view" },
     });
   });
 

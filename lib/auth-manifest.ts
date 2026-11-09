@@ -126,6 +126,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   // Open House Event
   "/open-house-events": { type: "permission", requirement: { module: "open_house_events", page: "all_events", action: "view" } },
   "/open-house-events/leads": { type: "permission", requirement: { module: "open_house_events", page: "event_leads", action: "view" } },
+  "/open-house-events/rsvp": { type: "permission", requirement: { module: "open_house_events", page: "rsvp", action: "view" } },
 
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
@@ -234,6 +235,8 @@ export const QUERY_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "open-house-events:detail": { module: "open_house_events", page: "all_events", action: "view" },
   "open-house-leads:list":    { module: "open_house_events", page: "event_leads", action: "view" },
   "open-house-leads:detail":  { module: "open_house_events", page: "event_leads", action: "view" },
+  "open-house-rsvps:list":    { module: "open_house_events", page: "rsvp", action: "view" },
+  "open-house-rsvps:detail":  { module: "open_house_events", page: "rsvp", action: "view" },
 
   "custom-fields:list": { module: "leads" },
 };
@@ -312,6 +315,9 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "open-house-leads:create":  { module: "open_house_events", page: "event_leads", action: "create" },
   "open-house-leads:edit":    { module: "open_house_events", page: "event_leads", action: "edit" },
   "open-house-leads:delete":  { module: "open_house_events", page: "event_leads", action: "delete" },
+  "open-house-rsvps:create":  { module: "open_house_events", page: "rsvp", action: "create" },
+  "open-house-rsvps:edit":    { module: "open_house_events", page: "rsvp", action: "edit" },
+  "open-house-rsvps:delete":  { module: "open_house_events", page: "rsvp", action: "delete" },
 
   "integrations:connect": { module: "integrations", page: "all_integrations", action: "connect" },
   "integrations:edit": { module: "integrations", page: "all_integrations", action: "edit" },
