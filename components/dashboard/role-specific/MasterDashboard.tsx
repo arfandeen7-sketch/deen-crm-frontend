@@ -23,6 +23,11 @@ export function MasterDashboard() {
 
   const sourceCounts = summary.data?.sourceCounts ?? [];
   const totalSourceLeads = sourceCounts.reduce((sum, s) => sum + s.count, 0);
+  const visibleSourceCounts = sourceCounts.flatMap((s, i) => {
+    const pct = totalSourceLeads > 0 ? Math.round((s.count / totalSourceLeads) * 100) : 0;
+    if (pct === 0) return [];
+    return [{ ...s, pct, color: CHART_COLORS[i % CHART_COLORS.length] }];
+  });
   const quickActions = ROLE_QUICK_ACTIONS.master;
 
   return (
@@ -121,28 +126,24 @@ export function MasterDashboard() {
                 </div>
 
                 <div className="flex-1 w-full space-y-4 max-w-md">
-                  {sourceCounts.map((s, i) => {
-                    const pct = totalSourceLeads > 0 ? Math.round((s.count / totalSourceLeads) * 100) : 0;
-                    const color = CHART_COLORS[i % CHART_COLORS.length];
-                    return (
-                      <div key={s.source} className="space-y-1">
-                        <div className="flex justify-between text-xs font-bold text-zinc-700">
-                          <span className="font-secondary text-zinc-500">{s.source}</span>
-                          <span>{pct}%</span>
-                        </div>
-                        <div className="h-1 w-full bg-zinc-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              backgroundColor: color,
-                              width: `${pct}%`,
-                            }}
-                          />
-                        </div>
+                  {visibleSourceCounts.map((s) => (
+                    <div key={s.source} className="space-y-1">
+                      <div className="flex justify-between text-xs font-bold text-zinc-700">
+                        <span className="font-secondary text-zinc-500">{s.source}</span>
+                        <span>{s.pct}%</span>
                       </div>
-                    );
-                  })}
-                  {sourceCounts.length === 0 && (
+                      <div className="h-1 w-full bg-zinc-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            backgroundColor: s.color,
+                            width: `${s.pct}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {visibleSourceCounts.length === 0 && (
                     <p className="text-sm text-zinc-400 text-center py-4">No sources recorded</p>
                   )}
                 </div>
@@ -151,13 +152,13 @@ export function MasterDashboard() {
           </div>
         </div>
 
-        <div className="flex flex-col min-h-[340px] lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
+        <div className="self-start flex flex-col w-full lg:pl-8 border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0">
           <div>
             <h3 className="text-2xl font-bold text-zinc-900 tracking-tight font-secondary">Quick Actions</h3>
             <p className="text-xs text-zinc-400 mt-1">Frequent tools</p>
           </div>
 
-          <div className="mt-4 flex-1 flex flex-col justify-center space-y-3">
+          <div className="mt-4 flex flex-col space-y-3">
             {quickActions.map((a) => (
               <Link
                 key={a.href}
