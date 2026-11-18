@@ -377,7 +377,7 @@ export interface OpenHouseEvent {
   createdAt: string;
   updatedAt: string;
   creator?: Pick<User, "id" | "fullName"> | null;
-  _count?: { leads: number };
+  _count?: { leads: number; rsvps?: number };
 }
 
 export type OpenHouseEventOption = Pick<

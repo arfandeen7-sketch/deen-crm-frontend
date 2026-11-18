@@ -24,6 +24,7 @@ import {
   OPEN_HOUSE_EVENTS_PAGE as PAGE,
   OPEN_HOUSE_LEADS_PAGE,
   OPEN_HOUSE_MODULE as MODULE,
+  OPEN_HOUSE_RSVP_PAGE,
 } from "@/constants/openHouse";
 import type { OpenHouseEvent } from "@/types";
 import { EventFormModal } from "@/components/openHouse/EventFormModal";
@@ -44,6 +45,7 @@ export default function OpenHouseEventsPage() {
 function OpenHouseEventsPageContent() {
   const { canAction } = usePermissions();
   const canViewLeads = canAction(MODULE, OPEN_HOUSE_LEADS_PAGE, "view");
+  const canViewRsvps = canAction(MODULE, OPEN_HOUSE_RSVP_PAGE, "view");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -169,6 +171,24 @@ function OpenHouseEventsPageContent() {
         return canViewLeads ? (
           <Link
             href={`/open-house-events/leads?eventId=${e.id}`}
+            onClick={(ev) => ev.stopPropagation()}
+            className="text-sm font-medium text-blue-600 hover:underline"
+          >
+            {n}
+          </Link>
+        ) : (
+          <span className="text-sm text-slate-700">{n}</span>
+        );
+      },
+    },
+    {
+      key: "rsvps",
+      header: "Total RSVPs",
+      render: (e) => {
+        const n = e._count?.rsvps ?? 0;
+        return canViewRsvps ? (
+          <Link
+            href={`/open-house-events/rsvp?eventId=${e.id}`}
             onClick={(ev) => ev.stopPropagation()}
             className="text-sm font-medium text-blue-600 hover:underline"
           >

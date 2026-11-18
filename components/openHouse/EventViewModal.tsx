@@ -28,6 +28,7 @@ export function EventViewModal({
 }) {
   if (!record) return null;
   const leadCount = record._count?.leads ?? 0;
+  const rsvpCount = record._count?.rsvps ?? 0;
 
   return (
     <Modal
@@ -50,7 +51,7 @@ export function EventViewModal({
             </CanAccess>
             <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_RSVP_PAGE} action="view">
               <Link href={`/open-house-events/rsvp?eventId=${record.id}`}>
-                <Button variant="secondary">View RSVPs</Button>
+                <Button variant="secondary">View RSVPs ({rsvpCount})</Button>
               </Link>
             </CanAccess>
           </div>
@@ -66,6 +67,7 @@ export function EventViewModal({
           <DetailRow label="Date & Time" value={formatEventWhen(record.eventDate, record.startTime, record.endTime)} />
           <DetailRow label="Status" value={<EventStatusBadge status={record.status} />} />
           <DetailRow label="Leads Collected" value={String(leadCount)} />
+          <DetailRow label="Total RSVPs" value={String(rsvpCount)} />
           <DetailRow label="Developer" value={record.developerName} />
           <DetailRow label="Location" value={record.location} />
           <DetailRow label="Hotel / Venue" value={record.venueName} />
