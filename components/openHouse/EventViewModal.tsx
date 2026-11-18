@@ -10,6 +10,7 @@ import {
   OPEN_HOUSE_EVENTS_PAGE,
   OPEN_HOUSE_LEADS_PAGE,
   OPEN_HOUSE_MODULE,
+  OPEN_HOUSE_RSVP_PAGE,
 } from "@/constants/openHouse";
 import { DetailRow, EventStatusBadge, formatEventWhen } from "./OpenHouseShared";
 import type { OpenHouseEvent } from "@/types";
@@ -39,13 +40,20 @@ export function EventViewModal({
       }`}
       footer={
         <>
-          <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_LEADS_PAGE} action="view">
-            <Link href={`/open-house-events/leads?eventId=${record.id}`} className="mr-auto">
-              <Button variant="secondary">
-                <Users className="h-4 w-4" /> View Leads ({leadCount})
-              </Button>
-            </Link>
-          </CanAccess>
+          <div className="mr-auto flex flex-wrap gap-2">
+            <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_LEADS_PAGE} action="view">
+              <Link href={`/open-house-events/leads?eventId=${record.id}`}>
+                <Button variant="secondary">
+                  <Users className="h-4 w-4" /> View Leads ({leadCount})
+                </Button>
+              </Link>
+            </CanAccess>
+            <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_RSVP_PAGE} action="view">
+              <Link href={`/open-house-events/rsvp?eventId=${record.id}`}>
+                <Button variant="secondary">View RSVPs</Button>
+              </Link>
+            </CanAccess>
+          </div>
           <Button variant="outline" onClick={onClose}>Close</Button>
           <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_EVENTS_PAGE} action="edit">
             <Button onClick={onEdit}>Edit</Button>

@@ -34,7 +34,7 @@ export function RsvpViewModal({
       open={open}
       onClose={onClose}
       size="xl"
-      title={record.guestName}
+      title={record.guestName || "RSVP"}
       description={`Added ${formatDateTime(record.createdAt)}${
         record.creator?.fullName ? ` by ${record.creator.fullName}` : ""
       }`}
@@ -57,7 +57,7 @@ export function RsvpViewModal({
         <DetailRow label="Location" value={event?.location} />
         <DetailRow label="Hotel / Venue" value={event?.venueName} />
         <DetailRow label="Mobile" value={record.mobile} />
-        <DetailRow label="People Coming With" value={String(record.peopleComingWith)} />
+        <DetailRow label="People Coming With" value={record.peopleComingWith == null ? undefined : String(record.peopleComingWith)} />
         <DetailRow label="Expected Arrival" value={labelFor(RSVP_ARRIVAL_SLOTS, record.expectedArrival)} />
         <DetailRow label="Status" value={<RsvpStatusBadge status={record.status} />} />
         <DetailRow label="Interested In" value={labelFor(RSVP_INTEREST_OPTIONS, record.interestedIn)} />

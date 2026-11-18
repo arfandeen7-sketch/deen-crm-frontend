@@ -56,6 +56,12 @@ const ALIASES: Record<string, string[]> = {
   lead_owner: ["owner", "assignee", "assigned to", "assignedto", "agent", "sales rep", "salesperson", "owner name"],
   comments: ["comment", "notes", "remark", "remarks", "description", "details"],
   created_time: ["created at", "createdat", "created date", "date", "created", "timestamp", "imported at", "lead date", "leaddate"],
+  guestName: ["guest name", "guest", "name"],
+  agentName: ["agent name", "agent", "created by", "creator"],
+  partySize: ["party size", "number of guests", "guests", "pax"],
+  expectedArrival: ["arrival time", "arrival", "expected arrival"],
+  interestedIn: ["interested in", "interest"],
+  createdAt: ["created", "created date", "created time"],
 };
 
 function findExactMatch(

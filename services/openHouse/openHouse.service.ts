@@ -2,6 +2,8 @@ import axios from "axios";
 import { api, getData, postData, putData, deleteData } from "@/services/api/client";
 import { buildQuery } from "@/lib/utils";
 import type {
+  ImportMapping,
+  ImportSystemField,
   OpenHouseEvent,
   OpenHouseEventLead,
   OpenHouseEventOption,
@@ -110,6 +112,92 @@ export const openHouseEventLeadsService = {
   },
 };
 
+export interface RsvpImportAgentOption {
+  id: string;
+  fullName: string;
+  employeeId: string | null;
+  role: string;
+  isActive: boolean;
+}
+
+export interface RsvpImportParseResult {
+  headers: string[];
+  previewRows: Record<string, string>[];
+  totalRows: number;
+  systemFields: ImportSystemField[];
+}
+
+export interface RsvpImportIssue {
+  row: number;
+  outcome: "invalid" | "duplicate";
+  reason: string;
+  guestName: string;
+  mobile: string;
+  agentName: string;
+}
+
+export interface RsvpImportPreview {
+  total: number;
+  valid: number;
+  invalid: number;
+  duplicate: number;
+  unmatchedAgents: string[];
+  ready: number;
+  eventId: string | null;
+  agents: { name: string; count: number; userId: string | null }[];
+  blankCounts: { expectedArrival: number; interestedIn: number; budget: number };
+  unmappedValues: {
+    status: string[];
+    expectedArrival: string[];
+    interestedIn: string[];
+    budget: string[];
+  };
+  issues: RsvpImportIssue[];
+  validSample: Array<{
+    row: number;
+    guestName: string;
+    mobile: string;
+    agentName: string;
+    createdByName: string;
+    status: string;
+    peopleComingWith: number | null;
+    expectedArrival: string;
+  }>;
+}
+
+export interface RsvpImportResult {
+  imported: number;
+  skipped: number;
+  failed: number;
+  duplicate: number;
+  eventId: string;
+  errors: RsvpImportIssue[];
+}
+
+export interface RsvpImportRequest {
+  eventId?: string;
+  mapping: ImportMapping;
+  agentMap: Record<string, string>;
+  defaults?: { expectedArrival?: string; interestedIn?: string; budget?: string };
+  valueMaps?: {
+    status?: Record<string, string>;
+    expectedArrival?: Record<string, string>;
+    interestedIn?: Record<string, string>;
+    budget?: Record<string, string>;
+  };
+}
+
+function rsvpImportForm(file: File, body: RsvpImportRequest): FormData {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("mapping", JSON.stringify(body.mapping));
+  form.append("agentMap", JSON.stringify(body.agentMap));
+  if (body.eventId) form.append("eventId", body.eventId);
+  form.append("defaults", JSON.stringify(body.defaults ?? {}));
+  form.append("valueMaps", JSON.stringify(body.valueMaps ?? {}));
+  return form;
+}
+
 export const openHouseRsvpsService = {
   /** GET /api/open-house/rsvps — paginated list */
   async list(params: OpenHouseRsvpQueryParams = {}): Promise<Paginated<OpenHouseRsvp>> {
@@ -131,6 +219,27 @@ export const openHouseRsvpsService = {
 
   remove(id: string): Promise<void> {
     return deleteData<void>(`/open-house/rsvps/${id}`);
+  },
+
+  async importAgents(): Promise<RsvpImportAgentOption[]> {
+    return getData<RsvpImportAgentOption[]>("/open-house/rsvps/import/agents");
+  },
+
+  async parseImport(file: File): Promise<RsvpImportParseResult> {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await api.post<{ data: RsvpImportParseResult }>("/open-house/rsvps/import/parse", form);
+    return res.data.data;
+  },
+
+  async previewImport(file: File, body: RsvpImportRequest): Promise<RsvpImportPreview> {
+    const res = await api.post<{ data: RsvpImportPreview }>("/open-house/rsvps/import/preview", rsvpImportForm(file, body));
+    return res.data.data;
+  },
+
+  async importFile(file: File, body: RsvpImportRequest): Promise<RsvpImportResult> {
+    const res = await api.post<{ data: RsvpImportResult }>("/open-house/rsvps/import", rsvpImportForm(file, body));
+    return res.data.data;
   },
 };
 

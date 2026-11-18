@@ -423,6 +423,7 @@ export type OpenHouseRsvpInterest =
   | "commercial"
   | "not_sure";
 export type OpenHouseRsvpBudget =
+  | "under_aed_1m"
   | "aed_1m_1_5m"
   | "aed_1_5m_2m"
   | "aed_2m_3m"
@@ -433,16 +434,16 @@ export type OpenHouseRsvpBudget =
 export interface OpenHouseRsvp {
   id: string;
   eventId: string;
-  guestName: string;
-  mobile: string;
-  peopleComingWith: number;
-  /** 24-hour "HH:mm", from 09:00 to 21:30. */
-  expectedArrival: string;
-  status: OpenHouseRsvpStatus;
-  interestedIn: OpenHouseRsvpInterest;
-  budget: OpenHouseRsvpBudget;
+  guestName: string | null;
+  mobile: string | null;
+  peopleComingWith: number | null;
+  /** 24-hour "HH:mm", from 09:00 to 21:30. Empty when the guest did not give a time. */
+  expectedArrival: string | null;
+  status: OpenHouseRsvpStatus | null;
+  interestedIn: OpenHouseRsvpInterest | null;
+  budget: OpenHouseRsvpBudget | null;
   notes?: string | null;
-  createdBy: string;
+  createdBy: string | null;
   updatedBy?: string | null;
   createdAt: string;
   updatedAt: string;

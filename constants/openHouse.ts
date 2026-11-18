@@ -84,6 +84,7 @@ export const RSVP_INTEREST_OPTIONS: { value: OpenHouseRsvpInterest; label: strin
 ];
 
 export const RSVP_BUDGET_OPTIONS: { value: OpenHouseRsvpBudget; label: string }[] = [
+  { value: "under_aed_1m", label: "Under AED 1M" },
   { value: "aed_1m_1_5m", label: "AED 1 – 1.5 Million" },
   { value: "aed_1_5m_2m", label: "AED 1.5 – 2 Million" },
   { value: "aed_2m_3m", label: "AED 2 – 3 Million" },

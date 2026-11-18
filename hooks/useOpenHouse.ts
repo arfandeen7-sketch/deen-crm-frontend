@@ -42,7 +42,7 @@ export function useOpenHouseEventOptions() {
   const enabled =
     permissionStatus === "ready" &&
     (canAction(OPEN_HOUSE_MODULE, OPEN_HOUSE_EVENTS_PAGE, "view") ||
-      (["view", "create", "edit"] as const).some(
+      (["view", "create", "edit", "import"] as const).some(
         (a) =>
           canAction(OPEN_HOUSE_MODULE, OPEN_HOUSE_LEADS_PAGE, a) ||
           canAction(OPEN_HOUSE_MODULE, OPEN_HOUSE_RSVP_PAGE, a),

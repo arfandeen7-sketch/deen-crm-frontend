@@ -29,9 +29,13 @@ function initialValue(record?: OpenHouseRsvp | null, defaultEventId?: string): O
     eventId: record?.eventId ?? defaultEventId ?? "",
     guestName: record?.guestName ?? "",
     mobile: record?.mobile ?? "",
-    peopleComingWith: String(record?.peopleComingWith ?? 0),
+    peopleComingWith: record
+      ? record.peopleComingWith == null
+        ? ""
+        : String(record.peopleComingWith)
+      : "0",
     expectedArrival: record?.expectedArrival ?? "",
-    status: record?.status ?? "awaiting",
+    status: record ? (record.status ?? "") : "awaiting",
     interestedIn: record?.interestedIn ?? "",
     budget: record?.budget ?? "",
     notes: record?.notes ?? "",
@@ -78,13 +82,13 @@ export function RsvpFormModal({
     }
     const body = {
       eventId: parsed.data.eventId,
-      guestName: parsed.data.guestName,
-      mobile: parsed.data.mobile,
-      peopleComingWith: Number(parsed.data.peopleComingWith),
-      expectedArrival: parsed.data.expectedArrival,
-      status: parsed.data.status,
-      interestedIn: parsed.data.interestedIn,
-      budget: parsed.data.budget,
+      guestName: parsed.data.guestName || null,
+      mobile: parsed.data.mobile || null,
+      peopleComingWith: parsed.data.peopleComingWith === "" ? null : Number(parsed.data.peopleComingWith),
+      expectedArrival: parsed.data.expectedArrival || null,
+      status: parsed.data.status || null,
+      interestedIn: parsed.data.interestedIn || null,
+      budget: parsed.data.budget || null,
       notes: parsed.data.notes.trim() || null,
     };
     setSaving(true);
@@ -152,7 +156,7 @@ export function RsvpFormModal({
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Guest Name" required error={errors.guestName}>
+          <Field label="Guest Name" error={errors.guestName} hint="A guest name or a mobile number is enough">
             <Input
               ref={nameRef}
               value={form.guestName}
@@ -161,7 +165,7 @@ export function RsvpFormModal({
               invalid={!!errors.guestName}
             />
           </Field>
-          <Field label="Mobile" required error={errors.mobile} hint="Include the country code, for example +971 50 123 4567">
+          <Field label="Mobile" error={errors.mobile} hint="Include the country code, for example +971 50 123 4567">
             <Input
               type="tel"
               value={form.mobile}
@@ -170,7 +174,7 @@ export function RsvpFormModal({
               invalid={!!errors.mobile}
             />
           </Field>
-          <Field label="People Coming With" required error={errors.peopleComingWith} hint="Accompanying guests, not including this guest">
+          <Field label="People Coming With" error={errors.peopleComingWith} hint="Accompanying guests, not including this guest. Leave blank when unknown.">
             <div className="flex items-center gap-2">
               <Button type="button" variant="outline" size="icon" onClick={() => setPeople(people - 1)} aria-label="Fewer people">
                 <Minus className="h-4 w-4" />
@@ -190,7 +194,7 @@ export function RsvpFormModal({
               </Button>
             </div>
           </Field>
-          <Field label="Expected Arrival" required error={errors.expectedArrival}>
+          <Field label="Expected Arrival" error={errors.expectedArrival}>
             <Select
               value={form.expectedArrival}
               onChange={(e) => setField("expectedArrival", e.target.value)}
@@ -203,18 +207,19 @@ export function RsvpFormModal({
               ))}
             </Select>
           </Field>
-          <Field label="Status" required error={errors.status}>
+          <Field label="Status" error={errors.status}>
             <Select
               value={form.status}
-              onChange={(e) => setField("status", e.target.value as OpenHouseRsvpFormValue["status"])}
+              onChange={(e) => setField("status", e.target.value)}
               invalid={!!errors.status}
             >
+              <option value=""></option>
               {RSVP_STATUS_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </Select>
           </Field>
-          <Field label="Interested In" required error={errors.interestedIn}>
+          <Field label="Interested In" error={errors.interestedIn}>
             <Select
               value={form.interestedIn}
               onChange={(e) => setField("interestedIn", e.target.value)}
@@ -227,7 +232,7 @@ export function RsvpFormModal({
               ))}
             </Select>
           </Field>
-          <Field label="Budget" required error={errors.budget} className="sm:col-span-2">
+          <Field label="Budget" error={errors.budget} className="sm:col-span-2">
             <Select
               value={form.budget}
               onChange={(e) => setField("budget", e.target.value)}

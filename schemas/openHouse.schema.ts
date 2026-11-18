@@ -66,24 +66,29 @@ export type OpenHouseEventLeadFormValue = z.input<typeof openHouseEventLeadSchem
 
 const RSVP_STATUSES = ["confirmed", "maybe", "awaiting", "declined"] as const;
 const RSVP_INTERESTS = ["studio", "1_br", "2_br", "3_br_plus", "villa_townhouse", "investment", "commercial", "not_sure"] as const;
-const RSVP_BUDGETS = ["aed_1m_1_5m", "aed_1_5m_2m", "aed_2m_3m", "aed_3m_4m", "aed_4m_5m", "aed_5m_plus"] as const;
-const oneOf = (values: readonly string[], message: string) =>
-  z.string().refine((v) => values.includes(v), message);
+const RSVP_BUDGETS = ["under_aed_1m", "aed_1m_1_5m", "aed_1_5m_2m", "aed_2m_3m", "aed_3m_4m", "aed_4m_5m", "aed_5m_plus"] as const;
+const optionalOneOf = (values: readonly string[], message: string) =>
+  z.string().refine((v) => v.trim() === "" || values.includes(v), message);
 
-export const openHouseRsvpSchema = z.object({
-  eventId: z.string().min(1, "Select an event"),
-  guestName: required("Guest name", 200),
-  mobile: z.string().trim().min(1, "Mobile is required").regex(PHONE, "Enter a valid mobile number"),
-  peopleComingWith: z
-    .string()
-    .trim()
-    .refine((v) => /^\d+$/.test(v) && Number(v) <= 100, "Enter a whole number from 0 to 100"),
-  expectedArrival: z.string().refine((v) => RSVP_ARRIVAL_SLOTS.some((s) => s.value === v), "Select an arrival time"),
-  status: oneOf(RSVP_STATUSES, "Select a status"),
-  interestedIn: oneOf(RSVP_INTERESTS, "Select what the guest is interested in"),
-  budget: oneOf(RSVP_BUDGETS, "Select a budget"),
-  notes: text(2000),
-});
+export const openHouseRsvpSchema = z
+  .object({
+    eventId: z.string().min(1, "Select an event"),
+    guestName: z.string().trim().max(200, "Guest name must be at most 200 characters"),
+    mobile: z.string().trim().refine((v) => v === "" || PHONE.test(v), "Enter a valid mobile number"),
+    peopleComingWith: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || (/^\d+$/.test(v) && Number(v) <= 100), "Enter a whole number from 0 to 100"),
+    expectedArrival: z.string().refine((v) => v === "" || RSVP_ARRIVAL_SLOTS.some((s) => s.value === v), "Select an arrival time"),
+    status: optionalOneOf(RSVP_STATUSES, "Select a status"),
+    interestedIn: optionalOneOf(RSVP_INTERESTS, "Select what the guest is interested in"),
+    budget: optionalOneOf(RSVP_BUDGETS, "Select a budget"),
+    notes: text(2000),
+  })
+  .refine((value) => value.guestName !== "" || value.mobile !== "", {
+    message: "Enter a guest name or a mobile number",
+    path: ["guestName"],
+  });
 
 export type OpenHouseRsvpFormValue = z.input<typeof openHouseRsvpSchema>;
 

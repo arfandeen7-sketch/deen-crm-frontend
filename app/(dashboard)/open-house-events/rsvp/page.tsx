@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -44,6 +44,7 @@ export default function OpenHouseRsvpPage() {
 }
 
 function OpenHouseRsvpPageContent() {
+  const router = useRouter();
   const { user, isMaster } = useAuth();
   const searchParams = useSearchParams();
   const eventIdParam = searchParams.get("eventId") ?? undefined;
@@ -135,12 +136,12 @@ function OpenHouseRsvpPageContent() {
       key: "guestName",
       header: "Guest Name",
       sortKey: "guestName",
-      render: (r) => <span className="font-medium text-slate-900">{r.guestName}</span>,
+      render: (r) => <span className="font-medium text-slate-900">{r.guestName || "—"}</span>,
     },
     {
       key: "mobile",
       header: "Mobile",
-      render: (r) => <span className="text-sm text-slate-700">{r.mobile}</span>,
+      render: (r) => <span className="text-sm text-slate-700">{r.mobile || "—"}</span>,
     },
     {
       key: "eventName",
@@ -157,7 +158,7 @@ function OpenHouseRsvpPageContent() {
       key: "peopleComingWith",
       header: "People Coming With",
       sortKey: "peopleComingWith",
-      render: (r) => <span className="text-sm text-slate-700">{r.peopleComingWith}</span>,
+      render: (r) => <span className="text-sm text-slate-700">{r.peopleComingWith == null ? "—" : r.peopleComingWith}</span>,
     },
     {
       key: "expectedArrival",
@@ -229,11 +230,18 @@ function OpenHouseRsvpPageContent() {
         title="RSVP"
         subtitle={subtitle}
         actions={
-          <CanAccess module={MODULE} page={PAGE} action="create">
-            <Button onClick={openCreate}>
-              <Plus className="h-4 w-4" /> Add RSVP
-            </Button>
-          </CanAccess>
+          <>
+            <CanAccess module={MODULE} page={PAGE} action="import">
+              <Button variant="outline" onClick={() => router.push("/open-house-events/rsvp/import")}>
+                <Upload className="h-4 w-4" /> Import RSVP
+              </Button>
+            </CanAccess>
+            <CanAccess module={MODULE} page={PAGE} action="create">
+              <Button onClick={openCreate}>
+                <Plus className="h-4 w-4" /> Add RSVP
+              </Button>
+            </CanAccess>
+          </>
         }
       />
 
@@ -317,7 +325,7 @@ function OpenHouseRsvpPageContent() {
         onClose={() => setDeleteRecord(null)}
         onConfirm={handleDelete}
         title="Delete RSVP?"
-        message={`“${deleteRecord?.guestName}” will be permanently removed. This cannot be undone.`}
+        message={`“${deleteRecord?.guestName || "This RSVP"}” will be permanently removed. This cannot be undone.`}
         confirmLabel="Delete"
         loading={deleting}
       />

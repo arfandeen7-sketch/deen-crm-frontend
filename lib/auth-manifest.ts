@@ -127,6 +127,7 @@ export const ROUTE_REQUIREMENTS: Record<string, RouteRequirement> = {
   "/open-house-events": { type: "permission", requirement: { module: "open_house_events", page: "all_events", action: "view" } },
   "/open-house-events/leads": { type: "permission", requirement: { module: "open_house_events", page: "event_leads", action: "view" } },
   "/open-house-events/rsvp": { type: "permission", requirement: { module: "open_house_events", page: "rsvp", action: "view" } },
+  "/open-house-events/rsvp/import": { type: "permission", requirement: { module: "open_house_events", page: "rsvp", action: "import" } },
 
   // My HR (self-service — authenticated only)
   "/my-hr/attendance": { type: "authenticated" },
@@ -316,6 +317,7 @@ export const ACTION_REQUIREMENTS: Record<string, PermissionRequirement> = {
   "open-house-leads:edit":    { module: "open_house_events", page: "event_leads", action: "edit" },
   "open-house-leads:delete":  { module: "open_house_events", page: "event_leads", action: "delete" },
   "open-house-rsvps:create":  { module: "open_house_events", page: "rsvp", action: "create" },
+  "open-house-rsvps:import":  { module: "open_house_events", page: "rsvp", action: "import" },
   "open-house-rsvps:edit":    { module: "open_house_events", page: "rsvp", action: "edit" },
   "open-house-rsvps:delete":  { module: "open_house_events", page: "rsvp", action: "delete" },
 
