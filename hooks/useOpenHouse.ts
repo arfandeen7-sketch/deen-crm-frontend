@@ -80,6 +80,14 @@ export function useOpenHouseRsvpsList(params: OpenHouseRsvpQueryParams) {
   });
 }
 
+export function useOpenHouseAgents() {
+  return useQuery({
+    queryKey: [KEY, "agents"],
+    queryFn: () => openHouseRsvpsService.agents(),
+    retry: retrySkipAuth,
+  });
+}
+
 export function useInvalidateOpenHouse() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: [KEY] });

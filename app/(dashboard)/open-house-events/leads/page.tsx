@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
@@ -20,6 +20,7 @@ import {
 } from "@/services/openHouse/openHouse.service";
 import {
   useInvalidateOpenHouse,
+  useOpenHouseAgents,
   useOpenHouseEventOptions,
   useOpenHouseLeadsList,
 } from "@/hooks/useOpenHouse";
@@ -50,6 +51,7 @@ function OpenHouseEventLeadsPageContent() {
   const { user, isMaster } = useAuth();
   const searchParams = useSearchParams();
   const eventIdParam = searchParams.get("eventId") ?? undefined;
+  const leadIdParam = searchParams.get("leadId");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -83,7 +85,20 @@ function OpenHouseEventLeadsPageContent() {
     ...filters,
   });
   const eventsQuery = useOpenHouseEventOptions();
+  const agentsQuery = useOpenHouseAgents();
   const events = eventsQuery.data ?? [];
+  const agents = agentsQuery.data ?? [];
+
+  useEffect(() => {
+    if (!leadIdParam) return;
+    let active = true;
+    openHouseEventLeadsService.getById(leadIdParam).then((lead) => {
+      if (active) setViewRecord(lead);
+    }).catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [leadIdParam]);
   const invalidate = useInvalidateOpenHouse();
 
   function setFilter<K extends keyof EventLeadFilters>(key: K, value: EventLeadFilters[K] | undefined) {
@@ -266,6 +281,7 @@ function OpenHouseEventLeadsPageContent() {
         <EventLeadFiltersBar
           filters={filters}
           events={events}
+          agents={agents}
           onChange={setFilter}
           onReset={() => {
             setFilters({});

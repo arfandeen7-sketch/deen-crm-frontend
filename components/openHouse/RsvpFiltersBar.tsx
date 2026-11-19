@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/Button";
 import { RSVP_ARRIVAL_SLOTS, RSVP_STATUS_OPTIONS } from "@/constants/openHouse";
 import { formatDate } from "@/lib/utils";
 import type { OpenHouseEventOption } from "@/types";
+import { AgentNameFilter } from "./OpenHouseShared";
 
 export interface RsvpFilters {
   eventId?: string;
   status?: string;
   expectedArrival?: string;
+  createdBy?: string;
 }
 
 function eventLabel(e: OpenHouseEventOption): string {
@@ -20,11 +22,13 @@ function eventLabel(e: OpenHouseEventOption): string {
 export function RsvpFiltersBar({
   filters,
   events,
+  agents,
   onChange,
   onReset,
 }: {
   filters: RsvpFilters;
   events: OpenHouseEventOption[];
+  agents: { id: string; fullName: string; isActive?: boolean }[];
   onChange: <K extends keyof RsvpFilters>(key: K, value: RsvpFilters[K] | undefined) => void;
   onReset: () => void;
 }) {
@@ -57,6 +61,12 @@ export function RsvpFiltersBar({
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
       </Select>
+
+      <AgentNameFilter
+        value={filters.createdBy}
+        agents={agents}
+        onChange={(agentId) => onChange("createdBy", agentId)}
+      />
 
       <Select
         value={filters.expectedArrival ?? ""}

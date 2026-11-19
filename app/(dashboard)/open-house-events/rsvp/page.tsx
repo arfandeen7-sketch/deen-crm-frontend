@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { ArrowRightLeft, Eye, Pencil, Plus, Trash2, Upload, UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -12,12 +12,14 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Pagination } from "@/components/ui/Pagination";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { AccessGuard, CanAccess } from "@/components/shared/Guards";
+import { usePermissions } from "@/contexts/PermissionContext";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/services/api/client";
 import { openHouseRsvpsService, type OpenHouseRsvpQueryParams } from "@/services/openHouse/openHouse.service";
-import { useInvalidateOpenHouse, useOpenHouseEventOptions, useOpenHouseRsvpsList } from "@/hooks/useOpenHouse";
+import { useInvalidateOpenHouse, useOpenHouseAgents, useOpenHouseEventOptions, useOpenHouseRsvpsList } from "@/hooks/useOpenHouse";
 import { displayValue, formatDateTime } from "@/lib/utils";
 import {
+  OPEN_HOUSE_LEADS_PAGE,
   OPEN_HOUSE_MODULE as MODULE,
   OPEN_HOUSE_RSVP_PAGE as PAGE,
   RSVP_ARRIVAL_SLOTS,
@@ -29,7 +31,8 @@ import type { OpenHouseRsvp } from "@/types";
 import { RsvpFormModal } from "@/components/openHouse/RsvpFormModal";
 import { RsvpViewModal } from "@/components/openHouse/RsvpViewModal";
 import { RsvpFiltersBar, type RsvpFilters } from "@/components/openHouse/RsvpFiltersBar";
-import { OpenHouseTabs, RsvpStatusBadge } from "@/components/openHouse/OpenHouseShared";
+import { ConvertedBadge, OpenHouseTabs, RsvpStatusBadge } from "@/components/openHouse/OpenHouseShared";
+import { ConvertRsvpModal, TransferRsvpModal } from "@/components/openHouse/RsvpWorkflowModals";
 
 type SortKey = NonNullable<OpenHouseRsvpQueryParams["sortBy"]>;
 
@@ -46,6 +49,8 @@ export default function OpenHouseRsvpPage() {
 function OpenHouseRsvpPageContent() {
   const router = useRouter();
   const { user, isMaster } = useAuth();
+  const { canAction } = usePermissions();
+  const canConvert = canAction(MODULE, OPEN_HOUSE_LEADS_PAGE, "create");
   const searchParams = useSearchParams();
   const eventIdParam = searchParams.get("eventId") ?? undefined;
 
@@ -69,6 +74,8 @@ function OpenHouseRsvpPageContent() {
   const [editRecord, setEditRecord] = useState<OpenHouseRsvp | null>(null);
   const [viewRecord, setViewRecord] = useState<OpenHouseRsvp | null>(null);
   const [deleteRecord, setDeleteRecord] = useState<OpenHouseRsvp | null>(null);
+  const [convertRecord, setConvertRecord] = useState<OpenHouseRsvp | null>(null);
+  const [transferRecord, setTransferRecord] = useState<OpenHouseRsvp | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const { data, isLoading, isError, refetch } = useOpenHouseRsvpsList({
@@ -80,7 +87,9 @@ function OpenHouseRsvpPageContent() {
     ...filters,
   });
   const eventsQuery = useOpenHouseEventOptions();
+  const agentsQuery = useOpenHouseAgents();
   const events = eventsQuery.data ?? [];
+  const agents = agentsQuery.data ?? [];
   const invalidate = useInvalidateOpenHouse();
 
   function setFilter<K extends keyof RsvpFilters>(key: K, value: RsvpFilters[K] | undefined) {
@@ -136,7 +145,12 @@ function OpenHouseRsvpPageContent() {
       key: "guestName",
       header: "Guest Name",
       sortKey: "guestName",
-      render: (r) => <span className="font-medium text-slate-900">{r.guestName || "—"}</span>,
+      render: (r) => (
+        <div>
+          <p className="font-medium text-slate-900">{r.guestName || "—"}</p>
+          {r.convertedLeadId ? <ConvertedBadge /> : null}
+        </div>
+      ),
     },
     {
       key: "mobile",
@@ -209,6 +223,26 @@ function OpenHouseRsvpPageContent() {
           <button onClick={() => setViewRecord(r)} className="rounded p-1.5 text-slate-400 hover:text-blue-600" title="View" aria-label="View RSVP">
             <Eye className="h-4 w-4" />
           </button>
+          {r.convertedLeadId ? null : canConvert ? (
+            <button
+              onClick={() => setConvertRecord(r)}
+              className="rounded p-1.5 text-slate-400 hover:text-emerald-700"
+              title="Convert to Event Lead"
+              aria-label="Convert to Event Lead"
+            >
+              <UserPlus className="h-4 w-4" />
+            </button>
+          ) : null}
+          {isMaster && (
+            <button
+              onClick={() => setTransferRecord(r)}
+              className="rounded p-1.5 text-slate-400 hover:text-gray-900"
+              title="Transfer Agent"
+              aria-label="Transfer Agent"
+            >
+              <ArrowRightLeft className="h-4 w-4" />
+            </button>
+          )}
           <CanAccess module={MODULE} page={PAGE} action="edit">
             <button onClick={() => openEdit(r)} className="rounded p-1.5 text-slate-400 hover:text-gray-900" title="Edit" aria-label="Edit RSVP">
               <Pencil className="h-4 w-4" />
@@ -260,6 +294,7 @@ function OpenHouseRsvpPageContent() {
         <RsvpFiltersBar
           filters={filters}
           events={events}
+          agents={agents}
           onChange={setFilter}
           onReset={() => {
             setFilters({});
@@ -317,7 +352,28 @@ function OpenHouseRsvpPageContent() {
         open={!!viewRecord}
         onClose={() => setViewRecord(null)}
         onEdit={() => viewRecord && openEdit(viewRecord)}
+        onConvert={() => {
+          if (!viewRecord) return;
+          setConvertRecord(viewRecord);
+          setViewRecord(null);
+        }}
+        onTransfer={() => {
+          if (!viewRecord) return;
+          setTransferRecord(viewRecord);
+          setViewRecord(null);
+        }}
+        canConvert={canConvert}
+        canTransfer={isMaster}
         record={viewRecord}
+      />
+
+      <ConvertRsvpModal key={convertRecord?.id ?? "convert"} record={convertRecord} onClose={() => setConvertRecord(null)} onConverted={invalidate} />
+      <TransferRsvpModal
+        key={transferRecord?.id ?? "transfer"}
+        record={transferRecord}
+        agents={agents}
+        onClose={() => setTransferRecord(null)}
+        onTransferred={invalidate}
       />
 
       <ConfirmModal

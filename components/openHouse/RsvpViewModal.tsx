@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { CanAccess } from "@/components/shared/Guards";
 import { formatDateTime } from "@/lib/utils";
 import {
+  OPEN_HOUSE_LEADS_PAGE,
   OPEN_HOUSE_MODULE,
   OPEN_HOUSE_RSVP_PAGE,
   RSVP_ARRIVAL_SLOTS,
@@ -12,18 +14,26 @@ import {
   RSVP_INTEREST_OPTIONS,
   labelFor,
 } from "@/constants/openHouse";
-import { DetailRow, RsvpStatusBadge, formatEventWhen } from "./OpenHouseShared";
+import { ConvertedBadge, DetailRow, RsvpStatusBadge, formatEventWhen } from "./OpenHouseShared";
 import type { OpenHouseRsvp } from "@/types";
 
 export function RsvpViewModal({
   open,
   onClose,
   onEdit,
+  onConvert,
+  onTransfer,
+  canConvert,
+  canTransfer,
   record,
 }: {
   open: boolean;
   onClose: () => void;
   onEdit: () => void;
+  onConvert: () => void;
+  onTransfer: () => void;
+  canConvert: boolean;
+  canTransfer: boolean;
   record: OpenHouseRsvp | null;
 }) {
   if (!record) return null;
@@ -41,6 +51,16 @@ export function RsvpViewModal({
       footer={
         <>
           <Button variant="outline" onClick={onClose}>Close</Button>
+          {record.convertedLeadId ? (
+            <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_LEADS_PAGE} action="view">
+              <Link href={`/open-house-events/leads?leadId=${record.convertedLeadId}`}>
+                <Button variant="secondary">Already Converted</Button>
+              </Link>
+            </CanAccess>
+          ) : canConvert ? (
+            <Button variant="secondary" onClick={onConvert}>Convert to Event Lead</Button>
+          ) : null}
+          {canTransfer && <Button variant="secondary" onClick={onTransfer}>Transfer Agent</Button>}
           <CanAccess module={OPEN_HOUSE_MODULE} page={OPEN_HOUSE_RSVP_PAGE} action="edit">
             <Button onClick={onEdit}>Edit</Button>
           </CanAccess>
@@ -59,7 +79,7 @@ export function RsvpViewModal({
         <DetailRow label="Mobile" value={record.mobile} />
         <DetailRow label="People Coming With" value={record.peopleComingWith == null ? undefined : String(record.peopleComingWith)} />
         <DetailRow label="Expected Arrival" value={labelFor(RSVP_ARRIVAL_SLOTS, record.expectedArrival)} />
-        <DetailRow label="Status" value={<RsvpStatusBadge status={record.status} />} />
+        <DetailRow label="Status" value={<span className="inline-flex items-center gap-2"><RsvpStatusBadge status={record.status} />{record.convertedLeadId ? <ConvertedBadge /> : null}</span>} />
         <DetailRow label="Interested In" value={labelFor(RSVP_INTEREST_OPTIONS, record.interestedIn)} />
         <DetailRow label="Budget" value={labelFor(RSVP_BUDGET_OPTIONS, record.budget)} />
         <DetailRow label="Created By" value={record.creator?.fullName} />

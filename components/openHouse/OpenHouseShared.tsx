@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { CalendarRange, Ticket, UserPlus } from "lucide-react";
 import { CanAccess } from "@/components/shared/Guards";
 import { Badge } from "@/components/ui/Badge";
+import { Select } from "@/components/ui/Input";
 import { cn, formatDate } from "@/lib/utils";
 import {
   EVENT_STATUS_COLORS,
@@ -74,6 +75,36 @@ export function DetailRow({
 export function EventStatusBadge({ status }: { status?: OpenHouseEventStatus | null }) {
   if (!status) return <span className="text-slate-400">—</span>;
   return <Badge className={EVENT_STATUS_COLORS[status]}>{labelFor(EVENT_STATUS_OPTIONS, status)}</Badge>;
+}
+
+export function AgentNameFilter({
+  value,
+  agents,
+  onChange,
+}: {
+  value?: string;
+  agents: { id: string; fullName: string; isActive?: boolean }[];
+  onChange: (agentId: string | undefined) => void;
+}) {
+  return (
+    <Select
+      value={value ?? ""}
+      onChange={(event) => onChange(event.target.value || undefined)}
+      className="h-9 w-full sm:w-48"
+      aria-label="Agent name"
+    >
+      <option value="">All Agents</option>
+      {agents.map((agent) => (
+        <option key={agent.id} value={agent.id}>
+          {agent.fullName}{agent.isActive === false ? " — inactive" : ""}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
+export function ConvertedBadge() {
+  return <span className="text-xs font-medium text-emerald-700">Converted</span>;
 }
 
 export function RsvpStatusBadge({ status }: { status?: OpenHouseRsvpStatus | null }) {

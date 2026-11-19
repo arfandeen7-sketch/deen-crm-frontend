@@ -445,6 +445,10 @@ export interface OpenHouseRsvp {
   notes?: string | null;
   createdBy: string | null;
   updatedBy?: string | null;
+  convertedLeadId?: string | null;
+  convertedAt?: string | null;
+  convertedBy?: string | null;
+  convertedLead?: { id: string; clientName: string } | null;
   createdAt: string;
   updatedAt: string;
   event?: (OpenHouseEventOption & { startTime?: string | null; endTime?: string | null; venueName?: string | null; location?: string | null }) | null;

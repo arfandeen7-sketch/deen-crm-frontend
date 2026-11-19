@@ -8,7 +8,7 @@ import {
   LEAD_PURPOSE_OPTIONS,
   PROPERTY_TYPE_OPTIONS,
 } from "@/constants/openHouse";
-import { DebouncedFilterInput, filterInputClass } from "./OpenHouseShared";
+import { AgentNameFilter, DebouncedFilterInput, filterInputClass } from "./OpenHouseShared";
 import { eventOptionLabel } from "./EventLeadFormModal";
 import type { OpenHouseEventOption } from "@/types";
 
@@ -23,16 +23,19 @@ export interface EventLeadFilters {
   budgetMax?: string;
   createdFrom?: string;
   createdTo?: string;
+  createdBy?: string;
 }
 
 export function EventLeadFiltersBar({
   filters,
   events,
+  agents,
   onChange,
   onReset,
 }: {
   filters: EventLeadFilters;
   events: OpenHouseEventOption[];
+  agents: { id: string; fullName: string; isActive?: boolean }[];
   onChange: <K extends keyof EventLeadFilters>(key: K, value: EventLeadFilters[K] | undefined) => void;
   onReset: () => void;
 }) {
@@ -55,6 +58,12 @@ export function EventLeadFiltersBar({
             <option key={ev.id} value={ev.id}>{eventOptionLabel(ev)}</option>
           ))}
         </Select>
+
+        <AgentNameFilter
+          value={filters.createdBy}
+          agents={agents}
+          onChange={(agentId) => onChange("createdBy", agentId)}
+        />
 
         <Select
           value={filters.propertyType ?? ""}

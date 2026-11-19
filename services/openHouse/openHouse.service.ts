@@ -40,6 +40,7 @@ export interface OpenHouseEventLeadQueryParams {
   budgetMax?: string;
   createdFrom?: string;
   createdTo?: string;
+  createdBy?: string;
   sortBy?: "createdAt" | "clientName" | "budget" | "nationality" | "eventName" | "eventDate";
   sortDir?: SortDir;
 }
@@ -55,6 +56,7 @@ export interface OpenHouseRsvpQueryParams {
   eventId?: string;
   status?: string;
   expectedArrival?: string;
+  createdBy?: string;
   sortBy?: "createdAt" | "guestName" | "expectedArrival" | "status" | "peopleComingWith" | "eventName";
   sortDir?: SortDir;
 }
@@ -219,6 +221,18 @@ export const openHouseRsvpsService = {
 
   remove(id: string): Promise<void> {
     return deleteData<void>(`/open-house/rsvps/${id}`);
+  },
+
+  agents(): Promise<RsvpImportAgentOption[]> {
+    return getData<RsvpImportAgentOption[]>("/open-house/agents");
+  },
+
+  convert(id: string): Promise<{ rsvp: OpenHouseRsvp; lead: OpenHouseEventLead }> {
+    return postData<{ rsvp: OpenHouseRsvp; lead: OpenHouseEventLead }>(`/open-house/rsvps/${id}/convert`, {});
+  },
+
+  transfer(id: string, agentId: string): Promise<OpenHouseRsvp> {
+    return postData<OpenHouseRsvp>(`/open-house/rsvps/${id}/transfer`, { agentId });
   },
 
   async importAgents(): Promise<RsvpImportAgentOption[]> {
