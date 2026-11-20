@@ -32,6 +32,7 @@ import type { TenantQueryParams } from "@/services/tenants/tenants.service";
 import { getErrorMessage } from "@/services/api/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { displayValue, formatDate, formatCurrency } from "@/lib/utils";
+import { isDealClosedStatus } from "@/lib/dealClosedLock";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { TenantEditForm } from "@/components/tenants/TenantEditForm";
 import {
@@ -120,7 +121,7 @@ export default function TenantsPage() {
 function TenantsPageContent() {
   const router = useRouter();
   const isMaster = useOwnerTenantFullAccess();
-  const { canAction } = useAuth();
+  const { canAction, isMaster: isMasterUser } = useAuth();
   const canDelete = canAction("tenant_details", "all_tenants", "delete");
   const qc = useQueryClient();
   const { remove, bulkDelete } = useTenantDeleteMutations();
@@ -234,7 +235,14 @@ function TenantsPageContent() {
       key: "fullName",
       header: "Tenant Name",
       render: (t) => (
-        <span className="font-medium text-slate-900">{displayValue(t.fullName)}</span>
+        <span className="font-medium text-slate-900">
+          {displayValue(t.fullName)}
+          {isDealClosedStatus(t.lead?.leadStatus) && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-800 ring-1 ring-inset ring-teal-600/20">
+              Deal Closed
+            </span>
+          )}
+        </span>
       ),
     },
     {
@@ -521,13 +529,15 @@ function TenantsPageContent() {
           >
             <ExternalLink className="h-4 w-4" />
           </Link>
-          <Link
-            href={`/leads/${t.leadId}`}
-            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-            title="View lead"
-          >
-            <CalendarClock className="h-4 w-4" />
-          </Link>
+          {(!isDealClosedStatus(t.lead?.leadStatus) || isMasterUser) && (
+            <Link
+              href={`/leads/${t.leadId}`}
+              className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              title="View lead"
+            >
+              <CalendarClock className="h-4 w-4" />
+            </Link>
+          )}
         </div>
       ),
     },

@@ -39,7 +39,9 @@ import { TenantHistorySection } from "@/components/tenants/TenantHistorySection"
 import { EndContractModal } from "@/components/tenants/EndContractModal";
 import { ChequeFileCell } from "@/components/tenants/ChequeFileCell";
 import { useTenantByLeadId, useTenantMutations, useTenantDocumentMutations, useTenantChequeFileMutations } from "@/hooks/useTenants";
+import { useAuth } from "@/hooks/useAuth";
 import { tenantsService } from "@/services/tenants/tenants.service";
+import { isDealClosedStatus } from "@/lib/dealClosedLock";
 import { getErrorMessage } from "@/services/api/client";
 import { displayValue, formatDate, formatDateTime, formatCurrency } from "@/lib/utils";
 
@@ -83,6 +85,7 @@ export default function TenantDetailPage() {
 
 function TenantDetailPageContent() {
   const params = useParams<{ leadId: string }>();
+  const { isMaster } = useAuth();
   const { data: tenant, isLoading, isError, refetch } = useTenantByLeadId(params.leadId);
   const {
     uploadPassport, deletePassport,
@@ -151,6 +154,8 @@ function TenantDetailPageContent() {
 
   const lead = tenant.lead;
   const daysLeft = remainingDays(tenant.agreementEndDate);
+  const dealClosed = isDealClosedStatus(lead?.leadStatus);
+  const canOpenLead = !dealClosed || isMaster;
 
   return (
     <div className="space-y-5">
@@ -163,7 +168,15 @@ function TenantDetailPageContent() {
 
       <PageHeader
         title={displayValue(tenant.fullName) ?? "Tenant Profile"}
-        subtitle={lead?.leadName ? `Lead: ${lead.leadName}` : ""}
+        subtitle={
+          dealClosed
+            ? canOpenLead && lead?.leadName
+              ? `Deal Closed · ${lead.leadName}`
+              : "Deal Closed"
+            : lead?.leadName
+              ? `Lead: ${lead.leadName}`
+              : ""
+        }
         actions={
           <div className="flex items-center gap-2">
             <CanAccess module="tenant_details" page="all_tenants" action="edit">
@@ -193,7 +206,7 @@ function TenantDetailPageContent() {
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
             </CanAccess>
-            {lead && (
+            {canOpenLead && lead && (
               <Link
                 href={`/leads/${params.leadId}`}
                 className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
@@ -489,7 +502,7 @@ function TenantDetailPageContent() {
         {/* Side column */}
         <div className="space-y-5">
           {/* Related Lead */}
-          {lead && (
+          {canOpenLead && lead && (
             <Card>
               <CardHeader title="Related Lead" />
               <CardBody className="space-y-3">
